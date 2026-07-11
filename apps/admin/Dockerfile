@@ -29,6 +29,8 @@ COPY packages/shared ./packages/shared
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+# Лимит heap для Next.js build (768MB — оставляем память для системы на 1GB VPS)
+ENV NODE_OPTIONS=--max-old-space-size=768
 
 RUN pnpm --filter admin build
 
