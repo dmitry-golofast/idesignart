@@ -1,0 +1,132 @@
+/*
+ * idesignart — Design Tokens
+ * Единый источник правды для всех компонентов.
+ * Nuxt UI (через ui.primary/neutral) и кастомные блоки ссылаются сюда.
+ *
+ * Палитра вдохновлена Norm Architects (тёплый нейтрал) +
+ * Studio Ashby (терракотовый акцент).
+ */
+
+@theme {
+  /* =========================================================
+   * Палитра — тёплый нейтрал + терракотовый акцент
+   * ========================================================= */
+
+  /* Нейтральная база (тёплый графит, не серый) */
+  --color-canvas: #faf8f5; /* фон страницы, тёплый белый */
+  --color-surface: #ffffff; /* карточки, модалки */
+  --color-surface-alt: #f3efe9; /* чередующиеся секции */
+
+  --color-ink: #1a1816; /* основной текст */
+  --color-ink-muted: #6b6660; /* вторичный текст */
+  --color-ink-subtle: #9b958d; /* плейсхолдеры, метаданные */
+
+  --color-line: #e7e0d6; /* границы, разделители */
+
+  /* Акцент — терракота (Studio Ashby) */
+  --color-accent: #b5533c; /* CTA, активные элементы */
+  --color-accent-soft: #e8d5cc; /* фоны-подложки, badge */
+  --color-accent-deep: #7a2e1f; /* hover, pressed */
+  --color-accent-contrast: #ffffff; /* текст на акценте */
+
+  /* Вторичный акцент — пыльно-зелёный (доп._badge) */
+  --color-sage: #7a8b6f;
+  --color-sage-soft: #e2e7dd;
+
+  /* Состояния */
+  --color-success: #4a7c59;
+  --color-warning: #c8924a;
+  --color-error: #b5533c;
+  --color-info: #4a6c7a;
+
+  /* =========================================================
+   * Типографика
+   * ========================================================= */
+
+  /* Семейства */
+  --font-display: "Fraunces", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+  /* Размерная шкала (clamp → адаптив без media-queries) */
+  --text-display: clamp(2.75rem, 6vw, 6rem); /* H1 hero */
+  --text--display--line-height: 1.05;
+  --text--display--letter-spacing: -0.03em;
+
+  --text-h1: clamp(2.25rem, 4vw, 3.5rem);
+  --text--h1--line-height: 1.1;
+  --text--h1--letter-spacing: -0.02em;
+
+  --text-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --text--h2--line-height: 1.15;
+  --text--h2--letter-spacing: -0.02em;
+
+  --text-h3: clamp(1.25rem, 2vw, 1.5rem);
+  --text--h3--line-height: 1.25;
+
+  --text-h4: 1.125rem;
+  --text--h4--line-height: 1.35;
+
+  --text-body: 1rem;
+  --text--body--line-height: 1.65;
+
+  --text-small: 0.875rem;
+  --text--small--line-height: 1.5;
+
+  --text-micro: 0.75rem; /* лейблы, метаданные */
+  --text--micro--line-height: 1.4;
+
+  /* Tracking */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-caps: 0.08em; /* uppercase лейблы */
+
+  /* =========================================================
+   * Скругления — мягкие, премиум
+   * ========================================================= */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
+
+  /* =========================================================
+   * Тени — тёплые, мягкие (не дефолтные серые)
+   * ========================================================= */
+  --shadow-xs: 0 1px 2px rgba(26, 24, 22, 0.04);
+  --shadow-card: 0 2px 8px rgba(26, 24, 22, 0.06),
+    0 8px 24px rgba(26, 24, 22, 0.04);
+  --shadow-hover: 0 8px 24px rgba(26, 24, 22, 0.12),
+    0 16px 48px rgba(26, 24, 22, 0.08);
+  --shadow-overlay: 0 24px 64px rgba(26, 24, 22, 0.24);
+
+  /* =========================================================
+   * Layout
+   * ========================================================= */
+  --container-max: 1440px;
+  --container-narrow: 880px; /* статьи, long-read */
+  --container-wide: 1600px; /* галереи, full-bleed */
+  --container-pad: clamp(1rem, 4vw, 3rem);
+  --section-gap: clamp(4rem, 8vw, 8rem);
+  --section-gap-sm: clamp(2.5rem, 5vw, 4rem);
+
+  /* Z-index шкала */
+  --z-base: 0;
+  --z-content: 10;
+  --z-header: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+
+  /* =========================================================
+   * Motion — медленные, дорогие (премиум feel)
+   * ========================================================= */
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --duration-fast: 0.2s;
+  --duration-base: 0.4s;
+  --duration-slow: 0.7s;
+}

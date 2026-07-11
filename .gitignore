@@ -1,22 +1,66 @@
-build
-dist / media
-node_modules
-.DS_Store
-.env
-.next
-next-env.d.ts
-.vercel
-
-# Payload default media upload directory
-public/media/
-
-public/robots.txt
-public/sitemap*.xml
-
-
-# Playwright
+# Dependencies
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+**/node_modules/
+.pnpm-store/
+
+# Nuxt
+.nuxt/
+.output/
+.nitro/
+**/.nuxt/
+**/.output/
+
+# Next.js
+.next/
+**/.next/
+out/
+
+# Build
+build/
+dist/
+**/dist/
+
+# Cache
+.cache/
+**/.cache/
+
+# Payload
+media/
+**/media/
+
+# Env
+.env
+.env.local
+.env.*.local
+.env.production
+**/.env
+**/.env.*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# TS
+*.tsbuildinfo
+.eslintcache
+
+# Test
+coverage/
+.playwright/
+test-results/
+
+# Temp
+*.tmp
+*.bak

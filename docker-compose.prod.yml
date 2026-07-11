@@ -1,0 +1,101 @@
+# ===== Production Docker Compose =====
+# Запуск: docker compose -f docker-compose.prod.yml up -d
+#
+# Сервисы:
+#   caddy     — reverse proxy, auto SSL (Let's Encrypt), роутинг по доменам
+#   postgres  — база данных
+#   web       — Nuxt (публичный сайт)
+#   admin     — Next.js + Payload (CMS + REST/GraphQL API + admin UI)
+#
+# Все переменные — из .env.production (не коммитится!)
+
+services:
+  # ===== Reverse Proxy + SSL =====
+  caddy:
+    image: caddy:2-alpine
+    container_name: idesignart-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - admin
+    environment:
+      - SITE_DOMAIN=${SITE_DOMAIN:-idesignart.com}
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-admin.idesignart.com}
+
+  # ===== PostgreSQL =====
+  postgres:
+    image: postgres:16-alpine
+    container_name: idesignart-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      POSTGRES_DB: ${DB_NAME:-idesignart}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # БД доступна только внутри сети (не публикуем порт наружу)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== Nuxt — публичный сайт =====
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: idesignart-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Nuxt runtime config — переопределяет значения из nuxt.config
+      NUXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN:-idesignart.com}
+      NUXT_PUBLIC_PAYLOAD_API_URL: https://${ADMIN_DOMAIN:-admin.idesignart.com}
+      PAYLOAD_API_URL: http://admin:3001
+      # Аналитика
+      NUXT_PUBLIC_GA_ID: ${GA_ID:-}
+      NUXT_PUBLIC_YANDEX_METRIKA_ID: ${YANDEX_METRIKA_ID:-}
+      NUXT_PUBLIC_PLAUSIBLE_DOMAIN: ${PLAUSIBLE_DOMAIN:-}
+      # Контакты
+      NUXT_PUBLIC_WHATSAPP: ${WHATSAPP:-}
+      NUXT_PUBLIC_TELEGRAM: ${TELEGRAM:-}
+      NUXT_PUBLIC_PHONE: ${PHONE:-}
+      NUXT_PUBLIC_EMAIL: ${EMAIL:-hello@idesignart.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ===== Next.js + Payload — CMS + Admin UI + API =====
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    container_name: idesignart-admin
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Payload
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?PAYLOAD_SECRET required}
+      DATABASE_URI: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-idesignart}
+      PAYLOAD_PUBLIC_SERVER_URL: https://${ADMIN_DOMAIN:-admin.idesignart.com}
+      # Media — файлы хранятся локально в volume
+      PAYLOAD_PUBLIC_PAYLOAD_UPLOAD_DIRECTORY: /app/media
+    volumes:
+      - media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:
