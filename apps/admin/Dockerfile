@@ -62,4 +62,4 @@ RUN mkdir -p /app/apps/admin/media
 EXPOSE 3001
 
 WORKDIR /app/apps/admin
-CMD ["node", "../../node_modules/.bin/next", "start", "--port", "3001", "--hostname", "0.0.0.0"]
+CMD ["npx", "next", "start", "--port", "3001", "--hostname", "0.0.0.0"]
