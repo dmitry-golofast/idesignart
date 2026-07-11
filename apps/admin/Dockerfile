@@ -28,9 +28,14 @@ COPY packages/shared ./packages/shared
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV NODE_OPTIONS=--max-old-space-size=768
+ENV NODE_OPTIONS=--max-old-space-size=1536
 
 RUN pnpm --filter admin build
+
+# Проверяем, куда standalone положил server.js
+RUN ls -la /app/apps/admin/.next/standalone/ && \
+    echo "---" && \
+    find /app/apps/admin/.next/standalone -name "server.js" -maxdepth 3
 
 # --- Этап 3: runtime ---
 FROM node:22-alpine AS runtime
@@ -41,13 +46,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
 
-# Standalone-сервер (создаётся Next.js при output: 'standalone')
+# Standalone копирует server.js в корень output (не в apps/admin/)
 COPY --from=builder /app/apps/admin/.next/standalone ./
-# Static-файлы
+# Static-файлы нужны рядом с .next
 COPY --from=builder /app/apps/admin/.next/static ./apps/admin/.next/static
 # Директория для media (Payload uploads)
 RUN mkdir -p /app/media
 
 EXPOSE 3001
 
-CMD ["node", "apps/admin/server.js"]
+# server.js в корне standalone output
+CMD ["node", "server.js"]
