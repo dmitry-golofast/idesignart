@@ -1,4 +1,6 @@
 # ===== Next.js + Payload (admin) production Dockerfile =====
+# Без standalone — pnpm monorepo ломает standalone trace.
+# Копируем полный проект с node_modules и запускаем через next start.
 
 # --- Этап 1: зависимости ---
 FROM node:22-alpine AS deps
@@ -32,13 +34,9 @@ ENV NODE_OPTIONS=--max-old-space-size=1536
 
 RUN pnpm --filter admin build
 
-# Проверяем, куда standalone положил server.js
-RUN ls -la /app/apps/admin/.next/standalone/ && \
-    echo "---" && \
-    find /app/apps/admin/.next/standalone -name "server.js" -maxdepth 3
-
-# --- Этап 3: runtime ---
+# --- Этап 3: runtime (полный образ с зависимостями) ---
 FROM node:22-alpine AS runtime
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -46,14 +44,22 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
 
-# Standalone копирует server.js в корень output (не в apps/admin/)
-COPY --from=builder /app/apps/admin/.next/standalone ./
-# Static-файлы нужны рядом с .next
-COPY --from=builder /app/apps/admin/.next/static ./apps/admin/.next/static
+# Копируем ВСЁ — node_modules, собранный .next, конфиги
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/admin/node_modules ./apps/admin/node_modules
+COPY --from=builder /app/apps/payload/node_modules ./apps/payload/node_modules
+COPY --from=builder /app/apps/admin/.next ./apps/admin/.next
+COPY --from=builder /app/apps/admin/package.json ./apps/admin/package.json
+COPY --from=builder /app/apps/admin/next.config.ts ./apps/admin/next.config.ts
+COPY --from=builder /app/apps/admin/tsconfig.json ./apps/admin/tsconfig.json
+COPY --from=builder /app/apps/payload ./apps/payload
+COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
+
 # Директория для media (Payload uploads)
-RUN mkdir -p /app/media
+RUN mkdir -p /app/apps/admin/media
 
 EXPOSE 3001
 
-# server.js в корне standalone output
-CMD ["node", "server.js"]
+WORKDIR /app/apps/admin
+CMD ["node", "../../node_modules/.bin/next", "start", "--port", "3001", "--hostname", "0.0.0.0"]
