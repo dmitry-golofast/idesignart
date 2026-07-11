@@ -1,5 +1,4 @@
 # ===== Next.js + Payload (admin) production Dockerfile =====
-# Многоэтапная сборка
 
 # --- Этап 1: зависимости ---
 FROM node:22-alpine AS deps
@@ -29,7 +28,6 @@ COPY packages/shared ./packages/shared
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-# Лимит heap для Next.js build (768MB — оставляем память для системы на 1GB VPS)
 ENV NODE_OPTIONS=--max-old-space-size=768
 
 RUN pnpm --filter admin build
@@ -43,11 +41,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
 
+# Standalone-сервер (создаётся Next.js при output: 'standalone')
 COPY --from=builder /app/apps/admin/.next/standalone ./
+# Static-файлы
 COPY --from=builder /app/apps/admin/.next/static ./apps/admin/.next/static
-COPY --from=builder /app/apps/admin/public ./apps/admin/public
-
-# Директория для загруженных файлов Payload
+# Директория для media (Payload uploads)
 RUN mkdir -p /app/media
 
 EXPOSE 3001
