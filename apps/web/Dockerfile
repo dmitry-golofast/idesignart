@@ -28,8 +28,8 @@ COPY packages/shared ./packages/shared
 # Переменные для сборки (Nuxt подставит в runtime-config)
 ENV NUXT_PUBLIC_SITE_URL=https://idesignart.ru
 ENV NUXT_PUBLIC_PAYLOAD_API_URL=https://admin.idesignart.ru
-# Лимит heap для Nuxt build (768MB — оставляем память для системы на 1GB VPS)
-ENV NODE_OPTIONS=--max-old-space-size=768
+# Лимит heap для Nuxt build (1024MB — server-side rendering требует больше)
+ENV NODE_OPTIONS=--max-old-space-size=1024
 
 RUN pnpm --filter web build
 
