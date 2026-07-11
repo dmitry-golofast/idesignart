@@ -7,7 +7,11 @@ import { withPayload } from '@payloadcms/next/withPayload'
  * withPayload добавляет нужные webpack/transpile настройки для Payload.
  */
 export default withPayload({
-  // Здесь можно добавить стандартные next.js опции
-}, {
-  // devBundleServerComponents: true (по умолчанию)
+  // Отключаем type-check при сборке (проверяем типы локально, не на VPS)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 })

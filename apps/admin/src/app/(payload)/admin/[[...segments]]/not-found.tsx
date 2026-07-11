@@ -8,6 +8,12 @@ export const metadata = {
   title: 'Страница не найдена',
 }
 
-const NotFound = () => NotFoundPage({ config, importMap })
+type Args = {
+  params: Promise<{ segments: string[] }>
+  searchParams: Promise<{ [key: string]: string | string[] }>
+}
+
+const NotFound = ({ params, searchParams }: Args) =>
+  NotFoundPage({ config, importMap, params, searchParams })
 
 export default NotFound
