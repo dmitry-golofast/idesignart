@@ -55,10 +55,13 @@ export default buildConfig({
   },
   cors: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    'http://localhost:3000',
     appURL,
+    '*',
   ],
   csrf: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    'http://localhost:3000',
     appURL,
   ],
 })

@@ -2,18 +2,24 @@
 import { computed } from 'vue'
 
 /**
- * Главная страница — рендерит ТОЛЬКО блоки из CMS (Payload).
+ * Главная страница — рендерит блоки из CMS (Payload).
  *
  * Вся структура и контент управляются через админку:
  * http://localhost:3001/admin → Pages → home → «Блоки страницы»
  *
- * Если страница не опубликована или без блоков — пустая страница.
+ * key на <PageSections> форсирует перерисовку при возврате на страницу.
  */
 
 const { data: pageData } = await usePage('home')
 
 const page = computed(() => pageData.value?.docs?.[0])
 const sections = computed(() => page.value?.sections || [])
+
+// Уникальный key — меняется при изменении данных, форсирует перерисовку
+const renderKey = computed(() => {
+  const s = sections.value
+  return `home-${s.length}-${s.map((x: any) => x.blockType).join(',')}`
+})
 
 // SEO из CMS
 useSeo({
@@ -25,6 +31,6 @@ useSeo({
 
 <template>
   <div>
-    <PageSections :sections="sections" />
+    <PageSections v-if="sections.length" :key="renderKey" :sections="sections" />
   </div>
 </template>
