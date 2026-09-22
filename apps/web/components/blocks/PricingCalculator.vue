@@ -60,7 +60,7 @@ async function requestDetailedQuote() {
 </script>
 
 <template>
-  <section class="section bg-[var(--color-surface-alt)]">
+  <section class="section bg-surface-alt">
     <div class="container-app">
       <div class="mx-auto max-w-3xl text-center">
         <p class="eyebrow">Прозрачные цены</p>
@@ -180,7 +180,7 @@ async function requestDetailedQuote() {
     <UModal v-model:open="showModal">
       <template #content>
         <div class="p-8 text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-success)]/10 text-[var(--color-success)]">
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
             <UIcon name="i-lucide-check" class="h-8 w-8" />
           </div>
           <h3 class="font-display text-2xl text-[var(--color-ink)]">Заявка отправлена!</h3>

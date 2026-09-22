@@ -225,9 +225,8 @@ async function runApply() {
     depth: 0,
   })
   const page = pages.docs[0]
-  if (!page) throw new Error('Страница slug=home не найдена в Pages')
 
-  const section = (page.sections ?? []).find((s: { blockType?: string }) => s.blockType === 'hero') as
+  const section = (page?.sections ?? []).find((s: { blockType?: string }) => s.blockType === 'hero') as
     | { hero?: AnyRecord }
     | undefined
   const currentHero = section?.hero ?? {}
@@ -274,13 +273,41 @@ async function runApply() {
     ...((data.bottomLine as AnyRecord | undefined) ?? {}),
   }
 
-  const otherSections = (page.sections ?? []).filter((s: { blockType: string }) => s.blockType !== 'hero')
+  const otherSections = (page?.sections ?? []).filter((s: { blockType: string }) => s.blockType !== 'hero')
+
+  const heroSection = {
+    blockType: 'hero',
+    hero,
+    bottomLine,
+    appearance: data.appearance ?? DEFAULT_APPEARANCE,
+  }
+
+  // Страницы нет (свежая база) — создаём home сразу с hero-блоком
+  if (!page) {
+    const created = await payload.create({
+      collection: 'pages',
+      draft: false,
+      data: {
+        title: 'Главная',
+        slug: 'home',
+        sections: [heroSection],
+        seo: {
+          title: 'idesignart — студия дизайна интерьера и 3D-визуализации',
+          description:
+            'Создаем выразительные интерьеры на фотографиях недвижимости. Покажите потенциал пространства.',
+        },
+        _status: 'published',
+      },
+    })
+    payload.logger.info(`✅ Страница home создана с hero-блоком (id=${created.id})`)
+    return
+  }
 
   await payload.update({
     collection: 'pages',
     id: page.id,
     data: {
-      sections: [{ blockType: 'hero', hero, bottomLine, appearance: data.appearance ?? DEFAULT_APPEARANCE }, ...otherSections],
+      sections: [heroSection, ...otherSections],
     },
   })
 
