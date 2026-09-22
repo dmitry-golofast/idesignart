@@ -103,9 +103,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     settings: Setting;
+    header: Header;
   };
   globalsSelect: {
     settings: SettingsSelect<false> | SettingsSelect<true>;
+    header: HeaderSelect<false> | HeaderSelect<true>;
   };
   locale: null;
   widgets: {
@@ -147,6 +149,10 @@ export interface Media {
    * Описание изображения для SEO (Image Search) и скринридеров.
    */
   alt: string;
+  /**
+   * Внутреннее название файла
+   */
+  title?: string | null;
   caption?: string | null;
   /**
    * Фотограф / визуализатор
@@ -225,16 +231,128 @@ export interface Page {
   sections?:
     | (
         | {
-            headline: string;
-            subheadline?: string | null;
-            image: number | Media;
-            ctaPrimary?: {
-              label?: string | null;
-              href?: string | null;
+            hero: {
+              /**
+               * Пустое значение скрывает строку
+               */
+              eyebrow?: string | null;
+              titleLines: {
+                text: string;
+                id?: string | null;
+              }[];
+              description?: string | null;
+              cta?: {
+                enabled?: boolean | null;
+                label?: string | null;
+                /**
+                 * Относительный путь (/start), якорь (#pricing) или HTTPS-адрес
+                 */
+                href?: string | null;
+                newTab?: boolean | null;
+                icon?: ('arrow-up-right' | 'arrow-right' | 'none') | null;
+                variant?: ('accent' | 'dark' | 'outline') | null;
+              };
+              /**
+               * Панорамный интерьер от 2400 px по ширине, без надписей
+               */
+              image: number | Media;
+              /**
+               * Необязательное; без него используется главное с мобильным кадрированием
+               */
+              mobileImage?: (number | null) | Media;
+              imageAlt: string;
+              /**
+               * Необязательное; по умолчанию берётся alt главного изображения
+               */
+              mobileImageAlt?: string | null;
+              imageCaption?: string | null;
+              showImageCaption?: boolean | null;
+              /**
+               * Горизонталь object-position
+               */
+              imagePositionX: number;
+              /**
+               * Вертикаль object-position
+               */
+              imagePositionY: number;
+              mobileImagePositionX: number;
+              mobileImagePositionY: number;
+              /**
+               * Прозрачность градиента в нижней части фото (0–0.6)
+               */
+              captionOverlayOpacity: number;
             };
-            ctaSecondary?: {
-              label?: string | null;
-              href?: string | null;
+            bottomLine?: {
+              enabled?: boolean | null;
+              leftText?: string | null;
+              rightText?: string | null;
+              /**
+               * Линия декоративная, скрыта от скринридеров и на мобильном
+               */
+              showDivider?: boolean | null;
+            };
+            /**
+             * Цвета, типографика и размеры экрана. Применяются через CSS-переменные.
+             */
+            appearance: {
+              backgroundColor?: string | null;
+              textColor?: string | null;
+              mutedTextColor?: string | null;
+              accentColor?: string | null;
+              accentTextColor?: string | null;
+              dividerColor?: string | null;
+              captionColor?: string | null;
+              fontFamily?: ('inter' | 'manrope' | 'system') | null;
+              titleWeight?: ('700' | '800' | '900') | null;
+              titleDesktopPx: number;
+              titleMobilePx: number;
+              titleLineHeight: number;
+              titleLetterSpacingEm: number;
+              bodyDesktopPx: number;
+              bodyMobilePx: number;
+              bodyLineHeight: number;
+              /**
+               * Размер шрифта бренда в шапке
+               */
+              brandPx: number;
+              /**
+               * Размер шрифта пунктов меню
+               */
+              navigationPx: number;
+              eyebrowPx: number;
+              eyebrowLetterSpacingEm: number;
+              captionPx: number;
+              bottomLinePx: number;
+              buttonTextPx: number;
+              buttonHeightPx: number;
+              buttonPaddingXPx: number;
+              buttonRadiusPx: number;
+              contentMaxWidthPx: number;
+              desktopGutterPx: number;
+              mobileGutterPx: number;
+              /**
+               * Учитывается в расчёте высоты экрана
+               */
+              headerHeightPx: number;
+              heroTopPaddingPx: number;
+              heroBottomPaddingPx: number;
+              heroColumnGapPx: number;
+              /**
+               * Доля ширины строки заголовка, остальное — описание и кнопка
+               */
+              titleColumnPercent: number;
+              descriptionButtonGapPx: number;
+              mobileStackGapPx: number;
+              imageWidth?: ('full-bleed' | 'contained') | null;
+              imageDesktopRatio?: ('3:1' | '16:9' | '21:9') | null;
+              imageMobileRatio?: ('4:3' | '1:1' | '3:4') | null;
+              imageRadiusPx: number;
+              /**
+               * На мобильном ограничивается боковым отступом
+               */
+              captionInsetPx: number;
+              bottomLinePaddingYPx: number;
+              dividerThicknessPx: number;
             };
             id?: string | null;
             blockName?: string | null;
@@ -849,6 +967,7 @@ export interface PayloadMigration {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  title?: T;
   caption?: T;
   credit?: T;
   updatedAt?: T;
@@ -930,20 +1049,93 @@ export interface PagesSelect<T extends boolean = true> {
         hero?:
           | T
           | {
-              headline?: T;
-              subheadline?: T;
-              image?: T;
-              ctaPrimary?:
+              hero?:
                 | T
                 | {
-                    label?: T;
-                    href?: T;
+                    eyebrow?: T;
+                    titleLines?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    description?: T;
+                    cta?:
+                      | T
+                      | {
+                          enabled?: T;
+                          label?: T;
+                          href?: T;
+                          newTab?: T;
+                          icon?: T;
+                          variant?: T;
+                        };
+                    image?: T;
+                    mobileImage?: T;
+                    imageAlt?: T;
+                    mobileImageAlt?: T;
+                    imageCaption?: T;
+                    showImageCaption?: T;
+                    imagePositionX?: T;
+                    imagePositionY?: T;
+                    mobileImagePositionX?: T;
+                    mobileImagePositionY?: T;
+                    captionOverlayOpacity?: T;
                   };
-              ctaSecondary?:
+              bottomLine?:
                 | T
                 | {
-                    label?: T;
-                    href?: T;
+                    enabled?: T;
+                    leftText?: T;
+                    rightText?: T;
+                    showDivider?: T;
+                  };
+              appearance?:
+                | T
+                | {
+                    backgroundColor?: T;
+                    textColor?: T;
+                    mutedTextColor?: T;
+                    accentColor?: T;
+                    accentTextColor?: T;
+                    dividerColor?: T;
+                    captionColor?: T;
+                    fontFamily?: T;
+                    titleWeight?: T;
+                    titleDesktopPx?: T;
+                    titleMobilePx?: T;
+                    titleLineHeight?: T;
+                    titleLetterSpacingEm?: T;
+                    bodyDesktopPx?: T;
+                    bodyMobilePx?: T;
+                    bodyLineHeight?: T;
+                    brandPx?: T;
+                    navigationPx?: T;
+                    eyebrowPx?: T;
+                    eyebrowLetterSpacingEm?: T;
+                    captionPx?: T;
+                    bottomLinePx?: T;
+                    buttonTextPx?: T;
+                    buttonHeightPx?: T;
+                    buttonPaddingXPx?: T;
+                    buttonRadiusPx?: T;
+                    contentMaxWidthPx?: T;
+                    desktopGutterPx?: T;
+                    mobileGutterPx?: T;
+                    headerHeightPx?: T;
+                    heroTopPaddingPx?: T;
+                    heroBottomPaddingPx?: T;
+                    heroColumnGapPx?: T;
+                    titleColumnPercent?: T;
+                    descriptionButtonGapPx?: T;
+                    mobileStackGapPx?: T;
+                    imageWidth?: T;
+                    imageDesktopRatio?: T;
+                    imageMobileRatio?: T;
+                    imageRadiusPx?: T;
+                    captionInsetPx?: T;
+                    bottomLinePaddingYPx?: T;
+                    dividerThicknessPx?: T;
                   };
               id?: T;
               blockName?: T;
@@ -1407,6 +1599,61 @@ export interface Setting {
   createdAt?: string | null;
 }
 /**
+ * Меню, телефон и кнопка действия в шапке. Оформление предзаполнено в стиле hero и управляется независимо.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header".
+ */
+export interface Header {
+  id: number;
+  navigation?:
+    | {
+        label: string;
+        /**
+         * Относительный путь (/services), якорь (#pricing) или HTTPS-адрес
+         */
+        href: string;
+        newTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Пусто — берётся из контактов (Settings), затем из переменных окружения
+   */
+  phone?: string | null;
+  cta?: {
+    enabled?: boolean | null;
+    label?: string | null;
+    /**
+     * Относительный путь (/start), якорь (#pricing) или HTTPS-адрес
+     */
+    href?: string | null;
+    newTab?: boolean | null;
+    icon?: ('arrow-up-right' | 'arrow-right' | 'none') | null;
+    variant?: ('accent' | 'dark' | 'outline') | null;
+  };
+  /**
+   * Предзаполнено в стиле hero-блока; управляется независимо от него
+   */
+  appearance: {
+    backgroundColor?: string | null;
+    textColor?: string | null;
+    mutedTextColor?: string | null;
+    accentColor?: string | null;
+    accentTextColor?: string | null;
+    fontFamily?: ('inter' | 'manrope' | 'system') | null;
+    brandPx: number;
+    navigationPx: number;
+    buttonTextPx: number;
+    buttonHeightPx: number;
+    buttonPaddingXPx: number;
+    buttonRadiusPx: number;
+    headerHeightPx: number;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "settings_select".
  */
@@ -1473,6 +1720,51 @@ export interface SettingsSelect<T extends boolean = true> {
         subtitle?: T;
         guideFile?: T;
         image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header_select".
+ */
+export interface HeaderSelect<T extends boolean = true> {
+  navigation?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        newTab?: T;
+        id?: T;
+      };
+  phone?: T;
+  cta?:
+    | T
+    | {
+        enabled?: T;
+        label?: T;
+        href?: T;
+        newTab?: T;
+        icon?: T;
+        variant?: T;
+      };
+  appearance?:
+    | T
+    | {
+        backgroundColor?: T;
+        textColor?: T;
+        mutedTextColor?: T;
+        accentColor?: T;
+        accentTextColor?: T;
+        fontFamily?: T;
+        brandPx?: T;
+        navigationPx?: T;
+        buttonTextPx?: T;
+        buttonHeightPx?: T;
+        buttonPaddingXPx?: T;
+        buttonRadiusPx?: T;
+        headerHeightPx?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -7,7 +7,7 @@ useSeo({
 })
 
 const { data: settings } = useSettings()
-const contacts = computed(() => settings.value?.value?.contacts || {})
+const contacts = computed(() => settings.value?.contacts || {})
 const config = useRuntimeConfig()
 
 const whatsappUrl = computed(() =>

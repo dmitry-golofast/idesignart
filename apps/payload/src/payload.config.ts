@@ -13,6 +13,7 @@ import { Leads } from './collections/Leads'
 import { Subscriptions } from './collections/Subscriptions'
 import { Users } from './collections/Users'
 import { Settings } from './globals/Settings'
+import { Header } from './globals/Header'
 
 const appURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001'
 const secret = process.env.PAYLOAD_SECRET || 'idesignart-dev-secret-key-2026-change-in-prod'
@@ -38,7 +39,7 @@ export default buildConfig({
     Subscriptions,
     Users,
   ],
-  globals: [Settings],
+  globals: [Settings, Header],
   editor: lexicalEditor(),
   db: postgresAdapter({
     pool: {

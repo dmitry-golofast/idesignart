@@ -65,3 +65,6 @@ test-results/
 # Temp
 *.tmp
 *.bak
+
+# Seed-экспорт контента (генерируется seed-hero.ts)
+hero-content.export.json

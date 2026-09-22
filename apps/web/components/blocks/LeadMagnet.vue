@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<{
 
 // Тянем настройки — там хранится контент гида
 const { data: settingsData } = useSettings()
-const settings = computed(() => settingsData.value?.value?.leadMagnet)
+const settings = computed(() => settingsData.value?.leadMagnet)
 
 // Не рендерим, если лид-магнит выключен в настройках
 const enabled = computed(() => settings.value?.enabled !== false)

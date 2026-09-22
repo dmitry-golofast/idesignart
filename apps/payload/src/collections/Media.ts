@@ -13,6 +13,9 @@ export const Media: CollectionConfig = {
     // Отдача файлов — через /api/media/file/* (REST); staticDir — где лежат на диске.
     // В проде staticDir относительный и резолвится от WORKDIR /app/apps/admin.
     staticDir: process.env.NODE_ENV === 'production' ? 'media' : '../../media',
+    // Только растровые форматы сайтов (§10 спеки hero); обработку AVIF
+    // обеспечивают sharp-пресеты ниже.
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
     // Адаптивные размеры для @nuxt/image
     imageSizes: [
       { name: 'thumbnail', width: 400, height: 300, position: 'centre' },
@@ -34,6 +37,11 @@ export const Media: CollectionConfig = {
       admin: {
         description: 'Описание изображения для SEO (Image Search) и скринридеров.',
       },
+    },
+    {
+      name: 'title',
+      type: 'text',
+      admin: { description: 'Внутреннее название файла' },
     },
     {
       name: 'caption',

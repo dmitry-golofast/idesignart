@@ -18,6 +18,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "title": {
+          "name": "title",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "caption": {
           "name": "caption",
           "type": "varchar",
@@ -408,6 +414,88 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.pages_blocks_hero_hero_title_lines": {
+      "name": "pages_blocks_hero_hero_title_lines",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "pages_blocks_hero_hero_title_lines_order_idx": {
+          "name": "pages_blocks_hero_hero_title_lines_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pages_blocks_hero_hero_title_lines_parent_id_idx": {
+          "name": "pages_blocks_hero_hero_title_lines_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pages_blocks_hero_hero_title_lines_parent_id_fk": {
+          "name": "pages_blocks_hero_hero_title_lines_parent_id_fk",
+          "tableFrom": "pages_blocks_hero_hero_title_lines",
+          "tableTo": "pages_blocks_hero",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.pages_blocks_hero": {
       "name": "pages_blocks_hero",
       "schema": "",
@@ -436,47 +524,469 @@
           "primaryKey": true,
           "notNull": true
         },
-        "headline": {
-          "name": "headline",
+        "hero_eyebrow": {
+          "name": "hero_eyebrow",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'ЦИФРОВОЙ ДИЗАЙН ИНТЕРЬЕРОВ'"
+        },
+        "hero_description": {
+          "name": "hero_description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Превращаем пустые комнаты в выразительные интерьеры для продажи недвижимости.'"
+        },
+        "hero_cta_enabled": {
+          "name": "hero_cta_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "hero_cta_label": {
+          "name": "hero_cta_label",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "subheadline": {
-          "name": "subheadline",
+        "hero_cta_href": {
+          "name": "hero_cta_href",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "image_id": {
-          "name": "image_id",
+        "hero_cta_new_tab": {
+          "name": "hero_cta_new_tab",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "hero_cta_icon": {
+          "name": "hero_cta_icon",
+          "type": "enum_pages_blocks_hero_hero_cta_icon",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'arrow-up-right'"
+        },
+        "hero_cta_variant": {
+          "name": "hero_cta_variant",
+          "type": "enum_pages_blocks_hero_hero_cta_variant",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'accent'"
+        },
+        "hero_image_id": {
+          "name": "hero_image_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "cta_primary_label": {
-          "name": "cta_primary_label",
+        "hero_mobile_image_id": {
+          "name": "hero_mobile_image_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_image_alt": {
+          "name": "hero_image_alt",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Светлая гостиная с панорамными окнами, кремовым диваном и терракотовым креслом'"
+        },
+        "hero_mobile_image_alt": {
+          "name": "hero_mobile_image_alt",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "cta_primary_href": {
-          "name": "cta_primary_href",
+        "hero_image_caption": {
+          "name": "hero_image_caption",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'01 / Тёплый минимализм'"
         },
-        "cta_secondary_label": {
-          "name": "cta_secondary_label",
-          "type": "varchar",
+        "hero_show_image_caption": {
+          "name": "hero_show_image_caption",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": true
         },
-        "cta_secondary_href": {
-          "name": "cta_secondary_href",
+        "hero_image_position_x": {
+          "name": "hero_image_position_x",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_image_position_y": {
+          "name": "hero_image_position_y",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_mobile_image_position_x": {
+          "name": "hero_mobile_image_position_x",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_mobile_image_position_y": {
+          "name": "hero_mobile_image_position_y",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_caption_overlay_opacity": {
+          "name": "hero_caption_overlay_opacity",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0.15
+        },
+        "bottom_line_enabled": {
+          "name": "bottom_line_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "bottom_line_left_text": {
+          "name": "bottom_line_left_text",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'Ваш объект. Новый взгляд.'"
+        },
+        "bottom_line_right_text": {
+          "name": "bottom_line_right_text",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Виртуальный хоумстейджинг'"
+        },
+        "bottom_line_show_divider": {
+          "name": "bottom_line_show_divider",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "appearance_background_color": {
+          "name": "appearance_background_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#F8F7F3'"
+        },
+        "appearance_text_color": {
+          "name": "appearance_text_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#080808'"
+        },
+        "appearance_muted_text_color": {
+          "name": "appearance_muted_text_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#303030'"
+        },
+        "appearance_accent_color": {
+          "name": "appearance_accent_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#D7EF28'"
+        },
+        "appearance_accent_text_color": {
+          "name": "appearance_accent_text_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#080808'"
+        },
+        "appearance_divider_color": {
+          "name": "appearance_divider_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#B8B8B5'"
+        },
+        "appearance_caption_color": {
+          "name": "appearance_caption_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#FFFFFF'"
+        },
+        "appearance_font_family": {
+          "name": "appearance_font_family",
+          "type": "enum_pages_blocks_hero_appearance_font_family",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'inter'"
+        },
+        "appearance_title_weight": {
+          "name": "appearance_title_weight",
+          "type": "enum_pages_blocks_hero_appearance_title_weight",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'800'"
+        },
+        "appearance_title_desktop_px": {
+          "name": "appearance_title_desktop_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 116
+        },
+        "appearance_title_mobile_px": {
+          "name": "appearance_title_mobile_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 48
+        },
+        "appearance_title_line_height": {
+          "name": "appearance_title_line_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0.98
+        },
+        "appearance_title_letter_spacing_em": {
+          "name": "appearance_title_letter_spacing_em",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": -0.045
+        },
+        "appearance_body_desktop_px": {
+          "name": "appearance_body_desktop_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 22
+        },
+        "appearance_body_mobile_px": {
+          "name": "appearance_body_mobile_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 18
+        },
+        "appearance_body_line_height": {
+          "name": "appearance_body_line_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1.4
+        },
+        "appearance_brand_px": {
+          "name": "appearance_brand_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 30
+        },
+        "appearance_navigation_px": {
+          "name": "appearance_navigation_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 16
+        },
+        "appearance_eyebrow_px": {
+          "name": "appearance_eyebrow_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 12
+        },
+        "appearance_eyebrow_letter_spacing_em": {
+          "name": "appearance_eyebrow_letter_spacing_em",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0.3
+        },
+        "appearance_caption_px": {
+          "name": "appearance_caption_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 14
+        },
+        "appearance_bottom_line_px": {
+          "name": "appearance_bottom_line_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 14
+        },
+        "appearance_button_text_px": {
+          "name": "appearance_button_text_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 18
+        },
+        "appearance_button_height_px": {
+          "name": "appearance_button_height_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 56
+        },
+        "appearance_button_padding_x_px": {
+          "name": "appearance_button_padding_x_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 28
+        },
+        "appearance_button_radius_px": {
+          "name": "appearance_button_radius_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "appearance_content_max_width_px": {
+          "name": "appearance_content_max_width_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1600
+        },
+        "appearance_desktop_gutter_px": {
+          "name": "appearance_desktop_gutter_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 48
+        },
+        "appearance_mobile_gutter_px": {
+          "name": "appearance_mobile_gutter_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 20
+        },
+        "appearance_header_height_px": {
+          "name": "appearance_header_height_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 88
+        },
+        "appearance_hero_top_padding_px": {
+          "name": "appearance_hero_top_padding_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 40
+        },
+        "appearance_hero_bottom_padding_px": {
+          "name": "appearance_hero_bottom_padding_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 36
+        },
+        "appearance_hero_column_gap_px": {
+          "name": "appearance_hero_column_gap_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 48
+        },
+        "appearance_title_column_percent": {
+          "name": "appearance_title_column_percent",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 68
+        },
+        "appearance_description_button_gap_px": {
+          "name": "appearance_description_button_gap_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 28
+        },
+        "appearance_mobile_stack_gap_px": {
+          "name": "appearance_mobile_stack_gap_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 24
+        },
+        "appearance_image_width": {
+          "name": "appearance_image_width",
+          "type": "enum_pages_blocks_hero_appearance_image_width",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'full-bleed'"
+        },
+        "appearance_image_desktop_ratio": {
+          "name": "appearance_image_desktop_ratio",
+          "type": "enum_pages_blocks_hero_appearance_image_desktop_ratio",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'3:1'"
+        },
+        "appearance_image_mobile_ratio": {
+          "name": "appearance_image_mobile_ratio",
+          "type": "enum_pages_blocks_hero_appearance_image_mobile_ratio",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'4:3'"
+        },
+        "appearance_image_radius_px": {
+          "name": "appearance_image_radius_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "appearance_caption_inset_px": {
+          "name": "appearance_caption_inset_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 32
+        },
+        "appearance_bottom_line_padding_y_px": {
+          "name": "appearance_bottom_line_padding_y_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 24
+        },
+        "appearance_divider_thickness_px": {
+          "name": "appearance_divider_thickness_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1
         },
         "block_name": {
           "name": "block_name",
@@ -531,11 +1041,26 @@
           "method": "btree",
           "with": {}
         },
-        "pages_blocks_hero_image_idx": {
-          "name": "pages_blocks_hero_image_idx",
+        "pages_blocks_hero_hero_hero_image_idx": {
+          "name": "pages_blocks_hero_hero_hero_image_idx",
           "columns": [
             {
-              "expression": "image_id",
+              "expression": "hero_image_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pages_blocks_hero_hero_hero_mobile_image_idx": {
+          "name": "pages_blocks_hero_hero_hero_mobile_image_idx",
+          "columns": [
+            {
+              "expression": "hero_mobile_image_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -548,12 +1073,25 @@
         }
       },
       "foreignKeys": {
-        "pages_blocks_hero_image_id_media_id_fk": {
-          "name": "pages_blocks_hero_image_id_media_id_fk",
+        "pages_blocks_hero_hero_image_id_media_id_fk": {
+          "name": "pages_blocks_hero_hero_image_id_media_id_fk",
           "tableFrom": "pages_blocks_hero",
           "tableTo": "media",
           "columnsFrom": [
-            "image_id"
+            "hero_image_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "pages_blocks_hero_hero_mobile_image_id_media_id_fk": {
+          "name": "pages_blocks_hero_hero_mobile_image_id_media_id_fk",
+          "tableFrom": "pages_blocks_hero",
+          "tableTo": "media",
+          "columnsFrom": [
+            "hero_mobile_image_id"
           ],
           "columnsTo": [
             "id"
@@ -2132,6 +2670,94 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public._pages_v_blocks_hero_hero_title_lines": {
+      "name": "_pages_v_blocks_hero_hero_title_lines",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "_pages_v_blocks_hero_hero_title_lines_order_idx": {
+          "name": "_pages_v_blocks_hero_hero_title_lines_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_pages_v_blocks_hero_hero_title_lines_parent_id_idx": {
+          "name": "_pages_v_blocks_hero_hero_title_lines_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "_pages_v_blocks_hero_hero_title_lines_parent_id_fk": {
+          "name": "_pages_v_blocks_hero_hero_title_lines_parent_id_fk",
+          "tableFrom": "_pages_v_blocks_hero_hero_title_lines",
+          "tableTo": "_pages_v_blocks_hero",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public._pages_v_blocks_hero": {
       "name": "_pages_v_blocks_hero",
       "schema": "",
@@ -2160,47 +2786,469 @@
           "primaryKey": true,
           "notNull": true
         },
-        "headline": {
-          "name": "headline",
+        "hero_eyebrow": {
+          "name": "hero_eyebrow",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'ЦИФРОВОЙ ДИЗАЙН ИНТЕРЬЕРОВ'"
+        },
+        "hero_description": {
+          "name": "hero_description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Превращаем пустые комнаты в выразительные интерьеры для продажи недвижимости.'"
+        },
+        "hero_cta_enabled": {
+          "name": "hero_cta_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "hero_cta_label": {
+          "name": "hero_cta_label",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "subheadline": {
-          "name": "subheadline",
+        "hero_cta_href": {
+          "name": "hero_cta_href",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "image_id": {
-          "name": "image_id",
+        "hero_cta_new_tab": {
+          "name": "hero_cta_new_tab",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "hero_cta_icon": {
+          "name": "hero_cta_icon",
+          "type": "enum__pages_v_blocks_hero_hero_cta_icon",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'arrow-up-right'"
+        },
+        "hero_cta_variant": {
+          "name": "hero_cta_variant",
+          "type": "enum__pages_v_blocks_hero_hero_cta_variant",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'accent'"
+        },
+        "hero_image_id": {
+          "name": "hero_image_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "cta_primary_label": {
-          "name": "cta_primary_label",
+        "hero_mobile_image_id": {
+          "name": "hero_mobile_image_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_image_alt": {
+          "name": "hero_image_alt",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Светлая гостиная с панорамными окнами, кремовым диваном и терракотовым креслом'"
+        },
+        "hero_mobile_image_alt": {
+          "name": "hero_mobile_image_alt",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "cta_primary_href": {
-          "name": "cta_primary_href",
+        "hero_image_caption": {
+          "name": "hero_image_caption",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'01 / Тёплый минимализм'"
         },
-        "cta_secondary_label": {
-          "name": "cta_secondary_label",
-          "type": "varchar",
+        "hero_show_image_caption": {
+          "name": "hero_show_image_caption",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": true
         },
-        "cta_secondary_href": {
-          "name": "cta_secondary_href",
+        "hero_image_position_x": {
+          "name": "hero_image_position_x",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_image_position_y": {
+          "name": "hero_image_position_y",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_mobile_image_position_x": {
+          "name": "hero_mobile_image_position_x",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_mobile_image_position_y": {
+          "name": "hero_mobile_image_position_y",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 50
+        },
+        "hero_caption_overlay_opacity": {
+          "name": "hero_caption_overlay_opacity",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0.15
+        },
+        "bottom_line_enabled": {
+          "name": "bottom_line_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "bottom_line_left_text": {
+          "name": "bottom_line_left_text",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'Ваш объект. Новый взгляд.'"
+        },
+        "bottom_line_right_text": {
+          "name": "bottom_line_right_text",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Виртуальный хоумстейджинг'"
+        },
+        "bottom_line_show_divider": {
+          "name": "bottom_line_show_divider",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "appearance_background_color": {
+          "name": "appearance_background_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#F8F7F3'"
+        },
+        "appearance_text_color": {
+          "name": "appearance_text_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#080808'"
+        },
+        "appearance_muted_text_color": {
+          "name": "appearance_muted_text_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#303030'"
+        },
+        "appearance_accent_color": {
+          "name": "appearance_accent_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#D7EF28'"
+        },
+        "appearance_accent_text_color": {
+          "name": "appearance_accent_text_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#080808'"
+        },
+        "appearance_divider_color": {
+          "name": "appearance_divider_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#B8B8B5'"
+        },
+        "appearance_caption_color": {
+          "name": "appearance_caption_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#FFFFFF'"
+        },
+        "appearance_font_family": {
+          "name": "appearance_font_family",
+          "type": "enum__pages_v_blocks_hero_appearance_font_family",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'inter'"
+        },
+        "appearance_title_weight": {
+          "name": "appearance_title_weight",
+          "type": "enum__pages_v_blocks_hero_appearance_title_weight",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'800'"
+        },
+        "appearance_title_desktop_px": {
+          "name": "appearance_title_desktop_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 116
+        },
+        "appearance_title_mobile_px": {
+          "name": "appearance_title_mobile_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 48
+        },
+        "appearance_title_line_height": {
+          "name": "appearance_title_line_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0.98
+        },
+        "appearance_title_letter_spacing_em": {
+          "name": "appearance_title_letter_spacing_em",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": -0.045
+        },
+        "appearance_body_desktop_px": {
+          "name": "appearance_body_desktop_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 22
+        },
+        "appearance_body_mobile_px": {
+          "name": "appearance_body_mobile_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 18
+        },
+        "appearance_body_line_height": {
+          "name": "appearance_body_line_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1.4
+        },
+        "appearance_brand_px": {
+          "name": "appearance_brand_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 30
+        },
+        "appearance_navigation_px": {
+          "name": "appearance_navigation_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 16
+        },
+        "appearance_eyebrow_px": {
+          "name": "appearance_eyebrow_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 12
+        },
+        "appearance_eyebrow_letter_spacing_em": {
+          "name": "appearance_eyebrow_letter_spacing_em",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0.3
+        },
+        "appearance_caption_px": {
+          "name": "appearance_caption_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 14
+        },
+        "appearance_bottom_line_px": {
+          "name": "appearance_bottom_line_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 14
+        },
+        "appearance_button_text_px": {
+          "name": "appearance_button_text_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 18
+        },
+        "appearance_button_height_px": {
+          "name": "appearance_button_height_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 56
+        },
+        "appearance_button_padding_x_px": {
+          "name": "appearance_button_padding_x_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 28
+        },
+        "appearance_button_radius_px": {
+          "name": "appearance_button_radius_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "appearance_content_max_width_px": {
+          "name": "appearance_content_max_width_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1600
+        },
+        "appearance_desktop_gutter_px": {
+          "name": "appearance_desktop_gutter_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 48
+        },
+        "appearance_mobile_gutter_px": {
+          "name": "appearance_mobile_gutter_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 20
+        },
+        "appearance_header_height_px": {
+          "name": "appearance_header_height_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 88
+        },
+        "appearance_hero_top_padding_px": {
+          "name": "appearance_hero_top_padding_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 40
+        },
+        "appearance_hero_bottom_padding_px": {
+          "name": "appearance_hero_bottom_padding_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 36
+        },
+        "appearance_hero_column_gap_px": {
+          "name": "appearance_hero_column_gap_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 48
+        },
+        "appearance_title_column_percent": {
+          "name": "appearance_title_column_percent",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 68
+        },
+        "appearance_description_button_gap_px": {
+          "name": "appearance_description_button_gap_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 28
+        },
+        "appearance_mobile_stack_gap_px": {
+          "name": "appearance_mobile_stack_gap_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 24
+        },
+        "appearance_image_width": {
+          "name": "appearance_image_width",
+          "type": "enum__pages_v_blocks_hero_appearance_image_width",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'full-bleed'"
+        },
+        "appearance_image_desktop_ratio": {
+          "name": "appearance_image_desktop_ratio",
+          "type": "enum__pages_v_blocks_hero_appearance_image_desktop_ratio",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'3:1'"
+        },
+        "appearance_image_mobile_ratio": {
+          "name": "appearance_image_mobile_ratio",
+          "type": "enum__pages_v_blocks_hero_appearance_image_mobile_ratio",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'4:3'"
+        },
+        "appearance_image_radius_px": {
+          "name": "appearance_image_radius_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "appearance_caption_inset_px": {
+          "name": "appearance_caption_inset_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 32
+        },
+        "appearance_bottom_line_padding_y_px": {
+          "name": "appearance_bottom_line_padding_y_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 24
+        },
+        "appearance_divider_thickness_px": {
+          "name": "appearance_divider_thickness_px",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1
         },
         "_uuid": {
           "name": "_uuid",
@@ -2261,11 +3309,26 @@
           "method": "btree",
           "with": {}
         },
-        "_pages_v_blocks_hero_image_idx": {
-          "name": "_pages_v_blocks_hero_image_idx",
+        "_pages_v_blocks_hero_hero_hero_image_idx": {
+          "name": "_pages_v_blocks_hero_hero_hero_image_idx",
           "columns": [
             {
-              "expression": "image_id",
+              "expression": "hero_image_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_pages_v_blocks_hero_hero_hero_mobile_image_idx": {
+          "name": "_pages_v_blocks_hero_hero_hero_mobile_image_idx",
+          "columns": [
+            {
+              "expression": "hero_mobile_image_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2278,12 +3341,25 @@
         }
       },
       "foreignKeys": {
-        "_pages_v_blocks_hero_image_id_media_id_fk": {
-          "name": "_pages_v_blocks_hero_image_id_media_id_fk",
+        "_pages_v_blocks_hero_hero_image_id_media_id_fk": {
+          "name": "_pages_v_blocks_hero_hero_image_id_media_id_fk",
           "tableFrom": "_pages_v_blocks_hero",
           "tableTo": "media",
           "columnsFrom": [
-            "image_id"
+            "hero_image_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "_pages_v_blocks_hero_hero_mobile_image_id_media_id_fk": {
+          "name": "_pages_v_blocks_hero_hero_mobile_image_id_media_id_fk",
+          "tableFrom": "_pages_v_blocks_hero",
+          "tableTo": "media",
+          "columnsFrom": [
+            "hero_mobile_image_id"
           ],
           "columnsTo": [
             "id"
@@ -9935,6 +11011,68 @@
     }
   },
   "enums": {
+    "public.enum_pages_blocks_hero_hero_cta_icon": {
+      "name": "enum_pages_blocks_hero_hero_cta_icon",
+      "schema": "public",
+      "values": [
+        "arrow-up-right",
+        "arrow-right",
+        "none"
+      ]
+    },
+    "public.enum_pages_blocks_hero_hero_cta_variant": {
+      "name": "enum_pages_blocks_hero_hero_cta_variant",
+      "schema": "public",
+      "values": [
+        "accent",
+        "dark",
+        "outline"
+      ]
+    },
+    "public.enum_pages_blocks_hero_appearance_font_family": {
+      "name": "enum_pages_blocks_hero_appearance_font_family",
+      "schema": "public",
+      "values": [
+        "inter",
+        "manrope",
+        "system"
+      ]
+    },
+    "public.enum_pages_blocks_hero_appearance_title_weight": {
+      "name": "enum_pages_blocks_hero_appearance_title_weight",
+      "schema": "public",
+      "values": [
+        "700",
+        "800",
+        "900"
+      ]
+    },
+    "public.enum_pages_blocks_hero_appearance_image_width": {
+      "name": "enum_pages_blocks_hero_appearance_image_width",
+      "schema": "public",
+      "values": [
+        "full-bleed",
+        "contained"
+      ]
+    },
+    "public.enum_pages_blocks_hero_appearance_image_desktop_ratio": {
+      "name": "enum_pages_blocks_hero_appearance_image_desktop_ratio",
+      "schema": "public",
+      "values": [
+        "3:1",
+        "16:9",
+        "21:9"
+      ]
+    },
+    "public.enum_pages_blocks_hero_appearance_image_mobile_ratio": {
+      "name": "enum_pages_blocks_hero_appearance_image_mobile_ratio",
+      "schema": "public",
+      "values": [
+        "4:3",
+        "1:1",
+        "3:4"
+      ]
+    },
     "public.enum_pages_blocks_content_layout": {
       "name": "enum_pages_blocks_content_layout",
       "schema": "public",
@@ -9957,6 +11095,68 @@
       "values": [
         "draft",
         "published"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_hero_cta_icon": {
+      "name": "enum__pages_v_blocks_hero_hero_cta_icon",
+      "schema": "public",
+      "values": [
+        "arrow-up-right",
+        "arrow-right",
+        "none"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_hero_cta_variant": {
+      "name": "enum__pages_v_blocks_hero_hero_cta_variant",
+      "schema": "public",
+      "values": [
+        "accent",
+        "dark",
+        "outline"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_appearance_font_family": {
+      "name": "enum__pages_v_blocks_hero_appearance_font_family",
+      "schema": "public",
+      "values": [
+        "inter",
+        "manrope",
+        "system"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_appearance_title_weight": {
+      "name": "enum__pages_v_blocks_hero_appearance_title_weight",
+      "schema": "public",
+      "values": [
+        "700",
+        "800",
+        "900"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_appearance_image_width": {
+      "name": "enum__pages_v_blocks_hero_appearance_image_width",
+      "schema": "public",
+      "values": [
+        "full-bleed",
+        "contained"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_appearance_image_desktop_ratio": {
+      "name": "enum__pages_v_blocks_hero_appearance_image_desktop_ratio",
+      "schema": "public",
+      "values": [
+        "3:1",
+        "16:9",
+        "21:9"
+      ]
+    },
+    "public.enum__pages_v_blocks_hero_appearance_image_mobile_ratio": {
+      "name": "enum__pages_v_blocks_hero_appearance_image_mobile_ratio",
+      "schema": "public",
+      "values": [
+        "4:3",
+        "1:1",
+        "3:4"
       ]
     },
     "public.enum__pages_v_blocks_content_layout": {
@@ -10223,6 +11423,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "945ce40b-9e8b-4453-a983-31ecf475e23f",
+  "id": "a7dcb2b1-afad-4cde-9afe-e992ec75600c",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

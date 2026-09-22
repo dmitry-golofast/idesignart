@@ -1,13 +1,18 @@
+import type { Media } from '../shared/types/payload'
+
 /**
  * useSeo — единый хелпер для SEO-мета на каждой странице.
- * Склеивает с дефолтами из Settings, формирует Open Graph + Twitter Card.
+ *
+ * Слои значений: страница → Settings.seoDefaults («SEO по умолчанию» в админке)
+ * → builtin-фолбэк. Description из шаблона (%s) подставляется только когда у
+ * страницы своего описания нет; в %s идёт title страницы.
  *
  * Note: useSeoMeta / useHead / useSchemaOrg / defineLocalBusiness /
  * useRuntimeConfig / useRoute — Nuxt auto-imports.
  */
 
 // Поля из Payload могут быть null (seo-группа необязательна) — принимаем null,
-// чтобы страницы не приходилось чистить перед вызовом
+// чтобы страницы не приходило чистить перед вызовом
 interface SeoOptions {
   title?: string | null
   description?: string | null
@@ -21,9 +26,19 @@ interface SeoOptions {
   author?: string | null
 }
 
+const isMedia = (m: unknown): m is Media =>
+  Boolean(m) && typeof m === 'object' && typeof (m as Media).url === 'string'
+
+/** Шаблон описания: %s заменяется на title страницы; без него разделитель подчищается */
+const applyDescriptionTemplate = (template: string, fill?: string | null) => {
+  if (!template.includes('%s')) return template
+  const value = (fill ?? '').trim()
+  if (!value) return template.replace('%s', '').replace(/\s*[—–-]\s*$/, '').trim()
+  return template.replace('%s', value)
+}
+
 /**
  * useSeo — единый хелпер для SEO-мета на каждой странице.
- * Склеивает с дефолтами из Settings, формирует Open Graph + Twitter Card.
  *
  * Использование:
  *   useSeo({ title: 'Дизайн квартиры', description: '...' })
@@ -31,28 +46,49 @@ interface SeoOptions {
 export function useSeo(options: SeoOptions = {}) {
   const config = useRuntimeConfig()
   const siteUrl = config.public.siteUrl as string
+  const payloadBase = config.public.payloadApiUrl as string
   const route = useRoute()
 
+  // Дефолты из Settings (fetch дедуплицируется по ключу useAsyncData)
+  const { data: settingsData } = useSettings()
+  const seoDefaults = settingsData.value?.seoDefaults ?? {}
+
+  // title: страница → глобальный дефолт
+  const title = options.title || seoDefaults.title || undefined
+
+  // description: страница → шаблон с %s из Settings
+  const description = options.description
+    ?? (seoDefaults.descriptionTemplate
+      ? applyDescriptionTemplate(seoDefaults.descriptionTemplate, options.title)
+      : null)
+
+  // OG-картинка: страница → глобальная дефолтная → /og-default.jpg
+  const defaultOgUrl = isMedia(seoDefaults.defaultOgImage)
+    ? seoDefaults.defaultOgImage.url ?? null
+    : null
+  const imageUrl = options.image || defaultOgUrl || '/og-default.jpg'
+  // /media/* отдаёт Payload, /og-default.jpg лежит в public/ фронтенда
+  const fullImage = imageUrl.startsWith('http')
+    ? imageUrl
+    : imageUrl.startsWith('/media/')
+      ? `${payloadBase}${imageUrl}`
+      : `${siteUrl}${imageUrl}`
+
   const fullUrl = options.url || `${siteUrl}${route.path}`
-  const fullImage = options.image?.startsWith('http')
-    ? options.image
-    : options.image
-      ? `${siteUrl}${options.image}`
-      : `${siteUrl}/og-default.jpg`
 
   const meta: Record<string, any> = {
-    title: options.title,
-    description: options.description,
+    title,
+    description,
     keywords: options.keywords,
-    ogTitle: options.title,
-    ogDescription: options.description,
+    ogTitle: title,
+    ogDescription: description,
     ogImage: fullImage,
     ogUrl: fullUrl,
     ogType: options.type || 'website',
     ogSiteName: 'idesignart',
     twitterCard: 'summary_large_image',
-    twitterTitle: options.title,
-    twitterDescription: options.description,
+    twitterTitle: title,
+    twitterDescription: description,
     twitterImage: fullImage,
   }
 
@@ -67,9 +103,17 @@ export function useSeo(options: SeoOptions = {}) {
 
   useSeoMeta(meta)
 
-  // Canonical
+  // Canonical + коды верификации поисковиков (заполняются в админке, Settings → SEO)
   useHead({
     link: [{ rel: 'canonical', href: fullUrl }],
+    meta: [
+      ...(seoDefaults.googleVerification
+        ? [{ name: 'google-site-verification', content: seoDefaults.googleVerification }]
+        : []),
+      ...(seoDefaults.yandexVerification
+        ? [{ name: 'yandex-verification', content: seoDefaults.yandexVerification }]
+        : []),
+    ],
   })
 
   // JSON-LD LocalBusiness — глобальный, на каждой странице

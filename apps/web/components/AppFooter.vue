@@ -6,12 +6,12 @@ interface SettingsData {
   contacts?: { email?: string | null; phone?: string | null; whatsapp?: string | null; telegram?: string | null; instagram?: string | null; address?: string | null }
 }
 
-const props = defineProps<{ settings?: { value?: SettingsData } }>()
+const props = defineProps<{ settings?: SettingsData }>()
 const config = useRuntimeConfig()
 
-const brand = computed(() => props.settings?.value?.brand?.name || 'idesignart')
-const tagline = computed(() => props.settings?.value?.brand?.tagline || 'Дизайн интерьера и 3D-визуализация')
-const contacts = computed(() => props.settings?.value?.contacts || {})
+const brand = computed(() => props.settings?.brand?.name || 'idesignart')
+const tagline = computed(() => props.settings?.brand?.tagline || 'Дизайн интерьера и 3D-визуализация')
+const contacts = computed(() => props.settings?.contacts || {})
 
 const year = new Date().getFullYear()
 

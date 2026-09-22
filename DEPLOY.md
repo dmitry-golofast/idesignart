@@ -275,28 +275,74 @@ docker exec -w /app/apps/payload idesignart-admin npx payload migrate
 
 ⚠️ Перед применением — бэкап: `docker exec idesignart-db pg_dump -U postgres idesignart > backup_$(date +%Y%m%d).sql`
 
-### Разовый фикс для СУЩЕСТВУЮЩЕГО прода при первом деплое миграций
+### Обновление СУЩЕСТВУЮЩЕГО прода, развёрнутого до рефакторинга hero (миграция `…_091233`)
 
-Если прод-база уже работает и её схема соответствует коду (контент сохраняется
-из админки без ошибок), базовую миграцию **выполнять не нужно** — достаточно
-пометить её применённой, чтобы будущие миграции применялись поверх:
+Начальная миграция пересоздана под новую схему hero (20260922_101054) —
+накатить её поверх старой схемы нельзя. Порядок обновления (контент,
+добавленный руками в прод-админке, сохраните заранее — см. «Бэкапы»):
 
 ```bash
-docker exec idesignart-db psql -U postgres -d idesignart -c "
-CREATE TABLE IF NOT EXISTS payload_migrations (
-  id serial PRIMARY KEY,
-  name varchar NOT NULL,
-  batch numeric NOT NULL,
-  updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
-  created_at timestamp(3) with time zone DEFAULT now() NOT NULL
-);
-INSERT INTO payload_migrations (name, batch, created_at, updated_at)
-VALUES ('20260922_091233_initial_schema', 1, now(), now());"
+# 1. Бэкап
+docker exec idesignart-db pg_dump -U postgres idesignart > backup_$(date +%Y%m%d).sql
+
+# 2. Сброс схемы (структура пересоздастся миграциями, контент — сидами ниже)
+docker exec idesignart-db psql -U postgres -d idesignart -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# 3. Миграции — новая схема целиком
+docker exec -w /app/apps/payload idesignart-admin npx payload migrate
+
+# 4. Наполнение контента сидами
+docker exec -w /app/apps/admin idesignart-admin npx payload run /app/apps/payload/src/scripts/seed-hero.ts
+docker exec -w /app/apps/admin idesignart-admin npx payload run /app/apps/payload/src/scripts/seed-header.ts
+docker exec -w /app/apps/admin idesignart-admin npx payload run /app/apps/payload/src/scripts/seed-seo-defaults.ts
 ```
+
+Контент hero можно перенести из другой среды (например, с dev, где он уже
+отредактирован) — см. следующий раздел.
 
 Для **нового** сервера с нуля: после первого `up -d` выполните
 `docker exec -w /app/apps/payload idesignart-admin npx payload migrate`
 до наполнения контента.
+
+---
+
+## Перенос контента в hero-блок на прод
+
+Скрипт `apps/payload/src/scripts/seed-hero.ts` переносит контент в hero-блок
+главной и работает в двух режимах. Идемпотентен: медиа переиспользуется по
+служебному title, повторный запуск не создаёт дубликаты.
+
+### Экспорт текущего контента (на исходной среде, например dev)
+
+```bash
+HERO_SEED_EXPORT=1 pnpm --filter payload exec payload run ./src/scripts/seed-hero.ts
+# → apps/payload/hero-content.export.json
+```
+
+### Применение на проде
+
+```bash
+# 1. Данные — в контейнер
+docker cp hero-content.export.json idesignart-admin:/tmp/
+
+# 2. Применить (WORKDIR /app/apps/admin — media попадают в volume)
+docker exec -e HERO_SEED_DATA=/tmp/hero-content.export.json \
+  -w /app/apps/admin idesignart-admin \
+  npx payload run /app/apps/payload/src/scripts/seed-hero.ts
+```
+
+Картинка скачивается из URL внутри файла экспорта. Если у контейнера нет
+доступа в интернет — положите файл картинки рядом:
+
+```bash
+docker cp hero-panorama.jpg idesignart-admin:/tmp/
+docker exec -e HERO_SEED_DATA=/tmp/hero-content.export.json \
+  -e HERO_SEED_IMAGE=/tmp/hero-panorama.jpg \
+  -w /app/apps/admin idesignart-admin \
+  npx payload run /app/apps/payload/src/scripts/seed-hero.ts
+```
+
+Без `HERO_SEED_DATA` скрипт наполнит hero стартовым контентом по спеке.
 
 ---
 

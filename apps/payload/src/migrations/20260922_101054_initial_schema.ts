@@ -2,9 +2,23 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   CREATE TYPE "public"."enum_pages_blocks_content_layout" AS ENUM('narrow', 'wide');
+   CREATE TYPE "public"."enum_pages_blocks_hero_hero_cta_icon" AS ENUM('arrow-up-right', 'arrow-right', 'none');
+  CREATE TYPE "public"."enum_pages_blocks_hero_hero_cta_variant" AS ENUM('accent', 'dark', 'outline');
+  CREATE TYPE "public"."enum_pages_blocks_hero_appearance_font_family" AS ENUM('inter', 'manrope', 'system');
+  CREATE TYPE "public"."enum_pages_blocks_hero_appearance_title_weight" AS ENUM('700', '800', '900');
+  CREATE TYPE "public"."enum_pages_blocks_hero_appearance_image_width" AS ENUM('full-bleed', 'contained');
+  CREATE TYPE "public"."enum_pages_blocks_hero_appearance_image_desktop_ratio" AS ENUM('3:1', '16:9', '21:9');
+  CREATE TYPE "public"."enum_pages_blocks_hero_appearance_image_mobile_ratio" AS ENUM('4:3', '1:1', '3:4');
+  CREATE TYPE "public"."enum_pages_blocks_content_layout" AS ENUM('narrow', 'wide');
   CREATE TYPE "public"."enum_pages_blocks_cta_banner_variant" AS ENUM('dark', 'accent');
   CREATE TYPE "public"."enum_pages_status" AS ENUM('draft', 'published');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_hero_cta_icon" AS ENUM('arrow-up-right', 'arrow-right', 'none');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_hero_cta_variant" AS ENUM('accent', 'dark', 'outline');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_appearance_font_family" AS ENUM('inter', 'manrope', 'system');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_appearance_title_weight" AS ENUM('700', '800', '900');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_appearance_image_width" AS ENUM('full-bleed', 'contained');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_appearance_image_desktop_ratio" AS ENUM('3:1', '16:9', '21:9');
+  CREATE TYPE "public"."enum__pages_v_blocks_hero_appearance_image_mobile_ratio" AS ENUM('4:3', '1:1', '3:4');
   CREATE TYPE "public"."enum__pages_v_blocks_content_layout" AS ENUM('narrow', 'wide');
   CREATE TYPE "public"."enum__pages_v_blocks_cta_banner_variant" AS ENUM('dark', 'accent');
   CREATE TYPE "public"."enum__pages_v_version_status" AS ENUM('draft', 'published');
@@ -33,6 +47,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TABLE "media" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"alt" varchar NOT NULL,
+  	"title" varchar,
   	"caption" varchar,
   	"credit" varchar,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -78,18 +93,84 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"sizes_featured_filename" varchar
   );
   
+  CREATE TABLE "pages_blocks_hero_hero_title_lines" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" varchar NOT NULL,
+  	"id" varchar PRIMARY KEY NOT NULL,
+  	"text" varchar
+  );
+  
   CREATE TABLE "pages_blocks_hero" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"_path" text NOT NULL,
   	"id" varchar PRIMARY KEY NOT NULL,
-  	"headline" varchar,
-  	"subheadline" varchar,
-  	"image_id" integer,
-  	"cta_primary_label" varchar,
-  	"cta_primary_href" varchar,
-  	"cta_secondary_label" varchar,
-  	"cta_secondary_href" varchar,
+  	"hero_eyebrow" varchar DEFAULT 'ЦИФРОВОЙ ДИЗАЙН ИНТЕРЬЕРОВ',
+  	"hero_description" varchar DEFAULT 'Превращаем пустые комнаты в выразительные интерьеры для продажи недвижимости.',
+  	"hero_cta_enabled" boolean DEFAULT true,
+  	"hero_cta_label" varchar,
+  	"hero_cta_href" varchar,
+  	"hero_cta_new_tab" boolean DEFAULT false,
+  	"hero_cta_icon" "enum_pages_blocks_hero_hero_cta_icon" DEFAULT 'arrow-up-right',
+  	"hero_cta_variant" "enum_pages_blocks_hero_hero_cta_variant" DEFAULT 'accent',
+  	"hero_image_id" integer,
+  	"hero_mobile_image_id" integer,
+  	"hero_image_alt" varchar DEFAULT 'Светлая гостиная с панорамными окнами, кремовым диваном и терракотовым креслом',
+  	"hero_mobile_image_alt" varchar,
+  	"hero_image_caption" varchar DEFAULT '01 / Тёплый минимализм',
+  	"hero_show_image_caption" boolean DEFAULT true,
+  	"hero_image_position_x" numeric DEFAULT 50,
+  	"hero_image_position_y" numeric DEFAULT 50,
+  	"hero_mobile_image_position_x" numeric DEFAULT 50,
+  	"hero_mobile_image_position_y" numeric DEFAULT 50,
+  	"hero_caption_overlay_opacity" numeric DEFAULT 0.15,
+  	"bottom_line_enabled" boolean DEFAULT true,
+  	"bottom_line_left_text" varchar DEFAULT 'Ваш объект. Новый взгляд.',
+  	"bottom_line_right_text" varchar DEFAULT 'Виртуальный хоумстейджинг',
+  	"bottom_line_show_divider" boolean DEFAULT true,
+  	"appearance_background_color" varchar DEFAULT '#F8F7F3',
+  	"appearance_text_color" varchar DEFAULT '#080808',
+  	"appearance_muted_text_color" varchar DEFAULT '#303030',
+  	"appearance_accent_color" varchar DEFAULT '#D7EF28',
+  	"appearance_accent_text_color" varchar DEFAULT '#080808',
+  	"appearance_divider_color" varchar DEFAULT '#B8B8B5',
+  	"appearance_caption_color" varchar DEFAULT '#FFFFFF',
+  	"appearance_font_family" "enum_pages_blocks_hero_appearance_font_family" DEFAULT 'inter',
+  	"appearance_title_weight" "enum_pages_blocks_hero_appearance_title_weight" DEFAULT '800',
+  	"appearance_title_desktop_px" numeric DEFAULT 116,
+  	"appearance_title_mobile_px" numeric DEFAULT 48,
+  	"appearance_title_line_height" numeric DEFAULT 0.98,
+  	"appearance_title_letter_spacing_em" numeric DEFAULT -0.045,
+  	"appearance_body_desktop_px" numeric DEFAULT 22,
+  	"appearance_body_mobile_px" numeric DEFAULT 18,
+  	"appearance_body_line_height" numeric DEFAULT 1.4,
+  	"appearance_brand_px" numeric DEFAULT 30,
+  	"appearance_navigation_px" numeric DEFAULT 16,
+  	"appearance_eyebrow_px" numeric DEFAULT 12,
+  	"appearance_eyebrow_letter_spacing_em" numeric DEFAULT 0.3,
+  	"appearance_caption_px" numeric DEFAULT 14,
+  	"appearance_bottom_line_px" numeric DEFAULT 14,
+  	"appearance_button_text_px" numeric DEFAULT 18,
+  	"appearance_button_height_px" numeric DEFAULT 56,
+  	"appearance_button_padding_x_px" numeric DEFAULT 28,
+  	"appearance_button_radius_px" numeric DEFAULT 0,
+  	"appearance_content_max_width_px" numeric DEFAULT 1600,
+  	"appearance_desktop_gutter_px" numeric DEFAULT 48,
+  	"appearance_mobile_gutter_px" numeric DEFAULT 20,
+  	"appearance_header_height_px" numeric DEFAULT 88,
+  	"appearance_hero_top_padding_px" numeric DEFAULT 40,
+  	"appearance_hero_bottom_padding_px" numeric DEFAULT 36,
+  	"appearance_hero_column_gap_px" numeric DEFAULT 48,
+  	"appearance_title_column_percent" numeric DEFAULT 68,
+  	"appearance_description_button_gap_px" numeric DEFAULT 28,
+  	"appearance_mobile_stack_gap_px" numeric DEFAULT 24,
+  	"appearance_image_width" "enum_pages_blocks_hero_appearance_image_width" DEFAULT 'full-bleed',
+  	"appearance_image_desktop_ratio" "enum_pages_blocks_hero_appearance_image_desktop_ratio" DEFAULT '3:1',
+  	"appearance_image_mobile_ratio" "enum_pages_blocks_hero_appearance_image_mobile_ratio" DEFAULT '4:3',
+  	"appearance_image_radius_px" numeric DEFAULT 0,
+  	"appearance_caption_inset_px" numeric DEFAULT 32,
+  	"appearance_bottom_line_padding_y_px" numeric DEFAULT 24,
+  	"appearance_divider_thickness_px" numeric DEFAULT 1,
   	"block_name" varchar
   );
   
@@ -231,18 +312,85 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_status" "enum_pages_status" DEFAULT 'draft'
   );
   
+  CREATE TABLE "_pages_v_blocks_hero_hero_title_lines" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" integer NOT NULL,
+  	"id" serial PRIMARY KEY NOT NULL,
+  	"text" varchar,
+  	"_uuid" varchar
+  );
+  
   CREATE TABLE "_pages_v_blocks_hero" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"_path" text NOT NULL,
   	"id" serial PRIMARY KEY NOT NULL,
-  	"headline" varchar,
-  	"subheadline" varchar,
-  	"image_id" integer,
-  	"cta_primary_label" varchar,
-  	"cta_primary_href" varchar,
-  	"cta_secondary_label" varchar,
-  	"cta_secondary_href" varchar,
+  	"hero_eyebrow" varchar DEFAULT 'ЦИФРОВОЙ ДИЗАЙН ИНТЕРЬЕРОВ',
+  	"hero_description" varchar DEFAULT 'Превращаем пустые комнаты в выразительные интерьеры для продажи недвижимости.',
+  	"hero_cta_enabled" boolean DEFAULT true,
+  	"hero_cta_label" varchar,
+  	"hero_cta_href" varchar,
+  	"hero_cta_new_tab" boolean DEFAULT false,
+  	"hero_cta_icon" "enum__pages_v_blocks_hero_hero_cta_icon" DEFAULT 'arrow-up-right',
+  	"hero_cta_variant" "enum__pages_v_blocks_hero_hero_cta_variant" DEFAULT 'accent',
+  	"hero_image_id" integer,
+  	"hero_mobile_image_id" integer,
+  	"hero_image_alt" varchar DEFAULT 'Светлая гостиная с панорамными окнами, кремовым диваном и терракотовым креслом',
+  	"hero_mobile_image_alt" varchar,
+  	"hero_image_caption" varchar DEFAULT '01 / Тёплый минимализм',
+  	"hero_show_image_caption" boolean DEFAULT true,
+  	"hero_image_position_x" numeric DEFAULT 50,
+  	"hero_image_position_y" numeric DEFAULT 50,
+  	"hero_mobile_image_position_x" numeric DEFAULT 50,
+  	"hero_mobile_image_position_y" numeric DEFAULT 50,
+  	"hero_caption_overlay_opacity" numeric DEFAULT 0.15,
+  	"bottom_line_enabled" boolean DEFAULT true,
+  	"bottom_line_left_text" varchar DEFAULT 'Ваш объект. Новый взгляд.',
+  	"bottom_line_right_text" varchar DEFAULT 'Виртуальный хоумстейджинг',
+  	"bottom_line_show_divider" boolean DEFAULT true,
+  	"appearance_background_color" varchar DEFAULT '#F8F7F3',
+  	"appearance_text_color" varchar DEFAULT '#080808',
+  	"appearance_muted_text_color" varchar DEFAULT '#303030',
+  	"appearance_accent_color" varchar DEFAULT '#D7EF28',
+  	"appearance_accent_text_color" varchar DEFAULT '#080808',
+  	"appearance_divider_color" varchar DEFAULT '#B8B8B5',
+  	"appearance_caption_color" varchar DEFAULT '#FFFFFF',
+  	"appearance_font_family" "enum__pages_v_blocks_hero_appearance_font_family" DEFAULT 'inter',
+  	"appearance_title_weight" "enum__pages_v_blocks_hero_appearance_title_weight" DEFAULT '800',
+  	"appearance_title_desktop_px" numeric DEFAULT 116,
+  	"appearance_title_mobile_px" numeric DEFAULT 48,
+  	"appearance_title_line_height" numeric DEFAULT 0.98,
+  	"appearance_title_letter_spacing_em" numeric DEFAULT -0.045,
+  	"appearance_body_desktop_px" numeric DEFAULT 22,
+  	"appearance_body_mobile_px" numeric DEFAULT 18,
+  	"appearance_body_line_height" numeric DEFAULT 1.4,
+  	"appearance_brand_px" numeric DEFAULT 30,
+  	"appearance_navigation_px" numeric DEFAULT 16,
+  	"appearance_eyebrow_px" numeric DEFAULT 12,
+  	"appearance_eyebrow_letter_spacing_em" numeric DEFAULT 0.3,
+  	"appearance_caption_px" numeric DEFAULT 14,
+  	"appearance_bottom_line_px" numeric DEFAULT 14,
+  	"appearance_button_text_px" numeric DEFAULT 18,
+  	"appearance_button_height_px" numeric DEFAULT 56,
+  	"appearance_button_padding_x_px" numeric DEFAULT 28,
+  	"appearance_button_radius_px" numeric DEFAULT 0,
+  	"appearance_content_max_width_px" numeric DEFAULT 1600,
+  	"appearance_desktop_gutter_px" numeric DEFAULT 48,
+  	"appearance_mobile_gutter_px" numeric DEFAULT 20,
+  	"appearance_header_height_px" numeric DEFAULT 88,
+  	"appearance_hero_top_padding_px" numeric DEFAULT 40,
+  	"appearance_hero_bottom_padding_px" numeric DEFAULT 36,
+  	"appearance_hero_column_gap_px" numeric DEFAULT 48,
+  	"appearance_title_column_percent" numeric DEFAULT 68,
+  	"appearance_description_button_gap_px" numeric DEFAULT 28,
+  	"appearance_mobile_stack_gap_px" numeric DEFAULT 24,
+  	"appearance_image_width" "enum__pages_v_blocks_hero_appearance_image_width" DEFAULT 'full-bleed',
+  	"appearance_image_desktop_ratio" "enum__pages_v_blocks_hero_appearance_image_desktop_ratio" DEFAULT '3:1',
+  	"appearance_image_mobile_ratio" "enum__pages_v_blocks_hero_appearance_image_mobile_ratio" DEFAULT '4:3',
+  	"appearance_image_radius_px" numeric DEFAULT 0,
+  	"appearance_caption_inset_px" numeric DEFAULT 32,
+  	"appearance_bottom_line_padding_y_px" numeric DEFAULT 24,
+  	"appearance_divider_thickness_px" numeric DEFAULT 1,
   	"_uuid" varchar,
   	"block_name" varchar
   );
@@ -852,7 +1000,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone
   );
   
-  ALTER TABLE "pages_blocks_hero" ADD CONSTRAINT "pages_blocks_hero_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "pages_blocks_hero_hero_title_lines" ADD CONSTRAINT "pages_blocks_hero_hero_title_lines_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_hero"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "pages_blocks_hero" ADD CONSTRAINT "pages_blocks_hero_hero_image_id_media_id_fk" FOREIGN KEY ("hero_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "pages_blocks_hero" ADD CONSTRAINT "pages_blocks_hero_hero_mobile_image_id_media_id_fk" FOREIGN KEY ("hero_mobile_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "pages_blocks_hero" ADD CONSTRAINT "pages_blocks_hero_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "pages_blocks_stats_items" ADD CONSTRAINT "pages_blocks_stats_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_stats"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "pages_blocks_stats" ADD CONSTRAINT "pages_blocks_stats_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
@@ -867,7 +1017,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "pages_blocks_cta_banner" ADD CONSTRAINT "pages_blocks_cta_banner_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "pages_blocks_contact_form" ADD CONSTRAINT "pages_blocks_contact_form_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "pages" ADD CONSTRAINT "pages_seo_og_image_id_media_id_fk" FOREIGN KEY ("seo_og_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_pages_v_blocks_hero" ADD CONSTRAINT "_pages_v_blocks_hero_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "_pages_v_blocks_hero_hero_title_lines" ADD CONSTRAINT "_pages_v_blocks_hero_hero_title_lines_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v_blocks_hero"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "_pages_v_blocks_hero" ADD CONSTRAINT "_pages_v_blocks_hero_hero_image_id_media_id_fk" FOREIGN KEY ("hero_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "_pages_v_blocks_hero" ADD CONSTRAINT "_pages_v_blocks_hero_hero_mobile_image_id_media_id_fk" FOREIGN KEY ("hero_mobile_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_pages_v_blocks_hero" ADD CONSTRAINT "_pages_v_blocks_hero_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_pages_v_blocks_stats_items" ADD CONSTRAINT "_pages_v_blocks_stats_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v_blocks_stats"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_pages_v_blocks_stats" ADD CONSTRAINT "_pages_v_blocks_stats_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v"("id") ON DELETE cascade ON UPDATE no action;
@@ -963,10 +1115,13 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "media_sizes_tablet_sizes_tablet_filename_idx" ON "media" USING btree ("sizes_tablet_filename");
   CREATE INDEX "media_sizes_desktop_sizes_desktop_filename_idx" ON "media" USING btree ("sizes_desktop_filename");
   CREATE INDEX "media_sizes_featured_sizes_featured_filename_idx" ON "media" USING btree ("sizes_featured_filename");
+  CREATE INDEX "pages_blocks_hero_hero_title_lines_order_idx" ON "pages_blocks_hero_hero_title_lines" USING btree ("_order");
+  CREATE INDEX "pages_blocks_hero_hero_title_lines_parent_id_idx" ON "pages_blocks_hero_hero_title_lines" USING btree ("_parent_id");
   CREATE INDEX "pages_blocks_hero_order_idx" ON "pages_blocks_hero" USING btree ("_order");
   CREATE INDEX "pages_blocks_hero_parent_id_idx" ON "pages_blocks_hero" USING btree ("_parent_id");
   CREATE INDEX "pages_blocks_hero_path_idx" ON "pages_blocks_hero" USING btree ("_path");
-  CREATE INDEX "pages_blocks_hero_image_idx" ON "pages_blocks_hero" USING btree ("image_id");
+  CREATE INDEX "pages_blocks_hero_hero_hero_image_idx" ON "pages_blocks_hero" USING btree ("hero_image_id");
+  CREATE INDEX "pages_blocks_hero_hero_hero_mobile_image_idx" ON "pages_blocks_hero" USING btree ("hero_mobile_image_id");
   CREATE INDEX "pages_blocks_stats_items_order_idx" ON "pages_blocks_stats_items" USING btree ("_order");
   CREATE INDEX "pages_blocks_stats_items_parent_id_idx" ON "pages_blocks_stats_items" USING btree ("_parent_id");
   CREATE INDEX "pages_blocks_stats_order_idx" ON "pages_blocks_stats" USING btree ("_order");
@@ -1005,10 +1160,13 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "pages_updated_at_idx" ON "pages" USING btree ("updated_at");
   CREATE INDEX "pages_created_at_idx" ON "pages" USING btree ("created_at");
   CREATE INDEX "pages__status_idx" ON "pages" USING btree ("_status");
+  CREATE INDEX "_pages_v_blocks_hero_hero_title_lines_order_idx" ON "_pages_v_blocks_hero_hero_title_lines" USING btree ("_order");
+  CREATE INDEX "_pages_v_blocks_hero_hero_title_lines_parent_id_idx" ON "_pages_v_blocks_hero_hero_title_lines" USING btree ("_parent_id");
   CREATE INDEX "_pages_v_blocks_hero_order_idx" ON "_pages_v_blocks_hero" USING btree ("_order");
   CREATE INDEX "_pages_v_blocks_hero_parent_id_idx" ON "_pages_v_blocks_hero" USING btree ("_parent_id");
   CREATE INDEX "_pages_v_blocks_hero_path_idx" ON "_pages_v_blocks_hero" USING btree ("_path");
-  CREATE INDEX "_pages_v_blocks_hero_image_idx" ON "_pages_v_blocks_hero" USING btree ("image_id");
+  CREATE INDEX "_pages_v_blocks_hero_hero_hero_image_idx" ON "_pages_v_blocks_hero" USING btree ("hero_image_id");
+  CREATE INDEX "_pages_v_blocks_hero_hero_hero_mobile_image_idx" ON "_pages_v_blocks_hero" USING btree ("hero_mobile_image_id");
   CREATE INDEX "_pages_v_blocks_stats_items_order_idx" ON "_pages_v_blocks_stats_items" USING btree ("_order");
   CREATE INDEX "_pages_v_blocks_stats_items_parent_id_idx" ON "_pages_v_blocks_stats_items" USING btree ("_parent_id");
   CREATE INDEX "_pages_v_blocks_stats_order_idx" ON "_pages_v_blocks_stats" USING btree ("_order");
@@ -1209,6 +1367,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    DROP TABLE "media" CASCADE;
+  DROP TABLE "pages_blocks_hero_hero_title_lines" CASCADE;
   DROP TABLE "pages_blocks_hero" CASCADE;
   DROP TABLE "pages_blocks_stats_items" CASCADE;
   DROP TABLE "pages_blocks_stats" CASCADE;
@@ -1223,6 +1382,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "pages_blocks_cta_banner" CASCADE;
   DROP TABLE "pages_blocks_contact_form" CASCADE;
   DROP TABLE "pages" CASCADE;
+  DROP TABLE "_pages_v_blocks_hero_hero_title_lines" CASCADE;
   DROP TABLE "_pages_v_blocks_hero" CASCADE;
   DROP TABLE "_pages_v_blocks_stats_items" CASCADE;
   DROP TABLE "_pages_v_blocks_stats" CASCADE;
@@ -1272,9 +1432,23 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "settings_social_proof_stats" CASCADE;
   DROP TABLE "settings_social_proof_press_logos" CASCADE;
   DROP TABLE "settings" CASCADE;
+  DROP TYPE "public"."enum_pages_blocks_hero_hero_cta_icon";
+  DROP TYPE "public"."enum_pages_blocks_hero_hero_cta_variant";
+  DROP TYPE "public"."enum_pages_blocks_hero_appearance_font_family";
+  DROP TYPE "public"."enum_pages_blocks_hero_appearance_title_weight";
+  DROP TYPE "public"."enum_pages_blocks_hero_appearance_image_width";
+  DROP TYPE "public"."enum_pages_blocks_hero_appearance_image_desktop_ratio";
+  DROP TYPE "public"."enum_pages_blocks_hero_appearance_image_mobile_ratio";
   DROP TYPE "public"."enum_pages_blocks_content_layout";
   DROP TYPE "public"."enum_pages_blocks_cta_banner_variant";
   DROP TYPE "public"."enum_pages_status";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_hero_cta_icon";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_hero_cta_variant";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_font_family";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_title_weight";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_image_width";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_image_desktop_ratio";
+  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_image_mobile_ratio";
   DROP TYPE "public"."enum__pages_v_blocks_content_layout";
   DROP TYPE "public"."enum__pages_v_blocks_cta_banner_variant";
   DROP TYPE "public"."enum__pages_v_version_status";
