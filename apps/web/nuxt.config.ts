@@ -76,23 +76,10 @@ export default defineNuxtConfig({
     allow: '/',
   },
 
-  // ===== Редиректы =====
-  // /admin и /api (CMS) → на Payload сервер (Next.js :3001)
-  // В dev: на localhost:3001, в проде — через env PAYLOAD_API_URL
-  routeRules: {
-    '/admin': {
-      redirect: {
-        to: process.env.NUXT_PUBLIC_PAYLOAD_API_URL + '/admin' || 'http://localhost:3001/admin',
-        statusCode: 302,
-      },
-    },
-    '/admin/**': {
-      redirect: {
-        to: process.env.NUXT_PUBLIC_PAYLOAD_API_URL + '/admin/**' || 'http://localhost:3001/admin/**',
-        statusCode: 302,
-      },
-    },
-  },
+  // ===== Роутинг /admin и /api =====
+  // Админка и API теперь same-origin и роутятся через Caddy (@payload matcher).
+  // Редиректы здесь НЕ нужны: при same-origin PAYLOAD_API_URL правило
+  // /admin → PAYLOAD_API_URL/admin зацикливало запрос (ERR_TOO_MANY_REDIRECTS).
 
   // ===== Изображения =====
   image: {
