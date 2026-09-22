@@ -34,6 +34,16 @@ const DATA_FILE = process.env.HERO_SEED_DATA || ''
 const OUTPUT_FILE = process.env.HERO_SEED_OUTPUT || 'hero-content.export.json'
 const MEDIA_TITLE = 'Hero — тёплый минимализм'
 
+/** Стартовая кнопка hero — структура §06 спеки */
+const DEFAULT_CTA = {
+  enabled: true,
+  label: 'Создать интерьер',
+  href: '/contacts',
+  newTab: false,
+  icon: 'arrow-up-right',
+  variant: 'accent',
+}
+
 /** Стартовые значения группы appearance — таблица §08 спеки */
 const DEFAULT_APPEARANCE = {
   backgroundColor: '#F8F7F3',
@@ -248,6 +258,7 @@ async function runApply() {
       ? incomingHero.description
       : str(currentHero.description as string, 'Превращаем пустые комнаты в выразительные интерьеры для продажи недвижимости.'),
     cta: {
+      ...DEFAULT_CTA,
       ...((currentHero.cta ?? {}) as AnyRecord),
       ...(typeof incomingHero.cta === 'object' && incomingHero.cta !== null ? (incomingHero.cta as AnyRecord) : {}),
     },
