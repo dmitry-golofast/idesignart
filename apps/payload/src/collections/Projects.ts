@@ -168,7 +168,6 @@ export const Projects: CollectionConfig = {
     {
       name: 'seo',
       type: 'group',
-      admin: { group: 'SEO' },
       fields: [
         { name: 'title', type: 'text' },
         { name: 'description', type: 'textarea' },

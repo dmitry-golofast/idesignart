@@ -3,24 +3,45 @@
 # Caddy автоматически получает SSL-сертификаты от Let's Encrypt
 # и продлевает их без настройки.
 #
-# Домены (замените на свои):
-#   idesignart.com       → Nuxt (сайт)
-#   admin.idesignart.com → Payload (CMS + API)
-#   www.idesignart.com   → редирект на idesignart.com
+# Всё живёт на одном домене:
+#   idesignart.com        → сайт (Nuxt) + админка (Payload) на /admin
+#   www.idesignart.com    → редирект на idesignart.com
+#   admin.idesignart.com  → временный 308-редирект на основной домен
+#                           (после переезда блок и DNS-запись A admin можно удалить)
 
-# ===== Публичный сайт (Nuxt) =====
-# Переменные из docker-compose: {$SITE_DOMAIN}
+# ===== Сайт + админка (один домен) =====
 {$SITE_DOMAIN} {
 	encode zstd gzip
 
-	# Все запросы → Nuxt
-	reverse_proxy web:3000
-
-	# Кэшируем статику
-	@static {
-		path /_nuxt/* /_ipx/* /favicon.ico /robots.txt /sitemap.xml
+	# Sitemap-роут Nuxt — раньше общего правила /api/* (там отдаёт Payload)
+	handle /api/__sitemap__/* {
+		reverse_proxy web:3000
 	}
-	header @static Cache-Control "public, max-age=31536000, immutable"
+
+	# Payload CMS: админка (/admin), REST/GraphQL API, статика Next (/_next), медиа
+	@payload {
+		path /admin* /_next/* /api/* /graphql* /media/*
+	}
+	handle @payload {
+		reverse_proxy admin:3001
+
+		# Media-файлы (загруженные через Payload)
+		@media {
+			path /api/media/* /media/*
+		}
+		header @media Cache-Control "public, max-age=86400"
+	}
+
+	# Всё остальное — Nuxt (сайт)
+	handle {
+		reverse_proxy web:3000
+
+		# Кэшируем статику
+		@static {
+			path /_nuxt/* /_ipx/* /favicon.ico /robots.txt /sitemap.xml
+		}
+		header @static Cache-Control "public, max-age=31536000, immutable"
+	}
 
 	# Security headers
 	header {
@@ -42,28 +63,9 @@ www.{$SITE_DOMAIN} {
 	redir https://{$SITE_DOMAIN}{uri} permanent
 }
 
-# ===== Admin (Payload CMS + API) =====
+# ===== Старый админ-домен → редирект на основной (временный) =====
+# Держит работоспособность старых ссылок на админку и зашитых URL медиа.
+# Через месяц-два после переезда: удалить этот блок и DNS-запись A admin.
 {$ADMIN_DOMAIN} {
-	encode zstd gzip
-
-	# Все запросы → Next.js/Payload
-	reverse_proxy admin:3001
-
-	# Media-файлы (загруженные через Payload)
-	@api_media {
-		path /api/media/* /media/*
-	}
-	header @api_media Cache-Control "public, max-age=86400"
-
-	# Security headers (мягче для admin — нужен доступ к iframe для previews)
-	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains"
-		X-Content-Type-Options "nosniff"
-		Referrer-Policy "strict-origin-when-cross-origin"
-	}
-
-	log {
-		output stdout
-		format console
-	}
+	redir https://{$SITE_DOMAIN}{uri} permanent
 }

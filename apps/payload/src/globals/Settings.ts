@@ -60,7 +60,6 @@ export const Settings: GlobalConfig = {
       name: 'seoDefaults',
       type: 'group',
       label: 'SEO по умолчанию',
-      admin: { group: 'SEO' },
       fields: [
         { name: 'title', type: 'text' },
         { name: 'descriptionTemplate', type: 'text', admin: { description: 'Шаблон: %s — разделитель' } },

@@ -31,7 +31,7 @@ const config = useRuntimeConfig()
 const payloadBase = config.public.payloadApiUrl as string
 
 const guideImage = computed(() => {
-  const url = settings.value?.image?.url
+  const url = populated(settings.value?.image)?.url
   if (!url) return ''
   return url.startsWith('http') ? url : `${payloadBase}${url}`
 })

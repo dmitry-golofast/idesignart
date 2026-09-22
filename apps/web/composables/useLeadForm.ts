@@ -12,7 +12,8 @@ const leadSchema = z.object({
   name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
   email: z.string().email('Некорректный email').optional().or(z.literal('')),
   phone: z.string().min(6, 'Некорректный телефон').optional().or(z.literal('')),
-  service: z.string().optional(),
+  // number: ID услуги приходит из Payload (postgres serial), v-model USelect кладёт его как есть
+  service: z.union([z.string(), z.number()]).optional(),
   message: z.string().min(10, 'Расскажите подробнее (минимум 10 символов)'),
   propertyType: z.string().optional(),
   area: z.number().optional(),

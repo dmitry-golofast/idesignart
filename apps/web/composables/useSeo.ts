@@ -6,17 +6,19 @@
  * useRuntimeConfig / useRoute — Nuxt auto-imports.
  */
 
+// Поля из Payload могут быть null (seo-группа необязательна) — принимаем null,
+// чтобы страницы не приходилось чистить перед вызовом
 interface SeoOptions {
-  title?: string
-  description?: string
-  image?: string
+  title?: string | null
+  description?: string | null
+  image?: string | null
   url?: string
   noindex?: boolean
   type?: 'website' | 'article' | 'profile'
-  keywords?: string
-  publishedTime?: string
-  modifiedTime?: string
-  author?: string
+  keywords?: string | null
+  publishedTime?: string | null
+  modifiedTime?: string | null
+  author?: string | null
 }
 
 /**

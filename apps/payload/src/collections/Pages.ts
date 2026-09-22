@@ -15,7 +15,6 @@ const seoFields: Field[] = [
     name: 'seo',
     type: 'group',
     admin: {
-      group: 'SEO',
       description: 'Метаданные страницы для поисковых систем и социальных сетей.',
     },
     fields: [
@@ -77,7 +76,6 @@ export const Pages: CollectionConfig = {
       type: 'blocks',
       label: 'Блоки страницы',
       admin: {
-        group: 'Контент страницы',
         description: 'Перетаскивайте блоки, чтобы собрать страницу. Порядок = порядок на сайте.',
       },
       blocks: [

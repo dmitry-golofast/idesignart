@@ -1,4 +1,5 @@
-import type { Project, ProjectsResponse } from '@shared/types/payload'
+import type { Project } from '#shared/types/payload'
+import type { ProjectsResponse } from '../shared/payload-helpers'
 
 /**
  * Список проектов (портфолио) с фильтрами.

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { Service } from '#shared/types/payload'
 
 /**
  * ServicesGrid — сетка карточек услуг.
@@ -7,23 +8,19 @@ import { computed } from 'vue'
  *
  * Берёт услуги из Payload через useServices() либо принимает через props.
  */
-interface Service {
-  id: string
-  title: string
-  slug: string
-  shortDescription?: string
-  icon?: { url?: string; alt?: string } | null
-}
-
 const props = defineProps<{
   services?: Service[]
   title?: string
   eyebrow?: string
 }>()
 
-// Если услуги не переданы — тянем опубликованные featured
+// Если услуги не переданы — тянем опубликованные featured.
+// icon — связь Payload (number | Media), сужаем до объекта для шаблона.
 const { data } = useServices({ featuredOnly: !props.services?.length })
-const services = computed(() => props.services?.length ? props.services : (data.value?.docs || []))
+const services = computed(() =>
+  (props.services?.length ? props.services : (data.value?.docs || []))
+    .map((s) => ({ ...s, icon: populated(s.icon) })),
+)
 </script>
 
 <template>

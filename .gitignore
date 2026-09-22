@@ -41,6 +41,7 @@ media/
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+.zcode/
 
 # OS
 .DS_Store

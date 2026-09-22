@@ -1,4 +1,4 @@
-import { buildConfig } from 'payload'
+import { buildConfig, type SharpDependency } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import sharp from 'sharp'
@@ -22,8 +22,7 @@ export default buildConfig({
   serverURL: appURL,
   admin: {
     user: Users.slug,
-    // CMS доступна на /admin
-    path: '/admin',
+    // Админка доступна на /admin (путь по умолчанию)
   },
   routes: {
     api: '/api',
@@ -48,20 +47,23 @@ export default buildConfig({
         'postgresql://postgres:postgres@localhost:5432/idesignart',
     },
   }),
-  sharp,
+  // Типы sharp в дереве (0.33) структурно расходятся с теми, на которые
+  // ссылается SharpDependency payload'а (0.32/0.34 в сторе) — рантайм совместим
+  sharp: sharp as unknown as SharpDependency,
   typescript: {
-    outputFile: '../../packages/shared/types/payload.ts',
-    declareShadowClasses: true,
+    // Путь от корня apps/payload (cwd при запуске payload CLI).
+    // Корневой скрипт generate:types копирует файл в web/shared/types/ —
+    // фронтенд импортирует его через #shared/types/payload
+    outputFile: 'types/payload.ts',
   },
+  // Сайт и Payload теперь same-origin (админка на /admin основного домена):
+  // cross-origin остаётся только в dev (web :3000 → payload :3001)
   cors: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     'http://localhost:3000',
-    appURL,
-    '*',
   ],
   csrf: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     'http://localhost:3000',
-    appURL,
   ],
 })

@@ -11,11 +11,15 @@
 Интернет
     │
     ▼
-┌──────────────────────────────────────────────┐
-│  Caddy (:80, :443)  ← auto SSL (Let's Encrypt) │
-│    ├─ idesignart.com        → web:3000 (Nuxt)  │
-│    └─ admin.idesignart.com  → admin:3001 (CMS) │
-└──────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│  Caddy (:80, :443)  ← auto SSL (Let's Encrypt)           │
+│  idesignart.com:                                         │
+│    ├─ /admin, /api, /media, /graphql → admin:3001 (CMS)  │
+│    └─ всё остальное                  → web:3000  (Nuxt)  │
+│  www.idesignart.com              → редирект на основной  │
+│  admin.idesignart.com            → 308 на основной       │
+│                                    (временный, см. ниже) │
+└────────────────────────────────────────────────────────┘
     │                              │
     ▼                              ▼
 ┌──────────┐               ┌──────────────┐
@@ -30,6 +34,12 @@
                           │ (:5432)      │
                           └──────────────┘
 ```
+
+Админка, API и медиа живут на основном домене по путям `/admin`, `/api`, `/media`.
+Отдельный поддомен `admin.idesignart.com` больше не нужен: Caddy держит для него
+временный 308-редирект, чтобы старые ссылки и зашитые URL медиа продолжали работать.
+Когда уверены, что старых ссылок не осталось (обычно через месяц-два), удалите блок
+`{$ADMIN_DOMAIN}` из Caddyfile и DNS-запись `A admin`.
 
 ---
 
@@ -48,9 +58,9 @@
 
 | Тип | Имя | Значение | Описание |
 |-----|-----|----------|----------|
-| A | `@` | `IP_ВАШЕГО_СЕРВЕРА` | Основной домен |
-| A | `admin` | `IP_ВАШЕГО_СЕРВЕРА` | Поддомен CMS |
+| A | `@` | `IP_ВАШЕГО_СЕРВЕРА` | Основной домен (сайт + админка) |
 | A | `www` | `IP_ВАШЕГО_СЕРВЕРА` | Редирект |
+| A | `admin` | `IP_ВАШЕГО_СЕРВЕРА` | Опционально: только если нужен редирект старых ссылок |
 
 Проверьте: `dig idesignart.com` должен вернуть IP вашего сервера.
 
@@ -121,6 +131,7 @@ nano .env.production
 
 ```env
 SITE_DOMAIN=idesignart.com
+# Опционально: только если держите редирект со старого админ-поддомена
 ADMIN_DOMAIN=admin.idesignart.com
 
 # Сгенерируйте секрет:
@@ -171,14 +182,14 @@ docker compose -f docker-compose.prod.yml logs -f caddy
 | URL | Что должно быть |
 |-----|-----------------|
 | `https://idesignart.com` | Nuxt-сайт (SSL автоматически) |
-| `https://admin.idesignart.com/admin` | Payload CMS — создание админа |
-| `https://admin.idesignart.com/api` | REST API |
+| `https://idesignart.com/admin` | Payload CMS — создание админа |
+| `https://idesignart.com/api` | REST API |
 
 SSL-сертификат выдаётся автоматически (~30 секунд после первого запроса).
 
 ### Первый вход в админку
 
-1. `https://admin.idesignart.com/admin`
+1. `https://idesignart.com/admin`
 2. Создайте администратора (email + пароль)
 3. Откройте **Pages → Home** → добавьте блоки
 4. Опубликуйте → сайт наполнится контентом
@@ -196,6 +207,96 @@ git pull origin main
 # Пересборка и перезапуск
 docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+---
+
+## Миграция существующего сервера (переезд на один домен)
+
+Если сервер уже работал со схемой `admin.idesignart.com`, при первом деплое
+этой версии сделайте дополнительно:
+
+**1. Перенесите загрузки медиа в volume.** Раньше `staticDir` указывал на
+`/app/apps/admin/media` внутри контейнера (слой контейнера, теряется при
+пересборке), а volume монтировался в `/app/media`. Теперь volume монтируется
+правильно, но старые файлы нужно перенести один раз:
+
+```bash
+# Пока СТАРЫЙ контейнер admin ещё работает:
+docker cp idesignart-admin:/app/apps/admin/media/. idesignart-admin:/app/media/
+
+# После этого: git pull + docker compose -f docker-compose.prod.yml up -d --build
+```
+
+**2. Проверьте контент на абсолютные ссылки старого домена** (обычно их нет —
+Payload вычисляет URL медиа от `serverURL` на лету, но rich-text-поля стоит
+проверить):
+
+```bash
+docker exec idesignart-db pg_dump -U postgres idesignart | grep -c 'admin\.idesignart'
+# 0 — чисто; если больше — см. ниже
+```
+
+Если находки есть — ссылки всё равно продолжат работать через временный
+308-редирект старого домена; починить можно точечным `UPDATE ... replace(...)`.
+
+**3. Проверьте после деплоя:**
+
+- `https://SITE/admin` открывает админку;
+- картинки на сайте грузятся с `https://SITE/media/...`;
+- `curl -I https://admin.SITE/media/<файл>` отдаёт 308 редирект.
+
+---
+
+## Миграции БД
+
+Схема Payload версонируется миграциями в `apps/payload/src/migrations/`.
+Контент миграции **не переносят** — только структуру таблиц. Контент живёт
+в базе и переезжает через `pg_dump`/`pg_restore` (см. «Бэкапы»).
+
+### Как это работает
+
+- **Dev**: схема применяется автоматически при старете (`push` через drizzle-kit).
+  Если локальная база разошлась с кодом, dev спросит интерактивно — выбирайте
+  «create column», никогда не «rename» (либо сбросьте дев-базу: `docker compose down -v && docker compose up -d`).
+- **Production**: миграции **сами не запускаются** — применяется вручную командой ниже.
+
+### Создать новую миграцию (нужен запущенный локальный postgres)
+
+```bash
+pnpm migrate:create "суть изменения"
+# файл появится в apps/payload/src/migrations/, закоммитьте его вместе с кодом
+```
+
+### Применить миграции на проде (после деплоя нового кода)
+
+```bash
+docker exec -w /app/apps/payload idesignart-admin npx payload migrate
+```
+
+⚠️ Перед применением — бэкап: `docker exec idesignart-db pg_dump -U postgres idesignart > backup_$(date +%Y%m%d).sql`
+
+### Разовый фикс для СУЩЕСТВУЮЩЕГО прода при первом деплое миграций
+
+Если прод-база уже работает и её схема соответствует коду (контент сохраняется
+из админки без ошибок), базовую миграцию **выполнять не нужно** — достаточно
+пометить её применённой, чтобы будущие миграции применялись поверх:
+
+```bash
+docker exec idesignart-db psql -U postgres -d idesignart -c "
+CREATE TABLE IF NOT EXISTS payload_migrations (
+  id serial PRIMARY KEY,
+  name varchar NOT NULL,
+  batch numeric NOT NULL,
+  updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+  created_at timestamp(3) with time zone DEFAULT now() NOT NULL
+);
+INSERT INTO payload_migrations (name, batch, created_at, updated_at)
+VALUES ('20260922_091233_initial_schema', 1, now(), now());"
+```
+
+Для **нового** сервера с нуля: после первого `up -d` выполните
+`docker exec -w /app/apps/payload idesignart-admin npx payload migrate`
+до наполнения контента.
 
 ---
 

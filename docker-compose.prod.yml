@@ -2,10 +2,10 @@
 # Запуск: docker compose -f docker-compose.prod.yml up -d
 #
 # Сервисы:
-#   caddy     — reverse proxy, auto SSL (Let's Encrypt), роутинг по доменам
+#   caddy     — reverse proxy, auto SSL (Let's Encrypt), роутинг по путям
 #   postgres  — база данных
 #   web       — Nuxt (публичный сайт)
-#   admin     — Next.js + Payload (CMS + REST/GraphQL API + admin UI)
+#   admin     — Next.js + Payload (CMS + REST/GraphQL API + admin UI на /admin)
 #
 # Все переменные — из .env.production (не коммитится!)
 
@@ -58,8 +58,8 @@ services:
       NODE_ENV: production
       # Nuxt runtime config — переопределяет значения из nuxt.config
       NUXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN:-idesignart.com}
-      NUXT_PUBLIC_PAYLOAD_API_URL: https://${ADMIN_DOMAIN:-admin.idesignart.com}
-      PAYLOAD_API_URL: http://admin:3001
+      # Payload теперь same-origin: сайт и API на одном домене (API на /api/*)
+      NUXT_PUBLIC_PAYLOAD_API_URL: https://${SITE_DOMAIN:-idesignart.com}
       # Аналитика
       NUXT_PUBLIC_GA_ID: ${GA_ID:-}
       NUXT_PUBLIC_YANDEX_METRIKA_ID: ${YANDEX_METRIKA_ID:-}
@@ -82,14 +82,14 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      # Payload
+      # Payload — всё на основном домене (админка на /admin)
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:?PAYLOAD_SECRET required}
       DATABASE_URI: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-idesignart}
-      PAYLOAD_PUBLIC_SERVER_URL: https://${ADMIN_DOMAIN:-admin.idesignart.com}
-      # Media — файлы хранятся локально в volume
-      PAYLOAD_PUBLIC_PAYLOAD_UPLOAD_DIRECTORY: /app/media
+      PAYLOAD_PUBLIC_SERVER_URL: https://${SITE_DOMAIN:-idesignart.com}
     volumes:
-      - media:/app/media
+      # staticDir в Media.ts относительный ('media') — резолвится от WORKDIR
+      # /app/apps/admin, поэтому volume монтируем именно туда
+      - media:/app/apps/admin/media
     depends_on:
       postgres:
         condition: service_healthy

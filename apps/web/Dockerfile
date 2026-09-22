@@ -9,7 +9,6 @@ WORKDIR /app
 # Копируем workspace-конфиги
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web/package.json ./apps/web/
-COPY packages/shared/package.json ./packages/shared/
 
 RUN pnpm install --frozen-lockfile
 
@@ -23,13 +22,10 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/web ./apps/web
-COPY packages/shared ./packages/shared
 
 # Переменные для сборки (Nuxt подставит в runtime-config)
 ENV NUXT_PUBLIC_SITE_URL=https://idesignart.ru
-ENV NUXT_PUBLIC_PAYLOAD_API_URL=https://admin.idesignart.ru
-# Лимит heap для Nuxt build (Nitro требует ~1.1GB в пике)
-ENV NODE_OPTIONS=--max-old-space-size=1536
+ENV NUXT_PUBLIC_PAYLOAD_API_URL=https://idesignart.ru
 
 RUN pnpm --filter web build
 

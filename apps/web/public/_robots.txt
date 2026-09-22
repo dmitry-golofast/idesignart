@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+# Админка и API живут на основном домене — в индекс им нельзя
+Disallow: /admin
+Disallow: /api
+Disallow: /graphql
 
 # Динамически управляется через @nuxtjs/robots — этот файл для dev/preview.
 Sitemap: http://localhost:3000/sitemap.xml

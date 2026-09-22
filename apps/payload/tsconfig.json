@@ -15,7 +15,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@payload-types": ["../shared/types/payload.ts"]
+      "@payload-types": ["./types/payload.ts"]
     }
   },
   "include": ["src/**/*.ts"],

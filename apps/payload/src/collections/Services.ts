@@ -126,7 +126,6 @@ export const Services: CollectionConfig = {
     {
       name: 'seo',
       type: 'group',
-      admin: { group: 'SEO' },
       fields: [
         { name: 'title', type: 'text' },
         { name: 'description', type: 'textarea' },

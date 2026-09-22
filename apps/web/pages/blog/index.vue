@@ -14,7 +14,14 @@ const { data } = await usePosts({ limit: 12 })
 const config = useRuntimeConfig()
 const payloadBase = config.public.payloadApiUrl as string
 
-const posts = computed(() => data.value?.docs || [])
+// Сужаем связи Payload (number | Media / number | Category) до объектов
+const posts = computed(() =>
+  (data.value?.docs || []).map((post) => ({
+    ...post,
+    cover: populated(post.coverImage),
+    category: populated(post.category),
+  })),
+)
 
 function imgUrl(url?: string) {
   if (!url) return ''
@@ -48,10 +55,10 @@ function formatDate(date?: string) {
             :to="`/blog/${post.slug}`"
             class="group flex flex-col overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-surface)] shadow-[var(--shadow-card)] transition-all duration-[var(--duration-base)] hover:shadow-[var(--shadow-hover)]"
           >
-            <div v-if="post.coverImage?.url" class="aspect-[16/10] overflow-hidden">
+            <div v-if="post.cover?.url" class="aspect-[16/10] overflow-hidden">
               <NuxtImg
-                :src="imgUrl(post.coverImage.url)"
-                :alt="post.coverImage.alt || post.title"
+                :src="imgUrl(post.cover.url)"
+                :alt="post.cover.alt || post.title"
                 class="h-full w-full object-cover transition-transform duration-[var(--duration-slow)] group-hover:scale-105"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 format="webp,avif"

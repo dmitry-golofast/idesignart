@@ -1,4 +1,5 @@
-import type { Service, ServicesResponse } from '@shared/types/payload'
+import type { Service } from '#shared/types/payload'
+import type { ServicesResponse } from '../shared/payload-helpers'
 
 /**
  * Список всех услуг (для сетки на /services и блока на главной).

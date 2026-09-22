@@ -1,4 +1,4 @@
-import type { PagesResponse } from '@shared/types/payload'
+import type { PagesResponse } from '../shared/payload-helpers'
 
 /**
  * usePage — получает страницу из Payload по slug с блоками sections.

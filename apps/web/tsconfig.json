@@ -1,10 +1,8 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
+  // Алиасы (@shared и пр.) задаются в nuxt.config → typescript.tsConfig
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@shared/*": ["../../packages/shared/*"]
-    }
+    "strict": true
   }
 }

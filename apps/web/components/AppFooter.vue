@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 
 interface SettingsData {
-  brand?: { name?: string; tagline?: string }
-  contacts?: { email?: string; phone?: string; whatsapp?: string; telegram?: string; instagram?: string; address?: string }
+  brand?: { name?: string | null; tagline?: string | null }
+  contacts?: { email?: string | null; phone?: string | null; whatsapp?: string | null; telegram?: string | null; instagram?: string | null; address?: string | null }
 }
 
 const props = defineProps<{ settings?: { value?: SettingsData } }>()

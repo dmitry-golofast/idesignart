@@ -10,7 +10,6 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/admin/package.json ./apps/admin/
 COPY apps/payload/package.json ./apps/payload/
-COPY packages/shared/package.json ./packages/shared/
 
 RUN pnpm install --frozen-lockfile
 
@@ -26,11 +25,9 @@ COPY --from=deps /app/apps/payload/node_modules ./apps/payload/node_modules
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/admin ./apps/admin
 COPY apps/payload ./apps/payload
-COPY packages/shared ./packages/shared
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV NODE_OPTIONS=--max-old-space-size=1536
 
 RUN pnpm --filter admin build
 
@@ -53,7 +50,6 @@ COPY --from=builder /app/apps/admin/package.json ./apps/admin/package.json
 COPY --from=builder /app/apps/admin/next.config.ts ./apps/admin/next.config.ts
 COPY --from=builder /app/apps/admin/tsconfig.json ./apps/admin/tsconfig.json
 COPY --from=builder /app/apps/payload ./apps/payload
-COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
 
 # Директория для media (Payload uploads)

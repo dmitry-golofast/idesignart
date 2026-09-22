@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Project } from '@shared/types/payload'
+import type { Project } from '#shared/types/payload'
 
 /**
  * /portfolio/[slug] — страница кейса.
@@ -19,11 +19,14 @@ if (error.value || !data.value?.docs?.length) {
 // После throw выше — docs гарантированно есть.
 const project = computed<Project>(() => data.value!.docs[0]!)
 
+// coverImage — связь Payload (number | Media) → объект
+const coverImage = computed(() => populated(project.value.coverImage))
+
 useSeo({
   title: project.value.seo?.title || `${project.value.title} — дизайн-проект`,
   description: project.value.seo?.description || project.value.excerpt,
   keywords: project.value.seo?.keywords,
-  image: project.value.coverImage?.url,
+  image: coverImage.value?.url,
   type: 'article',
 })
 
@@ -69,9 +72,9 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
     <!-- Hero кейса -->
     <section class="relative min-h-[70vh] overflow-hidden bg-[var(--color-ink)] pt-20">
       <NuxtImg
-        v-if="project.coverImage?.url"
-        :src="imgUrl(project.coverImage.url)"
-        :alt="project.coverImage.alt || project.title"
+        v-if="coverImage?.url"
+        :src="imgUrl(coverImage.url)"
+        :alt="coverImage.alt || project.title"
         class="absolute inset-0 h-full w-full object-cover opacity-70"
         sizes="100vw"
         format="webp,avif"

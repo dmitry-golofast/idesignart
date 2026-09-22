@@ -1,4 +1,5 @@
-import type { Post, PostsResponse } from '@shared/types/payload'
+import type { Post } from '#shared/types/payload'
+import type { PostsResponse } from '../shared/payload-helpers'
 
 /**
  * Список статей блога с пагинацией.

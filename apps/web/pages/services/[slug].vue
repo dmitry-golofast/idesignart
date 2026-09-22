@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Service } from '@shared/types/payload'
+import type { Service } from '#shared/types/payload'
 
 /**
  * /services/[slug] — посадочная страница услуги.
@@ -19,11 +19,19 @@ if (error.value || !data.value?.docs?.length) {
 // После throw выше — docs гарантированно есть. Явный тип снимает undefined.
 const service = computed<Service>(() => data.value!.docs[0]!)
 
+// Связи Payload сужает автоимпортируемый populated() из utils/payload.ts
+const heroImage = computed(() => populated(service.value.heroImage))
+const relatedProjects = computed(() =>
+  (service.value.relatedProjects ?? [])
+    .map((p) => populated(p))
+    .filter((p): p is NonNullable<typeof p> => p !== null),
+)
+
 useSeo({
   title: service.value.seo?.title || service.value.title,
   description: service.value.seo?.description || service.value.shortDescription,
   keywords: service.value.seo?.keywords,
-  image: service.value.heroImage?.url,
+  image: heroImage.value?.url ?? undefined,
   type: 'website',
 })
 
@@ -44,7 +52,7 @@ const faqJsonLd = computed(() => {
 const config = useRuntimeConfig()
 const payloadBase = config.public.payloadApiUrl as string
 const heroImg = computed(() => {
-  const url = service.value.heroImage?.url
+  const url = heroImage.value?.url
   if (!url) return ''
   return url.startsWith('http') ? url : `${payloadBase}${url}`
 })
@@ -155,8 +163,8 @@ const propertyLabels: Record<string, string> = {
 
     <!-- Портфолио по услуге -->
     <BlocksPortfolioMasonry
-      v-if="service.relatedProjects?.length"
-      :projects="service.relatedProjects"
+      v-if="relatedProjects.length"
+      :projects="relatedProjects"
       eyebrow="Кейсы по этой услуге"
       title="Примеры работ"
     />

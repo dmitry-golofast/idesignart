@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { Project } from '#shared/types/payload'
 
 /**
  * PortfolioMasonry — асимметричная сетка избранных проектов.
@@ -7,20 +8,6 @@ import { computed } from 'vue'
  *
  * На главной показывает featured; на /portfolio — все с фильтрами.
  */
-interface Project {
-  id: string
-  title: string
-  slug: string
-  excerpt?: string
-  coverImage?: { url?: string; alt?: string } | null
-  meta?: {
-    area?: number
-    propertyType?: string
-    style?: string
-    location?: string
-  }
-}
-
 const props = defineProps<{
   projects?: Project[]
   title?: string
@@ -31,6 +18,14 @@ const props = defineProps<{
 const { data } = useProjects({ featured: !props.projects?.length, limit: props.limit || 6 })
 const projects = computed(() =>
   props.projects?.length ? props.projects : (data.value?.docs || []),
+)
+
+// coverImage — связь Payload (number | Media): сужаем до объекта для шаблона
+const cards = computed(() =>
+  projects.value.map((project) => ({
+    project,
+    cover: populated(project.coverImage),
+  })),
 )
 
 const config = useRuntimeConfig()
@@ -73,16 +68,16 @@ const styleLabels: Record<string, string> = {
       <!-- Masonry-сетка (CSS columns для простоты) -->
       <div class="columns-1 gap-6 sm:columns-2 lg:columns-3 [&>*]:mb-6 [&>*]:break-inside-avoid">
         <NuxtLink
-          v-for="project in projects"
+          v-for="{ project, cover } in cards"
           :key="project.id"
           :to="`/portfolio/${project.slug}`"
           class="group relative block overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-surface-alt)]"
         >
           <!-- Обложка -->
           <NuxtImg
-            v-if="project.coverImage?.url"
-            :src="project.coverImage.url.startsWith('http') ? project.coverImage.url : `${payloadBase}${project.coverImage.url}`"
-            :alt="project.coverImage.alt || project.title"
+            v-if="cover?.url"
+            :src="cover.url.startsWith('http') ? cover.url : `${payloadBase}${cover.url}`"
+            :alt="cover.alt || project.title"
             class="w-full object-cover transition-transform duration-[var(--duration-slow)] ease-[var(--ease-premium)] group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             format="webp,avif"

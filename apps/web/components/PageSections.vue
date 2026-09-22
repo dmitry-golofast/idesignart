@@ -8,7 +8,7 @@
  */
 
 interface PageSection {
-  id: string
+  id?: string | null
   blockType: string
   [key: string]: any
 }

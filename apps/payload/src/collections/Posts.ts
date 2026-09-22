@@ -68,7 +68,6 @@ export const Posts: CollectionConfig = {
       type: 'date',
       admin: {
         position: 'sidebar',
-        date: { timeAppearance: false },
         description: 'Дата публикации. Статья скрыта до этой даты.',
       },
     },
@@ -83,7 +82,6 @@ export const Posts: CollectionConfig = {
     {
       name: 'seo',
       type: 'group',
-      admin: { group: 'SEO' },
       fields: [
         { name: 'title', type: 'text' },
         { name: 'description', type: 'textarea' },

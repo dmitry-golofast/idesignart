@@ -7,8 +7,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/image',
     '@nuxt/ui',
-    '@vueuse/nuxt',
-    '@pinia/nuxt',
     '@nuxtjs/sitemap',
     '@nuxtjs/robots',
     'nuxt-schema-org',
@@ -41,9 +39,6 @@ export default defineNuxtConfig({
 
   // ===== Runtime config (env → public) =====
   runtimeConfig: {
-    // server-only
-    payloadApiUrl: process.env.PAYLOAD_API_URL || 'http://localhost:3001',
-    payloadSecret: process.env.PAYLOAD_SECRET || '',
     public: {
       payloadApiUrl: process.env.NUXT_PUBLIC_PAYLOAD_API_URL || 'http://localhost:3001',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
@@ -111,6 +106,8 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     typeCheck: false, // включать через pnpm typecheck
+    // Сгенерированные типы Payload лежат в shared/types/payload.ts
+    // и импортируются через нативный алиас #shared/types/payload
   },
 
   // ===== Экспериментальные / nitro =====

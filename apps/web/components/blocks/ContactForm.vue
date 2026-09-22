@@ -18,7 +18,7 @@ const props = defineProps<{
 }>()
 
 const { data: servicesData } = useServices()
-const serviceOptions = computed(() =>
+const serviceOptions = computed<{ label: string; value: string | number }[]>(() =>
   (servicesData.value?.docs || []).map((s) => ({
     label: s.title,
     value: s.id,

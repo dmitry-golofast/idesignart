@@ -1,4 +1,4 @@
-import type { SettingsGlobal } from '@shared/types/payload'
+import type { SettingsGlobal } from '../shared/payload-helpers'
 
 /**
  * Глобальные настройки сайта (контакты, бренд, SEO defaults).

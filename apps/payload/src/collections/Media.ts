@@ -10,7 +10,8 @@ export const Media: CollectionConfig = {
     read: () => true, // публичный доступ — рендеры показываем всем
   },
   upload: {
-    staticURL: '/media',
+    // Отдача файлов — через /api/media/file/* (REST); staticDir — где лежат на диске.
+    // В проде staticDir относительный и резолвится от WORKDIR /app/apps/admin.
     staticDir: process.env.NODE_ENV === 'production' ? 'media' : '../../media',
     // Адаптивные размеры для @nuxt/image
     imageSizes: [
