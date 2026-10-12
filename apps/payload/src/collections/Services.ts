@@ -10,6 +10,7 @@ export const Services: CollectionConfig = {
       'Каждая услуга = отдельная посадочная страница под SEO/рекламу.',
   },
   versions: { drafts: true },
+  defaultSort: 'order',
   access: {
     read: ({ req: { user } }) =>
       user ? true : { _status: { equals: 'published' } },
@@ -136,8 +137,9 @@ export const Services: CollectionConfig = {
     {
       name: 'order',
       type: 'number',
+      label: 'Порядок сортировки',
       defaultValue: 0,
-      admin: { position: 'sidebar', description: 'Сортировка на странице услуг.' },
+      admin: { position: 'sidebar', description: 'Меньше число — выше в сетке услуг на главной.' },
     },
     {
       name: 'featured',

@@ -10,7 +10,7 @@ useSeo({
     <section class="bg-[var(--color-surface)] pt-32">
       <div class="container-app pb-8">
         <p class="eyebrow">Процесс</p>
-        <h1 class="mt-3 max-w-3xl font-display text-[var(--text-h1)]">
+        <h1 class="page-title mt-3 max-w-3xl">
           Как мы работаем
         </h1>
         <p class="mt-4 max-w-2xl text-lg text-[var(--color-ink-muted)]">

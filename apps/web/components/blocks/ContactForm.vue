@@ -47,7 +47,7 @@ const isDark = computed(() => props.variant === 'dark')
         <!-- Левая колонка — текст -->
         <div>
           <p class="eyebrow">{{ eyebrow || 'Связаться' }}</p>
-          <h2 class="mt-3 font-display text-[var(--text-h2)]" :class="isDark ? 'text-[var(--color-canvas)]' : ''">
+          <h2 class="section-title mt-3" :class="isDark ? 'text-[var(--color-canvas)]' : ''">
             {{ title || 'Расскажите о вашем проекте' }}
           </h2>
           <p
@@ -60,15 +60,15 @@ const isDark = computed(() => props.variant === 'dark')
           <!-- Доп. контакты -->
           <div v-if="!isDark" class="mt-8 space-y-3">
             <div class="flex items-center gap-3 text-sm text-[var(--color-ink-muted)]">
-              <UIcon name="i-lucide-clock" class="h-5 w-5 text-[var(--color-accent)]" />
+              <UIcon name="i-lucide-clock" class="h-5 w-5 text-[var(--color-accent-deep)]" />
               <span>Ответ в течение рабочего дня</span>
             </div>
             <div class="flex items-center gap-3 text-sm text-[var(--color-ink-muted)]">
-              <UIcon name="i-lucide-shield-check" class="h-5 w-5 text-[var(--color-accent)]" />
+              <UIcon name="i-lucide-shield-check" class="h-5 w-5 text-[var(--color-accent-deep)]" />
               <span>Договор и фиксированная смета</span>
             </div>
             <div class="flex items-center gap-3 text-sm text-[var(--color-ink-muted)]">
-              <UIcon name="i-lucide-map-pin" class="h-5 w-5 text-[var(--color-accent)]" />
+              <UIcon name="i-lucide-map-pin" class="h-5 w-5 text-[var(--color-accent-deep)]" />
               <span>Работаем по городу и удалённо</span>
             </div>
           </div>
@@ -182,9 +182,14 @@ const isDark = computed(() => props.variant === 'dark')
               {{ error }}
             </div>
 
-            <UButton type="submit" size="xl" color="primary" class="w-full justify-center" :loading="pending">
-              Отправить заявку
-            </UButton>
+            <button
+              type="submit"
+              class="btn-lime w-full"
+              :disabled="pending"
+            >
+              <UIcon v-if="pending" name="i-lucide-loader-circle" class="h-4 w-4 animate-spin" aria-hidden="true" />
+              {{ pending ? 'Отправляем...' : 'Отправить заявку' }}
+            </button>
           </form>
         </div>
       </div>

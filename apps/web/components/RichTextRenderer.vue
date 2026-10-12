@@ -88,7 +88,7 @@ function renderText(text: string, format = 0): string {
 </script>
 
 <template>
-  <div class="prose-content space-y-5 text-[var(--text-body)] leading-[var(--text--body--line-height)] text-[var(--color-ink-muted)]">
+  <div class="prose-content space-y-5 text-body leading-[var(--text--body--line-height)] text-[var(--color-ink-muted)]">
     <template v-for="(node, i) in nodes" :key="i">
       <!-- Параграф -->
       <p v-if="node.type === 'paragraph'" class="text-inherit">
@@ -112,9 +112,9 @@ function renderText(text: string, format = 0): string {
         v-else-if="node.type === 'heading'"
         class="font-display text-[var(--color-ink)]"
         :class="{
-          'text-[var(--text-h2)] mt-10': headingTag(node.tag) === 'h2',
-          'text-[var(--text-h3)] mt-8': headingTag(node.tag) === 'h3',
-          'text-[var(--text-h4)] mt-6': headingTag(node.tag) === 'h4',
+          'text-h2 mt-10': headingTag(node.tag) === 'h2',
+          'text-h3 mt-8': headingTag(node.tag) === 'h3',
+          'text-h4 mt-6': headingTag(node.tag) === 'h4',
         }"
       >
         <template v-for="(child, j) in node.children" :key="j">
@@ -164,7 +164,7 @@ function renderText(text: string, format = 0): string {
           :src="imgUrl(node.value.url)"
           :alt="node.value.alt || node.value.filename || ''"
           class="w-full rounded-[var(--radius-lg)] object-cover"
-          sizes="(max-width: 768px) 100vw, 768px"
+          sizes="md:768px 100vw"
           format="webp,avif"
         />
         <figcaption v-if="node.value.alt" class="mt-2 text-sm text-[var(--color-ink-subtle)]">

@@ -1,9 +1,7 @@
 <script setup lang="ts">
 /**
  * ProcessSteps — пронумерованная схема процесса работы (3–5 шагов).
- * Референс: Heanly Harris.
- * Снимает страх клиента, повышает доверие → конверсию.
- *
+ * Тёмная секция — ритм главной страницы; номера — фирменный лайм.
  * Данные приходят из CMS (props.steps) или дефолтные.
  */
 
@@ -33,53 +31,48 @@ const displaySteps = Array.isArray(props.steps) && props.steps.length > 0
 <template>
   <section class="section bg-[var(--color-ink)] text-[var(--color-canvas)]">
     <div class="container-app">
-      <div class="mb-16 max-w-2xl">
-        <p class="eyebrow text-[var(--color-accent-soft)]">{{ props.eyebrow || 'Как мы работаем' }}</p>
-        <h2 class="mt-3 font-display text-[var(--text-h2)] text-[var(--color-canvas)]">
+      <div class="mb-14 max-w-2xl">
+        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-canvas)]/50">
+          {{ props.eyebrow || 'Как мы работаем' }}
+        </p>
+        <h2 class="section-title mt-3 text-[var(--color-canvas)]">
           {{ props.title || 'Прозрачный процесс от идеи до переезда' }}
         </h2>
-        <p class="mt-4 text-[var(--color-canvas)]/70">
+        <p class="mt-4 text-[var(--color-canvas)]/60">
           Вы всегда знаете, на каком этапе проект и что будет дальше.
         </p>
       </div>
 
       <!-- Шаги -->
-      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
         <div
           v-for="(step, i) in displaySteps"
           :key="step.num"
-          class="group relative"
+          class="relative border-t-2 border-[var(--color-canvas)]/15 pt-6"
         >
-          <!-- Линия между шагами (desktop) -->
-          <div
-            v-if="i < displaySteps.length - 1"
-            class="absolute left-[3.25rem] top-8 hidden h-px w-[calc(100%-2rem)] bg-[var(--color-canvas)]/15 lg:block"
-          />
+          <!-- Лаймовый номер — акцент на тёмном -->
+          <p class="text-4xl font-extrabold tracking-[-0.02em] text-[var(--color-lime)]">
+            {{ step.num }}
+          </p>
 
-          <div class="relative">
-            <!-- Номер -->
-            <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[var(--color-canvas)]/20 font-display text-2xl text-[var(--color-accent-soft)] transition-colors duration-[var(--duration-base)] group-hover:border-[var(--color-accent)] group-hover:text-[var(--color-accent)]">
-              {{ step.num }}
-            </div>
-
-            <h3 class="mb-3 font-display text-xl text-[var(--color-canvas)]">
-              {{ step.title }}
-            </h3>
-            <p class="mb-4 text-sm leading-relaxed text-[var(--color-canvas)]/70">
-              {{ step.description }}
-            </p>
-            <p class="text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-canvas)]/40">
-              {{ step.duration }}
-            </p>
-          </div>
+          <h3 class="mb-3 mt-4 text-lg font-bold text-[var(--color-canvas)]">
+            {{ step.title }}
+          </h3>
+          <p class="mb-4 text-sm leading-relaxed text-[var(--color-canvas)]/60">
+            {{ step.description }}
+          </p>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-canvas)]/40">
+            {{ step.duration }}
+          </p>
         </div>
       </div>
 
       <!-- CTA -->
-      <div class="mt-16 text-center">
-        <UButton to="/process" size="lg" color="primary">
+      <div class="mt-14">
+        <NuxtLink to="/process" class="btn-lime">
           Подробнее о процессе
-        </UButton>
+          <UIcon name="i-lucide-arrow-right" class="h-4 w-4" aria-hidden="true" />
+        </NuxtLink>
       </div>
     </div>
   </section>

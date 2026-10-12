@@ -10,14 +10,14 @@
 import { getPayload } from 'payload'
 import payloadConfig from '../payload.config'
 
-/** Стартовые пункты меню — бывший захардкоженный список AppHeader */
+/** Стартовые пункты меню: якоря до блоков главной + страницы «О студии»/«Блог» */
 const DEFAULT_NAV = [
-  { label: 'Услуги', href: '/services' },
-  { label: 'Портфолио', href: '/portfolio' },
-  { label: 'Процесс', href: '/process' },
+  { label: 'Услуги', href: '/#services-grid' },
+  { label: 'Портфолио', href: '/#portfolio-grid' },
+  { label: 'Процесс', href: '/#process-steps' },
   { label: 'О студии', href: '/about' },
   { label: 'Блог', href: '/blog' },
-  { label: 'Контакты', href: '/contacts' },
+  { label: 'Контакты', href: '/#contact-form' },
 ]
 
 /** Оформление шапки — значения из оформления hero-блока (§08 спеки) */

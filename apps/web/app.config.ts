@@ -5,7 +5,7 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'orange',   // ближайший к терракоте из палитры Nuxt UI
+      primary: 'lime',     // фирменный лайм: слайдеры, фокусы инпутов, мелкая UI-статика
       neutral: 'stone',    // тёплый нейтрал
     },
     buttons: {

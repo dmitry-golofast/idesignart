@@ -62,9 +62,9 @@ async function requestDetailedQuote() {
 <template>
   <section class="section bg-surface-alt">
     <div class="container-app">
-      <div class="mx-auto max-w-3xl text-center">
+      <div class="mb-10 max-w-2xl">
         <p class="eyebrow">Прозрачные цены</p>
-        <h2 class="mt-3 font-display text-[var(--text-h2)]">
+        <h2 class="section-title mt-3">
           Узнайте стоимость вашего проекта
         </h2>
         <p class="mt-4 text-[var(--color-ink-muted)]">
@@ -72,7 +72,7 @@ async function requestDetailedQuote() {
         </p>
       </div>
 
-      <div class="mx-auto mt-12 max-w-4xl rounded-[var(--radius-xl)] bg-[var(--color-surface)] p-8 shadow-[var(--shadow-card)] lg:p-12">
+      <div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-8 lg:p-12">
         <div class="grid gap-10 lg:grid-cols-[1fr_auto]">
           <!-- Контролы -->
           <div class="space-y-8">
@@ -81,15 +81,16 @@ async function requestDetailedQuote() {
               <label class="mb-3 block text-sm font-medium text-[var(--color-ink)]">
                 Тип объекта
               </label>
-              <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div class="flex flex-wrap gap-2">
                 <button
                   v-for="pt in propertyTypes"
                   :key="pt.value"
                   type="button"
-                  class="rounded-[var(--radius-md)] border-2 px-3 py-2.5 text-sm transition-all duration-[var(--duration-fast)]"
+                  :aria-pressed="propertyType === pt.value"
+                  class="min-h-11 rounded-[var(--radius-pill)] px-5 text-sm font-medium whitespace-nowrap transition-colors duration-200"
                   :class="propertyType === pt.value
-                    ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-deep)]'
-                    : 'border-[var(--color-line)] text-[var(--color-ink-muted)] hover:border-[var(--color-ink-muted)]'"
+                    ? 'bg-[var(--color-lime)] text-[var(--color-lime-contrast)]'
+                    : 'bg-[var(--color-surface-alt)] text-[var(--color-ink)] hover:bg-[var(--color-line)]'"
                   @click="propertyType = pt.value"
                 >
                   {{ pt.label }}
@@ -103,7 +104,7 @@ async function requestDetailedQuote() {
                 <label class="text-sm font-medium text-[var(--color-ink)]">
                   Площадь
                 </label>
-                <span class="font-display text-xl text-[var(--color-accent)]">
+                <span class="text-xl font-extrabold tracking-[-0.02em] text-[var(--color-ink)]">
                   {{ area }} м²
                 </span>
               </div>
@@ -130,43 +131,49 @@ async function requestDetailedQuote() {
                   v-for="sl in serviceLevels"
                   :key="sl.value"
                   type="button"
-                  class="flex w-full items-center justify-between rounded-[var(--radius-md)] border-2 px-4 py-3 text-left transition-all duration-[var(--duration-fast)]"
+                  :aria-pressed="serviceLevel === sl.value"
+                  class="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors duration-200"
                   :class="serviceLevel === sl.value
-                    ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
-                    : 'border-[var(--color-line)] hover:border-[var(--color-ink-muted)]'"
+                    ? 'border-[var(--color-ink)] bg-[var(--color-surface)]'
+                    : 'border-[var(--color-line)] bg-[var(--color-surface)] hover:border-[var(--color-ink-muted)]'"
                   @click="serviceLevel = sl.value"
                 >
                   <span>
-                    <span class="block text-sm font-medium text-[var(--color-ink)]">{{ sl.label }}</span>
+                    <span class="block text-sm font-bold text-[var(--color-ink)]">{{ sl.label }}</span>
                     <span class="block text-xs text-[var(--color-ink-muted)]">{{ sl.desc }}</span>
                   </span>
+                  <span
+                    class="h-4 w-4 shrink-0 rounded-full border-2"
+                    :class="serviceLevel === sl.value ? 'border-[var(--color-ink)] bg-[var(--color-lime)]' : 'border-[var(--color-line)]'"
+                    aria-hidden="true"
+                  />
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Результат -->
-          <div class="flex flex-col justify-between rounded-[var(--radius-lg)] bg-[var(--color-ink)] p-8 text-[var(--color-canvas)] lg:min-w-[280px]">
+          <div class="flex flex-col justify-between rounded-xl bg-[var(--color-ink)] p-8 text-[var(--color-canvas)] lg:min-w-[280px]">
             <div>
-              <p class="text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-canvas)]/50">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-canvas)]/50">
                 Ориентировочно
               </p>
-              <p class="mt-2 font-display text-4xl text-[var(--color-canvas)]">
+              <p class="mt-3 text-4xl font-extrabold tracking-[-0.02em] text-[var(--color-lime)]">
                 {{ formattedPrice }}
               </p>
               <p class="mt-2 text-sm text-[var(--color-canvas)]/60">
                 от, за весь проект
               </p>
             </div>
-            <UButton
-              size="lg"
-              color="primary"
-              class="mt-8 w-full justify-center"
-              :loading="pending"
+            <button
+              type="button"
+              class="btn-lime mt-8 w-full"
+              :disabled="pending"
               @click="requestDetailedQuote"
             >
-              Получить точный расчёт
-            </UButton>
+              <UIcon v-if="pending" name="i-lucide-loader-circle" class="h-4 w-4 animate-spin" aria-hidden="true" />
+              {{ pending ? 'Отправляем...' : 'Получить точный расчёт' }}
+            </button>
           </div>
         </div>
       </div>

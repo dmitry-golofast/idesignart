@@ -382,10 +382,25 @@ export interface Page {
             eyebrow?: string | null;
             title: string;
             /**
-             * Сколько featured-проектов показать
+             * Выбранные проекты показываются на сайте в этом порядке. Если пусто — автоматически берутся избранные (галочка featured у проекта) в количестве «Кол-во проектов».
+             */
+            projects?: (number | Project)[] | null;
+            /**
+             * Работает только в авто-режиме: сколько избранных проектов показать
              */
             limit?: number | null;
-            showAllButton?: boolean | null;
+            /**
+             * Чипы-фильтры строятся из категорий типа «Проект» (Контент → Категории, порядок задаётся полем «Порядок сортировки»)
+             */
+            showFilters?: boolean | null;
+            facts?:
+              | {
+                  icon: 'layers' | 'house' | 'leaf' | 'compass';
+                  value: string;
+                  label: string;
+                  id?: string | null;
+                }[]
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'portfolio-grid';
@@ -589,7 +604,7 @@ export interface Project {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Категории проектов и услуг: квартира, офис, визуализация и т.д. — основа для SEO-кластеров.
+ * Категории проектов и услуг: квартира, офис, визуализация и т.д. — основа для SEO-кластеров. Категории типа «Проект» становятся фильтрами в блоке «Наши работы».
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
@@ -598,6 +613,10 @@ export interface Category {
   id: number;
   title: string;
   slug: string;
+  /**
+   * Меньше число — выше в фильтрах блока «Наши работы».
+   */
+  order?: number | null;
   /**
    * Для SEO — выводится на странице категории.
    */
@@ -1167,8 +1186,17 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               eyebrow?: T;
               title?: T;
+              projects?: T;
               limit?: T;
-              showAllButton?: T;
+              showFilters?: T;
+              facts?:
+                | T
+                | {
+                    icon?: T;
+                    value?: T;
+                    label?: T;
+                    id?: T;
+                  };
               id?: T;
               blockName?: T;
             };
@@ -1404,6 +1432,7 @@ export interface PostsSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  order?: T;
   description?: T;
   type?: T;
   seoImage?: T;

@@ -65,12 +65,12 @@ const articleJsonLd = computed(() => ({
         <div class="mx-auto max-w-3xl pb-12">
           <NuxtLink to="/blog" class="link-arrow mb-8 text-sm">Все статьи</NuxtLink>
           <div class="mb-4 flex items-center gap-3 text-sm text-[var(--color-ink-subtle)]">
-            <span v-if="category?.title" class="text-[var(--color-accent)]">{{ category.title }}</span>
+            <span v-if="category?.title" class="text-[var(--color-accent-deep)]">{{ category.title }}</span>
             <span>·</span>
             <time v-if="post.publishedAt">{{ formatDate(post.publishedAt) }}</time>
             <span v-if="post.readingTime">· {{ post.readingTime }} мин чтения</span>
           </div>
-          <h1 class="font-display text-[var(--text-h1)]">{{ post.title }}</h1>
+          <h1 class="page-title">{{ post.title }}</h1>
           <p class="mt-4 text-lg text-[var(--color-ink-muted)]">{{ post.excerpt }}</p>
         </div>
       </div>
@@ -82,7 +82,7 @@ const articleJsonLd = computed(() => ({
         :src="imgUrl(coverImage.url)"
         :alt="coverImage.alt || post.title"
         class="aspect-[16/9] w-full rounded-[var(--radius-lg)] object-cover"
-        sizes="(max-width: 1024px) 100vw, 880px"
+        sizes="xl:880px 100vw"
         format="webp,avif"
       />
     </div>
@@ -106,14 +106,19 @@ const articleJsonLd = computed(() => ({
 
     <!-- CTA -->
     <section class="section bg-[var(--color-surface-alt)]">
-      <div class="container-app text-center">
-        <h2 class="font-display text-[var(--text-h2)]">Понравилась статья?</h2>
-        <p class="mx-auto mt-3 max-w-md text-[var(--color-ink-muted)]">
-          Подпишитесь на новые материалы или обсудите свой проект с нами.
-        </p>
-        <div class="mt-8 flex justify-center gap-4">
-          <UButton to="/contacts" color="primary" size="lg">Обсудить проект</UButton>
-          <UButton to="/blog" color="neutral" variant="outline" size="lg">Все статьи</UButton>
+      <div class="container-app">
+        <div class="max-w-2xl">
+          <h2 class="section-title">Понравилась статья?</h2>
+          <p class="mt-4 text-[var(--color-ink-muted)]">
+            Подпишитесь на новые материалы или обсудите свой проект с нами.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <NuxtLink to="/contacts" class="btn-lime">
+              Обсудить проект
+              <UIcon name="i-lucide-arrow-right" class="h-4 w-4" aria-hidden="true" />
+            </NuxtLink>
+            <UButton to="/blog" color="neutral" variant="outline" size="lg">Все статьи</UButton>
+          </div>
         </div>
       </div>
     </section>

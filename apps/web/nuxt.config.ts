@@ -77,9 +77,19 @@ export default defineNuxtConfig({
   },
 
   // ===== Роутинг /admin и /api =====
-  // Админка и API теперь same-origin и роутятся через Caddy (@payload matcher).
-  // Редиректы здесь НЕ нужны: при same-origin PAYLOAD_API_URL правило
-  // /admin → PAYLOAD_API_URL/admin зацикливало запрос (ERR_TOO_MANY_REDIRECTS).
+  // Админка и API same-origin и роутятся через Caddy (@payload matcher).
+  // Редирект здесь нужен ТОЛЬКО в dev: Nuxt (:3000) сам не отдаёт /admin,
+  // а Payload живёт на :3001. На проде same-origin-редирект зацикливался
+  // (см. коммит 918121a), поэтому условие по NODE_ENV — в production-сборку
+  // правило не попадает.
+  ...(process.env.NODE_ENV === 'development'
+    ? {
+        routeRules: {
+          '/admin': { redirect: { to: 'http://localhost:3001/admin', statusCode: 302 } },
+          '/admin/**': { redirect: { to: 'http://localhost:3001/admin', statusCode: 302 } },
+        },
+      }
+    : {}),
 
   // ===== Изображения =====
   image: {

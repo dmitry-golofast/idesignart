@@ -82,8 +82,8 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
       <div class="container-app relative z-10 flex min-h-[70vh] flex-col justify-end pb-16 text-[var(--color-canvas)]">
-        <p class="eyebrow mb-4 text-[var(--color-accent-soft)]">Кейс</p>
-        <h1 class="max-w-4xl font-display text-[var(--text-h1)]">{{ project.title }}</h1>
+        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-lime)]">Кейс</p>
+        <h1 class="max-w-4xl font-display text-h1">{{ project.title }}</h1>
         <p class="mt-4 max-w-2xl text-lg text-[var(--color-canvas)]/80">{{ project.excerpt }}</p>
 
         <!-- Метаданные -->
@@ -112,20 +112,20 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
       <div class="mx-auto max-w-3xl">
         <!-- Задача -->
         <section v-if="project.brief" class="mb-16">
-          <h2 class="mb-4 font-display text-[var(--text-h2)]">Задача</h2>
+          <h2 class="mb-4 font-display text-h2">Задача</h2>
           <RichTextRenderer :content="project.brief" />
         </section>
 
         <!-- Решение -->
         <section v-if="project.solution" class="mb-16">
-          <h2 class="mb-4 font-display text-[var(--text-h2)]">Решение</h2>
+          <h2 class="mb-4 font-display text-h2">Решение</h2>
           <RichTextRenderer :content="project.solution" />
         </section>
       </div>
 
       <!-- Галерея -->
       <section v-if="renderImages.length" class="my-16">
-        <h2 class="mb-8 font-display text-[var(--text-h2)]">3D-визуализация</h2>
+        <h2 class="mb-8 font-display text-h2">3D-визуализация</h2>
         <div class="grid gap-6 sm:grid-cols-2">
           <figure
             v-for="(img, i) in renderImages"
@@ -137,7 +137,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
               :src="galleryUrl(img)"
               :alt="img.caption || galleryAlt(img, project.title)"
               class="w-full object-cover"
-              sizes="(max-width: 640px) 100vw, 50vw"
+              sizes="sm:50vw xl:50vw 100vw"
               format="webp,avif"
             />
             <figcaption v-if="img.caption" class="mt-2 text-sm text-[var(--color-ink-subtle)]">
@@ -149,7 +149,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
 
       <!-- Реализация (после) -->
       <section v-if="afterImages.length" class="my-16">
-        <h2 class="mb-8 font-display text-[var(--text-h2)]">Реализация</h2>
+        <h2 class="mb-8 font-display text-h2">Реализация</h2>
         <div class="grid gap-6 sm:grid-cols-2">
           <figure
             v-for="(img, i) in afterImages"
@@ -161,7 +161,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
               :src="galleryUrl(img)"
               :alt="img.caption || galleryAlt(img, project.title)"
               class="w-full object-cover"
-              sizes="(max-width: 640px) 100vw, 50vw"
+              sizes="sm:50vw xl:50vw 100vw"
               format="webp,avif"
             />
           </figure>
@@ -186,7 +186,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
 
       <!-- CTA -->
       <div class="my-16 rounded-[var(--radius-xl)] bg-[var(--color-ink)] p-10 text-center text-[var(--color-canvas)]">
-        <h2 class="font-display text-[var(--text-h2)] text-[var(--color-canvas)]">Хотите так же?</h2>
+        <h2 class="font-display text-h2 text-[var(--color-canvas)]">Хотите так же?</h2>
         <p class="mt-3 text-[var(--color-canvas)]/70">Обсудим ваш проект и предложим решение.</p>
         <UButton to="/contacts" color="primary" size="lg" class="mt-6">Оставить заявку</UButton>
       </div>

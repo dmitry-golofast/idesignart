@@ -54,7 +54,7 @@ const { form, submit, pending, success, error, errors, downloadUrl } = useSubscr
               :src="guideImage"
               :alt="settings?.title || 'Гид по дизайну интерьера'"
               class="relative w-full rounded-[var(--radius-lg)] shadow-[var(--shadow-hover)]"
-              sizes="(max-width: 1024px) 100vw, 480px"
+              sizes="lg:480px 100vw"
               format="webp,avif"
             />
           </div>
@@ -63,7 +63,7 @@ const { form, submit, pending, success, error, errors, downloadUrl } = useSubscr
         <!-- Правая часть: текст + форма -->
         <div class="order-1 lg:order-2">
           <p class="eyebrow">Бесплатно</p>
-          <h2 class="mt-3 font-display text-[var(--text-h2)] text-[var(--color-ink)]">
+          <h2 class="mt-3 font-display text-h2 text-[var(--color-ink)]">
             {{ settings?.title || 'Гид: 10 вопросов перед началом ремонта' }}
           </h2>
           <p class="mt-4 max-w-md text-[var(--color-ink-muted)]">

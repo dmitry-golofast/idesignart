@@ -47,7 +47,14 @@ const isDev = import.meta.dev
 </script>
 
 <template>
-  <template v-for="section in sections" :key="section.id">
+  <!-- Каждому блоку — якорь по blockType (#portfolio-grid, #contact-form, …);
+       scroll-mt компенсирует sticky-шапку при хеш-навигации -->
+  <div
+    v-for="(section, i) in sections"
+    :id="section.blockType"
+    :key="section.id ?? `${section.blockType}-${i}`"
+    class="scroll-mt-24"
+  >
     <component
       :is="blockMap[section.blockType]"
       v-bind="section"
@@ -59,5 +66,5 @@ const isDev = import.meta.dev
     >
       ⚠️ Неизвестный блок: «{{ section.blockType }}»
     </div>
-  </template>
+  </div>
 </template>

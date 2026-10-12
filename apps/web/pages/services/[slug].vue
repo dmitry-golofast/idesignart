@@ -72,14 +72,14 @@ const propertyLabels: Record<string, string> = {
         :src="heroImg"
         :alt="service.heroHeadline"
         class="absolute inset-0 h-full w-full object-cover opacity-60"
-        sizes="100vw"
+        sizes="lg:100vw 2xl:100vw 100vw"
         format="webp,avif"
         preload
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
       <div class="container-app relative z-10 pb-16 text-[var(--color-canvas)]">
-        <p class="eyebrow mb-4 text-[var(--color-accent-soft)]">Услуга</p>
-        <h1 class="max-w-3xl font-display text-[var(--text-h1)]">
+        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-lime)]">Услуга</p>
+        <h1 class="max-w-3xl font-display text-h1">
           {{ service.heroHeadline || service.title }}
         </h1>
         <p v-if="service.heroSubheadline" class="mt-4 max-w-xl text-lg text-[var(--color-canvas)]/80">
@@ -94,14 +94,14 @@ const propertyLabels: Record<string, string> = {
         <div>
           <!-- Боли клиента -->
           <div v-if="service.painPoints?.length">
-            <h2 class="font-display text-[var(--text-h2)]">Знакомо?</h2>
+            <h2 class="font-display text-h2">Знакомо?</h2>
             <ul class="mt-6 space-y-4">
               <li
                 v-for="(pain, i) in service.painPoints"
                 :key="i"
                 class="flex gap-3 text-[var(--color-ink-muted)]"
               >
-                <UIcon name="i-lucide-alert-circle" class="mt-1 h-5 w-5 shrink-0 text-[var(--color-accent)]" />
+                <UIcon name="i-lucide-alert-circle" class="mt-1 h-5 w-5 shrink-0 text-[var(--color-accent-deep)]" />
                 <span>{{ pain.point }}</span>
               </li>
             </ul>
@@ -109,7 +109,7 @@ const propertyLabels: Record<string, string> = {
 
           <!-- Что входит -->
           <div v-if="service.deliverables?.length" class="mt-16">
-            <h2 class="font-display text-[var(--text-h2)]">Что входит</h2>
+            <h2 class="font-display text-h2">Что входит</h2>
             <div class="mt-6 grid gap-6 sm:grid-cols-2">
               <div
                 v-for="(d, i) in service.deliverables"
@@ -132,7 +132,7 @@ const propertyLabels: Record<string, string> = {
 
           <!-- FAQ -->
           <div v-if="service.faqs?.length" class="mt-16">
-            <h2 class="font-display text-[var(--text-h2)]">Частые вопросы</h2>
+            <h2 class="font-display text-h2">Частые вопросы</h2>
             <UAccordion
               :items="service.faqs.map((f, i) => ({ label: f.question, content: f.answer, key: String(i) }))"
               class="mt-6"
@@ -142,20 +142,21 @@ const propertyLabels: Record<string, string> = {
 
         <!-- Сайдбар: цена + CTA -->
         <aside class="lg:sticky lg:top-28 lg:self-start">
-          <div class="rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]">
-            <p class="text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-ink-subtle)]">Стоимость</p>
-            <p v-if="service.pricing?.priceFrom" class="mt-2 font-display text-3xl text-[var(--color-ink)]">
+          <div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-subtle)]">Стоимость</p>
+            <p v-if="service.pricing?.priceFrom" class="mt-2 text-3xl font-extrabold tracking-[-0.02em] text-[var(--color-ink)]">
               от {{ new Intl.NumberFormat('ru-RU').format(service.pricing.priceFrom) }} ₽
-              <span class="text-base text-[var(--color-ink-muted)]">
+              <span class="text-base font-medium text-[var(--color-ink-muted)]">
                 / {{ service.pricing.unit === 'sqm' ? 'м²' : service.pricing.unit === 'project' ? 'проект' : service.pricing.unit }}
               </span>
             </p>
             <p v-if="service.pricing?.note" class="mt-1 text-sm text-[var(--color-ink-muted)]">
               {{ service.pricing.note }}
             </p>
-            <UButton to="/contacts" color="primary" size="lg" class="mt-6 w-full justify-center">
+            <NuxtLink to="/contacts" class="btn-lime mt-6 w-full">
               Оставить заявку
-            </UButton>
+              <UIcon name="i-lucide-arrow-right" class="h-4 w-4" aria-hidden="true" />
+            </NuxtLink>
           </div>
         </aside>
       </div>

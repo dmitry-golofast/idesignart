@@ -61,13 +61,14 @@ const str = (v: unknown, d: string) => (typeof v === 'string' && v.length > 0 ? 
 const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d)
 const bool = (v: unknown, d: boolean) => (typeof v === 'boolean' ? v : d)
 
+// Якорные пункты прокручивают до блоков на главной; «О студии» и «Блог» — страницы
 const DEFAULT_NAV: NavItemData[] = [
-  { label: 'Услуги', href: '/services' },
-  { label: 'Портфолио', href: '/portfolio' },
-  { label: 'Процесс', href: '/process' },
+  { label: 'Услуги', href: '/#services-grid' },
+  { label: 'Портфолио', href: '/#portfolio-grid' },
+  { label: 'Процесс', href: '/#process-steps' },
   { label: 'О студии', href: '/about' },
   { label: 'Блог', href: '/blog' },
-  { label: 'Контакты', href: '/contacts' },
+  { label: 'Контакты', href: '/#contact-form' },
 ]
 
 const nav = computed<NavItemData[]>(() => {

@@ -14,6 +14,7 @@ useSeo({
       eyebrow="Портфолио"
       title="Все проекты"
       :limit="24"
+      :show-filters="true"
     />
   </div>
 </template>

@@ -23,24 +23,23 @@ const telegramUrl = computed(() =>
     <section class="bg-[var(--color-surface)] pt-32">
       <div class="container-app pb-8">
         <p class="eyebrow">Контакты</p>
-        <h1 class="mt-3 font-display text-[var(--text-h1)]">Свяжитесь с нами</h1>
+        <h1 class="page-title mt-3">Свяжитесь с нами</h1>
         <p class="mt-4 max-w-xl text-lg text-[var(--color-ink-muted)]">
           Выберите удобный способ — ответим в течение рабочего дня.
         </p>
 
         <!-- Быстрые контакты -->
         <div class="mt-8 flex flex-wrap gap-3">
-          <UButton
+          <NuxtLink
             v-if="whatsappUrl"
             :to="whatsappUrl"
-            icon="i-lucide-message-circle"
-            color="primary"
-            size="lg"
             external
             target="_blank"
+            class="btn-lime"
           >
+            <UIcon name="i-lucide-message-circle" class="h-4 w-4" aria-hidden="true" />
             WhatsApp
-          </UButton>
+          </NuxtLink>
           <UButton
             v-if="telegramUrl"
             :to="telegramUrl"

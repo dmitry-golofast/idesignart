@@ -23,15 +23,22 @@
 
   --color-line: #e7e0d6; /* границы, разделители */
 
-  /* Акцент — терракота (Studio Ashby) */
-  --color-accent: #b5533c; /* CTA, активные элементы */
-  --color-accent-soft: #e8d5cc; /* фоны-подложки, badge */
-  --color-accent-deep: #7a2e1f; /* hover, pressed */
-  --color-accent-contrast: #ffffff; /* текст на акценте */
+  /* Акцент — фирменный лайм hero v2 (спека hero §08, works §02).
+     Лайм — только для ЗАЛИВОК/чипов/деталей с тёмным текстом;
+     для текста на светлом использовать --color-accent-deep (оливковый). */
+  --color-accent: #d7ef28; /* CTA-заливки, активные элементы */
+  --color-accent-soft: #f4f9d3; /* фоны-подложки, badge */
+  --color-accent-deep: #6f8a0c; /* текстовые акценты, hover на светлом */
+  --color-accent-contrast: #101010; /* текст на акценте */
 
   /* Вторичный акцент — пыльно-зелёный (доп._badge) */
   --color-sage: #7a8b6f;
   --color-sage-soft: #e2e7dd;
+
+  /* Фирменный лайм hero v2 (спека hero §08, блок «Наши работы» §02)
+     — текст на лайме всегда почти чёрный */
+  --color-lime: #d7ef28;
+  --color-lime-contrast: #101010;
 
   /* Состояния */
   --color-success: #4a7c59;
@@ -43,8 +50,10 @@
    * Типографика
    * ========================================================= */
 
-  /* Семейства */
-  --font-display: "Fraunces", "Cormorant Garamond", Georgia, serif;
+  /* Семейства.
+     --font-display: единый гротеск заголовков (язык hero v2 и «Наших работ»);
+    serif Fraunces выведен из оборота для консистентности. */
+  --font-display: "Inter", "Manrope", system-ui, -apple-system, sans-serif;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", monospace;
 

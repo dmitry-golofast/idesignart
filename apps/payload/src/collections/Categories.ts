@@ -2,14 +2,15 @@ import { CollectionConfig } from 'payload'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
+  defaultSort: 'order',
   admin: {
     group: 'Контент',
     useAsTitle: 'title',
-    description: 'Категории проектов и услуг: квартира, офис, визуализация и т.д. — основа для SEO-кластеров.',
+    description: 'Категории проектов и услуг: квартира, офис, визуализация и т.д. — основа для SEO-кластеров. Категории типа «Проект» становятся фильтрами в блоке «Наши работы».',
   },
   access: {
-    read: ({ req: { user } }) =>
-      user ? true : { _status: { equals: 'published' } },
+    // У категорий нет черновиков (поля _status не существует) — читают все.
+    read: () => true,
   },
   fields: [
     {
@@ -23,6 +24,15 @@ export const Categories: CollectionConfig = {
       required: true,
       unique: true,
       admin: { position: 'sidebar' },
+    },
+    {
+      name: 'order',
+      type: 'number',
+      label: 'Порядок сортировки',
+      admin: {
+        position: 'sidebar',
+        description: 'Меньше число — выше в фильтрах блока «Наши работы».',
+      },
     },
     {
       name: 'description',

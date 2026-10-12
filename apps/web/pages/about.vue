@@ -35,7 +35,7 @@ const values = [
       <div class="container-app pb-16">
         <div class="max-w-3xl">
           <p class="eyebrow">О студии</p>
-          <h1 class="mt-3 font-display text-[var(--text-h1)]">
+          <h1 class="page-title mt-3">
             Создаём пространства, в которых хочется жить и работать
           </h1>
           <p class="mt-6 text-lg text-[var(--color-ink-muted)]">
@@ -50,14 +50,16 @@ const values = [
     <!-- Ценности -->
     <section class="section">
       <div class="container-app">
-        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div
             v-for="v in values"
             :key="v.title"
-            class="rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-8 shadow-[var(--shadow-card)]"
+            class="rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-7 transition-colors duration-300 hover:border-[var(--color-ink)]"
           >
-            <UIcon :name="v.icon" class="mb-5 h-10 w-10 text-[var(--color-accent)]" />
-            <h3 class="mb-2 font-display text-xl">{{ v.title }}</h3>
+            <span class="mb-5 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-lime)] bg-[var(--color-lime)]/10">
+              <UIcon :name="v.icon" class="h-5 w-5 text-[var(--color-ink)]" aria-hidden="true" />
+            </span>
+            <h3 class="mb-2 text-lg font-bold text-[var(--color-ink)]">{{ v.title }}</h3>
             <p class="text-sm text-[var(--color-ink-muted)]">{{ v.text }}</p>
           </div>
         </div>

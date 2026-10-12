@@ -22,7 +22,7 @@ useSeo({
     <PageSections v-if="sections.length" :sections="sections" />
     <section v-else class="section">
       <div class="container-app">
-        <h1 class="font-display text-[var(--text-h1)]">Регистрация</h1>
+        <h1 class="font-display text-h1">Регистрация</h1>
         <p class="mt-4 text-[var(--color-ink-muted)]">Форма регистрации появится здесь.</p>
       </div>
     </section>

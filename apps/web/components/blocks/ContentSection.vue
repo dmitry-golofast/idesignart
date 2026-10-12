@@ -16,7 +16,7 @@ defineProps<{
     <div class="container-app">
       <div :class="layout === 'wide' ? 'max-w-5xl' : 'max-w-3xl'" class="mx-auto">
         <p v-if="eyebrow" class="eyebrow">{{ eyebrow }}</p>
-        <h2 v-if="title" class="mt-3 mb-6 font-display text-[var(--text-h2)]">{{ title }}</h2>
+        <h2 v-if="title" class="section-title mb-6 mt-3">{{ title }}</h2>
         <RichTextRenderer v-if="body" :content="body" />
       </div>
     </div>

@@ -29,11 +29,11 @@ const cols = [
   {
     title: 'Студия',
     links: [
-      { label: 'Портфолио', to: '/portfolio' },
+      { label: 'Портфолио', to: '/#portfolio-grid' },
       { label: 'О нас', to: '/about' },
-      { label: 'Процесс работы', to: '/process' },
+      { label: 'Процесс работы', to: '/#process-steps' },
       { label: 'Блог', to: '/blog' },
-      { label: 'Контакты', to: '/contacts' },
+      { label: 'Контакты', to: '/#contact-form' },
     ],
   },
 ]
@@ -56,7 +56,7 @@ const telegramUrl = computed(() =>
       <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1.5fr]">
         <!-- Бренд + описание -->
         <div>
-          <div class="font-display text-2xl">{{ brand }}</div>
+          <div class="text-2xl font-extrabold tracking-[-0.02em]">{{ brand }}</div>
           <p class="mt-3 max-w-xs text-sm text-[var(--color-canvas)]/70">
             {{ tagline }}
           </p>
@@ -90,14 +90,14 @@ const telegramUrl = computed(() =>
 
         <!-- Колонки навигации -->
         <div v-for="col in cols" :key="col.title">
-          <h3 class="mb-4 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-canvas)]/50">
+          <h3 class="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-canvas)]/50">
             {{ col.title }}
           </h3>
           <ul class="space-y-2.5">
             <li v-for="link in col.links" :key="link.to">
               <NuxtLink
                 :to="link.to"
-                class="text-sm text-[var(--color-canvas)]/70 transition-colors hover:text-[var(--color-canvas)]"
+                class="text-sm text-[var(--color-canvas)]/70 transition-colors hover:text-[var(--color-lime)]"
               >
                 {{ link.label }}
               </NuxtLink>
@@ -107,17 +107,17 @@ const telegramUrl = computed(() =>
 
         <!-- Контакты -->
         <div>
-          <h3 class="mb-4 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-canvas)]/50">
+          <h3 class="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-canvas)]/50">
             Контакты
           </h3>
           <ul class="space-y-2.5 text-sm text-[var(--color-canvas)]/70">
             <li v-if="contacts.email">
-              <a :href="`mailto:${contacts.email}`" class="transition-colors hover:text-[var(--color-canvas)]">
+              <a :href="`mailto:${contacts.email}`" class="transition-colors hover:text-[var(--color-lime)]">
                 {{ contacts.email }}
               </a>
             </li>
             <li v-if="contacts.phone">
-              <a :href="`tel:${contacts.phone}`" class="transition-colors hover:text-[var(--color-canvas)]">
+              <a :href="`tel:${contacts.phone}`" class="transition-colors hover:text-[var(--color-lime)]">
                 {{ contacts.phone }}
               </a>
             </li>
