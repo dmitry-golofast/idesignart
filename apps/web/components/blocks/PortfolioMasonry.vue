@@ -152,29 +152,6 @@ const factIcons: Record<string, string> = {
             </button>
           </div>
         </div>
-
-        <!-- Инфо-карточки: на мобильном — горизонтальная лента со снапом -->
-        <ul
-          class="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 min-[480px]:grid min-[480px]:grid-cols-3 min-[480px]:overflow-visible min-[480px]:pb-0 lg:max-w-[648px] lg:flex-none"
-          aria-label="О студии в цифрах"
-        >
-          <li
-            v-for="fact in factCards"
-            :key="fact.value"
-            class="min-w-[168px] snap-start rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-5 min-[480px]:min-w-0"
-          >
-            <span class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-lime)] bg-[var(--color-lime)]/10">
-              <UIcon :name="factIcons[fact.icon || ''] || 'i-lucide-layers'" class="h-5 w-5 text-[var(--color-ink)]" aria-hidden="true" />
-            </span>
-            <!-- Короткое значение («120+») — акцентное, крупнее текстовых заголовков (по макету) -->
-            <p class="mt-3 leading-snug font-bold" :class="fact.value.length <= 4 ? 'text-2xl' : 'text-[17px] sm:text-lg'">
-              {{ fact.value }}
-            </p>
-            <p class="mt-2 text-sm leading-snug text-[var(--color-ink-muted)]">
-              {{ fact.label }}
-            </p>
-          </li>
-        </ul>
       </div>
 
       <!-- Сетка проектов: 1 крупный + 2 компактных, остальные ниже -->

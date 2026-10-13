@@ -83,12 +83,54 @@ const PROJECTS: SeedProject[] = [
 ]
 
 /** Демо-услуги для сетки (полные посадочные страницы не заполняем) */
-const SERVICES = [
-  { slug: 'apartment-design', title: 'Дизайн квартиры', shortDescription: 'Продуманный интерьер под ваш образ жизни — от планировки до подборки материалов.', order: 1 },
-  { slug: 'office-design', title: 'Дизайн офиса', shortDescription: 'Рабочее пространство, которое усиливает бренд и продуктивность команды.', order: 2 },
-  { slug: '3d-visualization', title: '3D-визуализация', shortDescription: 'Фотореалистичные рендеры: увидите результат до начала ремонта.', order: 3 },
-  { slug: 'space-planning', title: 'Планировочные решения', shortDescription: 'Эргономика и зонирование без потери квадратных метров.', order: 4 },
-  { slug: 'author-supervision', title: 'Авторский надзор', shortDescription: 'Контроль ремонта и соответствия проекту — вплоть до расстановки декора.', order: 5 },
+const SERVICES: {
+  slug: string
+  title: string
+  shortDescription: string
+  tagline: string
+  palette: [string, string, string]
+  order: number
+}[] = [
+  {
+    slug: 'apartment-design',
+    title: 'Дизайн квартиры',
+    shortDescription: 'Продуманный интерьер под ваш образ жизни — от планировки до подборки материалов.',
+    tagline: 'Гармония в деталях',
+    palette: ['#e7ddce', '#cbbba4', '#8a7358'],
+    order: 1,
+  },
+  {
+    slug: 'office-design',
+    title: 'Дизайн офиса',
+    shortDescription: 'Рабочее пространство, которое усиливает бренд и продуктивность команды.',
+    tagline: 'Пространство для роста',
+    palette: ['#dfe2e4', '#b9bfc4', '#4d555b'],
+    order: 2,
+  },
+  {
+    slug: '3d-visualization',
+    title: '3D-визуализация',
+    shortDescription: 'Фотореалистичные рендеры: увидите результат до начала ремонта.',
+    tagline: 'Увидьте результат заранее',
+    palette: ['#ece4d8', '#d4c3ae', '#96805f'],
+    order: 3,
+  },
+  {
+    slug: 'space-planning',
+    title: 'Планировочные решения',
+    shortDescription: 'Эргономика и зонирование без потери квадратных метров.',
+    tagline: 'Максимум функциональности',
+    palette: ['#e3e0da', '#c6c1b8', '#55524c'],
+    order: 4,
+  },
+  {
+    slug: 'author-supervision',
+    title: 'Авторский надзор',
+    shortDescription: 'Контроль ремонта и соответствия проекту — вплоть до расстановки декора.',
+    tagline: 'Спокойствие на каждом этапе',
+    palette: ['#e2e7dd', '#b8c2ab', '#6f7d63'],
+    order: 5,
+  },
 ]
 
 /**
@@ -98,7 +140,6 @@ const SERVICES = [
 const TARGET_SECTIONS: Record<string, unknown>[] = [
   {
     blockType: 'services-grid',
-    eyebrow: 'Услуги',
     title: 'Чем мы можем помочь',
     description: 'Полный цикл: от планировки и визуализации до реализации под ключ.',
   },
@@ -116,13 +157,14 @@ const TARGET_SECTIONS: Record<string, unknown>[] = [
   },
   {
     blockType: 'process-steps',
-    eyebrow: 'Как мы работаем',
-    title: 'Прозрачный процесс от идеи до переезда',
+    eyebrow: 'Процесс',
+    title: 'Как мы работаем',
+    description: 'Четыре листа — от первой идеи до готового интерьера',
     steps: [
-      { num: '01', title: 'Брифинг и концепция', description: 'Изучаем задачи, образ жизни, референсы. Формируем концепцию и планировочное решение.', duration: '1–2 недели' },
-      { num: '02', title: '3D-визуализация', description: 'Создаём фотореалистичные рендеры каждого помещения. Вы видите результат до ремонта.', duration: '2–4 недели' },
-      { num: '03', title: 'Рабочая документация', description: 'Чертежи, спецификации, смета. Все материалы и оборудование — с точным указанием.', duration: '2–3 недели' },
-      { num: '04', title: 'Авторский надзор', description: 'Контролируем ход ремонта, корректируем отклонения. Сдаём готовый объект под ключ.', duration: 'до сдачи' },
+      { num: '01', title: 'Брифинг и концепция', description: 'Изучаем задачи, образ жизни, референсы. Формируем концепцию и планировочное решение.', duration: '1–2 недели', sketch: 'plan' },
+      { num: '02', title: '3D-визуализация', description: 'Создаём фотореалистичные рендеры каждого помещения. Вы видите результат до ремонта.', duration: '2–4 недели', sketch: 'iso' },
+      { num: '03', title: 'Рабочая документация', description: 'Чертежи, спецификации, смета. Все материалы и оборудование — с точным указанием.', duration: '2–3 недели', sketch: 'elevation' },
+      { num: '04', title: 'Авторский надзор', description: 'Контролируем ход ремонта, корректируем отклонения. Сдаём готовый объект под ключ.', duration: 'до сдачи', sketch: 'perspective' },
     ],
   },
   {
@@ -163,17 +205,24 @@ async function ensureService(payload: Awaited<ReturnType<typeof getPayload>>, s:
     limit: 1,
     depth: 0,
   })
+  const imageId = await ensureMedia(payload, { title: s.title, excerpt: s.shortDescription, palette: s.palette }, s.order)
   if (existing.docs[0]) {
-    // Черновики публикуем, порядок синхронизируем (сид-контент должен быть виден на сайте)
-    if (existing.docs[0]._status !== 'published' || existing.docs[0].order !== s.order) {
+    // Черновики публикуем, порядок/тэглайн/фото синхронизируем (сид-контент должен быть виден на сайте)
+    const doc = existing.docs[0]
+    const needsUpdate =
+      doc._status !== 'published' ||
+      doc.order !== s.order ||
+      doc.tagline !== s.tagline ||
+      doc.cardImage !== imageId
+    if (needsUpdate) {
       await payload.update({
         collection: 'services',
-        id: existing.docs[0].id as number,
-        data: { _status: 'published', order: s.order },
+        id: doc.id as number,
+        data: { _status: 'published', order: s.order, tagline: s.tagline, cardImage: imageId },
       })
       payload.logger.info(`услуга обновлена: ${s.slug}`)
     }
-    return existing.docs[0].id as number
+    return doc.id as number
   }
   const created = await payload.create({
     collection: 'services',
@@ -182,6 +231,8 @@ async function ensureService(payload: Awaited<ReturnType<typeof getPayload>>, s:
       title: s.title,
       slug: s.slug,
       shortDescription: s.shortDescription,
+      tagline: s.tagline,
+      cardImage: imageId,
       heroHeadline: s.title,
       order: s.order,
       featured: true,
@@ -207,31 +258,34 @@ async function placeholderJpeg(index: number, palette: [string, string, string])
   return sharp(Buffer.from(svg)).jpeg({ quality: 82 }).toBuffer()
 }
 
-async function ensureMedia(payload: Awaited<ReturnType<typeof getPayload>>, project: SeedProject, index: number) {
+/** Минимальный набор полей для генерации плейсхолдера (проект или услуга) */
+type PlaceholderSource = { title: string; excerpt: string; palette: [string, string, string] }
+
+async function ensureMedia(payload: Awaited<ReturnType<typeof getPayload>>, item: PlaceholderSource, index: number) {
   const existing = await payload.find({
     collection: 'media',
-    where: { title: { equals: `Плейсхолдер — ${project.title}` } },
+    where: { title: { equals: `Плейсхолдер — ${item.title}` } },
     limit: 1,
     depth: 0,
   })
   if (existing.docs[0]) return existing.docs[0].id as number
 
-  const buffer = await placeholderJpeg(index, project.palette)
+  const buffer = await placeholderJpeg(index, item.palette)
   const media = await payload.create({
     collection: 'media',
     data: {
-      title: `Плейсхолдер — ${project.title}`,
-      alt: `${project.title} — ${project.excerpt}`,
+      title: `Плейсхолдер — ${item.title}`,
+      alt: `${item.title} — ${item.excerpt}`,
       credit: 'Плейсхолдер для dev-среды',
     },
     file: {
       data: buffer,
       mimetype: 'image/jpeg',
-      name: `${project.slug}-cover.jpg`,
+      name: `placeholder-${index + 1}-${item.title.slice(0, 16).replace(/[^\p{L}\p{N}]+/gu, '-')}.jpg`,
       size: buffer.length,
     },
   })
-  payload.logger.info(`media создано: id=${media.id} (${project.slug})`)
+  payload.logger.info(`media создано: id=${media.id} (${item.title})`)
   return media.id as number
 }
 

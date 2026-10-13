@@ -282,10 +282,8 @@ const ctaAttrs = computed(() =>
   --h-btn-px: 28px;
   --h-btn-radius: 0;
 
-  /* Layout */
-  --h-max-w: 1600px;
-  --h-gutter-d: 48px;
-  --h-gutter-m: 20px;
+  /* Layout — общие токены контейнера сайта (как у блока «Чем мы можем помочь») */
+  --h-max-w: var(--container-max);
   --h-header-h: 88px;
   --h-top-pad: 40px;
   --h-bottom-pad: 36px;
@@ -303,7 +301,7 @@ const ctaAttrs = computed(() =>
   --h-bottom-pad-y: 24px;
   --h-divider-thick: 1px;
 
-  --h-pad-x: var(--h-gutter-m);
+  --h-pad-x: var(--container-pad);
 
   display: flex;
   flex-direction: column;
@@ -317,7 +315,6 @@ const ctaAttrs = computed(() =>
 
 @media (min-width: 768px) {
   .hero {
-    --h-pad-x: var(--h-gutter-d);
     /* Экран ровно без учёта шапки: фиксированная высота делает фото
        гибким наполнителем между контентом и нижней строкой.
        640px — пол: на совсем низких окнах секция скроллится */

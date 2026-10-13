@@ -92,9 +92,15 @@
     max-width: var(--container-wide);
   }
 
-  /* Секция — стандартный вертикальный отступ */
+  /* Секция — стандартный вертикальный отступ.
+     На больших экранах (lg+) — вдвое меньше: плотнее ритм секций */
   .section {
     padding-block: var(--section-gap);
+  }
+  @media (min-width: 1024px) {
+    .section {
+      padding-block: calc(var(--section-gap) / 2);
+    }
   }
   .section-sm {
     padding-block: var(--section-gap-sm);

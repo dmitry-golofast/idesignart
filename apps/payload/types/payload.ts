@@ -314,7 +314,6 @@ export interface Page {
             blockType: 'stats';
           }
         | {
-            eyebrow?: string | null;
             title: string;
             description?: string | null;
             id?: string | null;
@@ -351,12 +350,14 @@ export interface Page {
         | {
             eyebrow?: string | null;
             title: string;
+            description?: string | null;
             steps?:
               | {
                   num: string;
                   title: string;
                   description: string;
                   duration?: string | null;
+                  sketch?: ('plan' | 'iso' | 'elevation' | 'perspective') | null;
                   id?: string | null;
                 }[]
               | null;
@@ -583,9 +584,13 @@ export interface Service {
    */
   slug: string;
   /**
-   * Иконка/мини-рендер для карточки услуги.
+   * Фото для карточки в блоке «Чем мы можем помочь» (сетка на главной и /services).
    */
-  icon?: (number | null) | Media;
+  cardImage?: (number | null) | Media;
+  /**
+   * Короткий caps-подзаголовок под названием услуги (2–4 слова).
+   */
+  tagline?: string | null;
   /**
    * 1 предложение для карточки в сетке услуг.
    */
@@ -1074,7 +1079,6 @@ export interface PagesSelect<T extends boolean = true> {
         'services-grid'?:
           | T
           | {
-              eyebrow?: T;
               title?: T;
               description?: T;
               id?: T;
@@ -1104,6 +1108,7 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               eyebrow?: T;
               title?: T;
+              description?: T;
               steps?:
                 | T
                 | {
@@ -1111,6 +1116,7 @@ export interface PagesSelect<T extends boolean = true> {
                     title?: T;
                     description?: T;
                     duration?: T;
+                    sketch?: T;
                     id?: T;
                   };
               id?: T;
@@ -1247,7 +1253,8 @@ export interface ProjectsSelect<T extends boolean = true> {
 export interface ServicesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
-  icon?: T;
+  cardImage?: T;
+  tagline?: T;
   shortDescription?: T;
   heroHeadline?: T;
   heroSubheadline?: T;

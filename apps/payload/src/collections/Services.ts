@@ -5,7 +5,7 @@ export const Services: CollectionConfig = {
   admin: {
     group: 'Услуги',
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', 'featured', 'order', '_status'],
+    defaultColumns: ['title', 'slug', 'cardImage', 'featured', 'order', '_status'],
     description:
       'Каждая услуга = отдельная посадочная страница под SEO/рекламу.',
   },
@@ -29,10 +29,22 @@ export const Services: CollectionConfig = {
       admin: { position: 'sidebar', description: 'URL: /services/{slug}' },
     },
     {
-      name: 'icon',
+      name: 'cardImage',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Иконка/мини-рендер для карточки услуги.' },
+      label: 'Фото карточки',
+      admin: {
+        description:
+          'Фото для карточки в блоке «Чем мы можем помочь» (сетка на главной и /services).',
+      },
+    },
+    {
+      name: 'tagline',
+      type: 'text',
+      label: 'Подзаголовок карточки',
+      admin: {
+        description: 'Короткий caps-подзаголовок под названием услуги (2–4 слова).',
+      },
     },
     {
       name: 'shortDescription',

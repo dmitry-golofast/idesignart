@@ -12,8 +12,8 @@ useSeo({
 <template>
   <div>
     <BlocksServicesGrid
-      eyebrow="Услуги"
       title="Что мы делаем"
+      description="Дизайн квартиры, дома, офиса, 3D-визуализация и авторский надзор — полный цикл под ключ."
     />
   </div>
 </template>
