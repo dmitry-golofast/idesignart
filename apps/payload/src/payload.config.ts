@@ -15,7 +15,10 @@ import { Users } from './collections/Users'
 import { Settings } from './globals/Settings'
 import { Header } from './globals/Header'
 
-const appURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001'
+// Same-origin: админка и API доступны на origin сайта (в dev — через
+// прокси в Nuxt на :3000, в проде — через Caddy). Явно переопределяется
+// PAYLOAD_PUBLIC_SERVER_URL (prod задаёт его в docker-compose).
+const appURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
 const secret = process.env.PAYLOAD_SECRET || 'idesignart-dev-secret-key-2026-change-in-prod'
 
 export default buildConfig({
@@ -57,8 +60,10 @@ export default buildConfig({
     // фронтенд импортирует его через #shared/types/payload
     outputFile: 'types/payload.ts',
   },
-  // Сайт и Payload теперь same-origin (админка на /admin основного домена):
-  // cross-origin остаётся только в dev (web :3000 → payload :3001)
+  // Сайт и Payload same-origin на всех окружениях: админка и API доступны
+  // на /admin и /api основного origin (в dev — через прокси в Nuxt, в
+  // проде — через Caddy). CORS/CSRF-list остаётся для совместимости и
+  // прямого доступа к :3001 в dev.
   cors: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     'http://localhost:3000',

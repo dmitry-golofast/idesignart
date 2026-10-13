@@ -47,10 +47,14 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
-  // ===== Runtime config (env → public) =====
+  // ===== Runtime config =====
+  // payloadProxyTarget — куда server/middleware/payload-proxy.ts проксирует
+  // пути Payload (пустая строка отключает прокси).
   runtimeConfig: {
+    payloadProxyTarget: process.env.PAYLOAD_PROXY_TARGET || 'http://localhost:3001',
     public: {
-      payloadApiUrl: process.env.NUXT_PUBLIC_PAYLOAD_API_URL || 'http://localhost:3001',
+      // Same-origin: в dev Payload-пути проксируются через этот же сервер
+      payloadApiUrl: process.env.NUXT_PUBLIC_PAYLOAD_API_URL || 'http://localhost:3000',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       gaId: process.env.NUXT_PUBLIC_GA_ID || '',
       yandexMetrikaId: process.env.NUXT_PUBLIC_YANDEX_METRIKA_ID || '',
@@ -76,20 +80,11 @@ export default defineNuxtConfig({
     allow: '/',
   },
 
-  // ===== Роутинг /admin и /api =====
-  // Админка и API same-origin и роутятся через Caddy (@payload matcher).
-  // Редирект здесь нужен ТОЛЬКО в dev: Nuxt (:3000) сам не отдаёт /admin,
-  // а Payload живёт на :3001. На проде same-origin-редирект зацикливался
-  // (см. коммит 918121a), поэтому условие по NODE_ENV — в production-сборку
-  // правило не попадает.
-  ...(process.env.NODE_ENV === 'development'
-    ? {
-        routeRules: {
-          '/admin': { redirect: { to: 'http://localhost:3001/admin', statusCode: 302 } },
-          '/admin/**': { redirect: { to: 'http://localhost:3001/admin', statusCode: 302 } },
-        },
-      }
-    : {}),
+  // ===== Роутинг /admin, /api и прочих путей Payload =====
+  // Админка и API same-origin на любом окружении: в dev их проксирует
+  // server/middleware/payload-proxy.ts на админ-сервер (:3001), в проде —
+  // Caddy (@payload matcher) на контейнер admin. Отдельных редиректов
+  // здесь быть не должно (см. коммит 918121a про self-redirect loop).
 
   // ===== Изображения =====
   image: {
@@ -106,7 +101,7 @@ export default defineNuxtConfig({
       '2xl': 1920,
       '3xl': 2400,
     },
-    domains: [process.env.NUXT_PUBLIC_PAYLOAD_API_URL || 'localhost:3001'],
+    domains: [process.env.NUXT_PUBLIC_PAYLOAD_API_URL || 'localhost:3000'],
   },
 
   // ===== TypeScript =====

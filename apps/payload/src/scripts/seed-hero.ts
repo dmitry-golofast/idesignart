@@ -44,56 +44,11 @@ const DEFAULT_CTA = {
   variant: 'accent',
 }
 
-/** Стартовые значения группы appearance — таблица §08 спеки */
-const DEFAULT_APPEARANCE = {
-  backgroundColor: '#F8F7F3',
-  textColor: '#080808',
-  mutedTextColor: '#303030',
-  accentColor: '#D7EF28',
-  accentTextColor: '#080808',
-  dividerColor: '#B8B8B5',
-  captionColor: '#FFFFFF',
-  fontFamily: 'inter',
-  titleWeight: '800',
-  titleDesktopPx: 116,
-  // 44 вместо дефолтных 48: «Пространство.» не влезает в 375px при 20px отступах
-  titleMobilePx: 44,
-  titleLineHeight: 0.98,
-  titleLetterSpacingEm: -0.045,
-  bodyDesktopPx: 22,
-  bodyMobilePx: 18,
-  bodyLineHeight: 1.4,
-  brandPx: 30,
-  navigationPx: 16,
-  eyebrowPx: 12,
-  eyebrowLetterSpacingEm: 0.3,
-  captionPx: 14,
-  bottomLinePx: 14,
-  buttonTextPx: 18,
-  buttonHeightPx: 56,
-  buttonPaddingXPx: 28,
-  buttonRadiusPx: 0,
-  contentMaxWidthPx: 1600,
-  desktopGutterPx: 48,
-  mobileGutterPx: 20,
-  headerHeightPx: 88,
-  heroTopPaddingPx: 40,
-  heroBottomPaddingPx: 36,
-  heroColumnGapPx: 48,
-  titleColumnPercent: 68,
-  descriptionButtonGapPx: 28,
-  mobileStackGapPx: 24,
-  imageWidth: 'full-bleed',
-  imageDesktopRatio: '3:1',
-  imageMobileRatio: '4:3',
-  imageRadiusPx: 0,
-  captionInsetPx: 32,
-  bottomLinePaddingYPx: 24,
-  dividerThicknessPx: 1,
-}
+// Оформление hero (бывшая группа §08) выведено из CMS — живёт в CSS-токенах
+// HeroSection.vue, сид его не трогает.
 
 function payloadBase(): string {
-  return process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001'
+  return process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
 }
 
 /** ---------- экспорт ---------- */
@@ -111,7 +66,7 @@ async function runExport() {
   if (!page) throw new Error('Страница slug=home не найдена')
 
   const section = (page.sections ?? []).find((s: { blockType?: string }) => s.blockType === 'hero') as
-    | { hero?: Record<string, unknown>; bottomLine?: Record<string, unknown>; appearance?: Record<string, unknown> }
+    | { hero?: Record<string, unknown>; bottomLine?: Record<string, unknown> }
     | undefined
   if (!section?.hero) throw new Error('На странице home нет hero-блока')
 
@@ -146,7 +101,6 @@ async function runExport() {
       captionOverlayOpacity: section.hero.captionOverlayOpacity ?? null,
     },
     bottomLine: section.bottomLine ?? null,
-    appearance: section.appearance ?? null,
   }
 
   const file = path.resolve(process.cwd(), OUTPUT_FILE)
@@ -290,7 +244,6 @@ async function runApply() {
     blockType: 'hero',
     hero,
     bottomLine,
-    appearance: data.appearance ?? DEFAULT_APPEARANCE,
   }
 
   // Страницы нет (свежая база) — создаём home сразу с hero-блоком

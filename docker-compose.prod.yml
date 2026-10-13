@@ -60,6 +60,11 @@ services:
       NUXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN:-idesignart.com}
       # Payload теперь same-origin: сайт и API на одном домене (API на /api/*)
       NUXT_PUBLIC_PAYLOAD_API_URL: https://${SITE_DOMAIN:-idesignart.com}
+      # Цель same-origin прокси (server/middleware/payload-proxy.ts).
+      # Caddy роутит пути Payload напрямую на admin, так что прокси в web
+      # не срабатывает — это страховка на случай обращения к web в обход
+      # Caddy (например, без reverse proxy вообще).
+      PAYLOAD_PROXY_TARGET: http://admin:3001
       # Аналитика
       NUXT_PUBLIC_GA_ID: ${GA_ID:-}
       NUXT_PUBLIC_YANDEX_METRIKA_ID: ${YANDEX_METRIKA_ID:-}

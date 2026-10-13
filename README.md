@@ -19,7 +19,7 @@ idesignart/
 ├── apps/
 │   ├── payload/     ← Schema + config (коллекции, глобалы, типы)
 │   ├── admin/       ← Next.js: Payload admin UI + REST/GraphQL API (:3001)
-│   └── web/         ← Nuxt 4: публичный сайт (:3000)
+│   └── web/         ← Nuxt 4: публичный сайт (:3000) + same-origin прокси к CMS
 ├── packages/
 │   └── shared/types/← Общие TypeScript-типы (генерируются из Payload)
 ├── docs/
@@ -28,6 +28,13 @@ idesignart/
 ```
 
 **Поток данных:** Nuxt (frontend) → REST API (`/api/*`) → Payload (admin app) → PostgreSQL
+
+**Один хост, один порт.** Сайт и CMS работают на одном origin: браузеру
+достаточно порта Nuxt (:3000 в dev, :80/:443 в проде). Пути Payload
+(`/admin`, `/api`, `/graphql`, `/_next`, `/media`) роутятся на admin-сервер:
+в dev — server-middleware `apps/web/server/middleware/payload-proxy.ts`
+(цель — `PAYLOAD_PROXY_TARGET`), в проде — Caddy (`@payload` matcher).
+Админ-сервер продолжает слушать :3001, но наружу его выставлять не нужно.
 
 ## Быстрый старт
 
@@ -39,7 +46,7 @@ pnpm install
 
 # 2. Скопировать env
 cp .env.example .env
-#   → заполнить PAYLOAD_SECRET (32+ случайных символа)
+#   → заполнить PAYLOAD_SECRET (32+ случайных символов)
 
 # 3. Поднять базу
 docker compose up -d postgres
@@ -48,22 +55,22 @@ docker compose up -d postgres
 pnpm --filter payload generate:types
 
 # 5. Запустить admin (CMS) и сайт
-pnpm --filter admin dev   # → http://localhost:3001/admin
+pnpm --filter admin dev   # слушает :3001 (наружу не нужен)
 pnpm --filter web dev     # → http://localhost:3000
 ```
 
-## URL-ы
+## URL-ы (всё на одном порту)
 
 | URL | Что |
 |-----|-----|
-| http://localhost:3000 | **Nuxt** — публичный сайт |
-| http://localhost:3001/admin | **Payload admin** — управление контентом |
-| http://localhost:3001/api | **REST API** (Payload) |
-| http://localhost:3001/api/graphql | **GraphQL** playground (Payload) |
+| http://localhost:3000 | **Сайт** (Nuxt) |
+| http://localhost:3000/admin | **Payload admin** — управление контентом |
+| http://localhost:3000/api | **REST API** (Payload) |
+| http://localhost:3000/graphql | **GraphQL** playground (Payload) |
 
 ## Первый вход в админку
 
-1. Откройте http://localhost:3001/admin
+1. Откройте http://localhost:3000/admin
 2. При первом запуске Payload предложит создать администратора
 3. Создайте пользователя (email + пароль)
 4. Войдите — откроется дашборд со всеми коллекциями
@@ -73,8 +80,8 @@ pnpm --filter web dev     # → http://localhost:3000
 | Команда | Описание |
 |---------|----------|
 | `pnpm install` | Установить все зависимости |
-| `pnpm --filter admin dev` | Запустить Payload admin + API (:3001) |
-| `pnpm --filter web dev` | Запустить Nuxt — сайт (:3000) |
+| `pnpm --filter admin dev` | Запустить Payload admin + API (слушает :3001) |
+| `pnpm --filter web dev` | Запустить Nuxt — сайт + прокси к CMS (:3000) |
 | `pnpm --filter payload generate:types` | Типы → `packages/shared/types/payload.ts` |
 | `pnpm --filter web build` | Сборка Nuxt |
 | `pnpm --filter admin build` | Сборка admin (Next.js) |
@@ -83,7 +90,7 @@ pnpm --filter web dev     # → http://localhost:3000
 ## Если Docker недоступен
 
 Payload admin требует PostgreSQL. Без БД:
-- `http://localhost:3001/admin` вернёт ошибку 500
+- `http://localhost:3000/admin` вернёт ошибку 500
 - Nuxt-сайт поднимется, но данные из CMS не загрузятся
 
 Решения:
