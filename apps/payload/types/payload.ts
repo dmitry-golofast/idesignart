@@ -298,8 +298,14 @@ export interface Page {
         | {
             items?:
               | {
+                  icon?: ('layers' | 'house' | 'leaf' | 'compass' | 'heart' | 'trending-up') | null;
                   value: string;
                   label: string;
+                  description?: string | null;
+                  /**
+                   * Скетч или фото интерьера — показывается полупрозрачно в верхней части карточки, текст остаётся на белой подложке
+                   */
+                  image?: (number | null) | Media;
                   id?: string | null;
                 }[]
               | null;
@@ -1055,8 +1061,11 @@ export interface PagesSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    icon?: T;
                     value?: T;
                     label?: T;
+                    description?: T;
+                    image?: T;
                     id?: T;
                   };
               id?: T;

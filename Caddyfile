@@ -18,6 +18,11 @@
 		reverse_proxy web:3000
 	}
 
+	# Серверный роут иконок Nuxt (@nuxt/icon) — тоже роут Nuxt, не Payload
+	handle /api/_nuxt_icon/* {
+		reverse_proxy web:3000
+	}
+
 	# Payload CMS: админка (/admin), REST/GraphQL API, статика Next (/_next), медиа
 	@payload {
 		path /admin* /_next/* /api/* /graphql* /media/*

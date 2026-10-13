@@ -10,14 +10,15 @@
  * Цель прокси — PAYLOAD_PROXY_TARGET (по умолчанию http://localhost:3001).
  * Пустое значение отключает прокси.
  *
- * /api/__sitemap__ не проксируется: это серверный роут самого Nuxt
- * (@nuxtjs/sitemap), поэтому проверка идёт до общего префикса /api.
+ * /api/__sitemap__ и /api/_nuxt_icon не проксируются: это серверные роуты
+ * самого Nuxt (@nuxtjs/sitemap и @nuxt/icon), поэтому проверка идёт до
+ * общего префикса /api.
  */
 
 const PAYLOAD_PREFIXES = ['/api', '/admin', '/graphql', '/_next', '/media']
 
 // Роуты Nitro, которые должны остаться на Nuxt-сервере
-const LOCAL_PREFIXES = ['/api/__sitemap__']
+const LOCAL_PREFIXES = ['/api/__sitemap__', '/api/_nuxt_icon']
 
 function hasPrefix(path: string, prefixes: string[]) {
   return prefixes.some((p) => path === p || path.startsWith(`${p}/`))
@@ -32,5 +33,13 @@ export default defineEventHandler((event) => {
   if (!hasPrefix(pathname, PAYLOAD_PREFIXES)) return
   if (hasPrefix(pathname, LOCAL_PREFIXES)) return
 
-  return proxyRequest(event, `${target}${event.path}`)
+  // Next.js в админке проверяет Server Actions (загрузка файлов в блоках):
+  // x-forwarded-host обязан совпадать с origin браузера, иначе save падает
+  // 500 «Invalid Server Actions request». Host при проксировании становится
+  // localhost:3001, поэтому явно возвращаем хост исходного запроса.
+  return proxyRequest(event, `${target}${event.path}`, {
+    headers: {
+      'x-forwarded-host': getRequestURL(event).host,
+    },
+  })
 })

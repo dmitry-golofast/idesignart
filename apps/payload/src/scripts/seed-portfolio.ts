@@ -127,12 +127,11 @@ const TARGET_SECTIONS: Record<string, unknown>[] = [
   },
   {
     blockType: 'stats',
-    eyebrow: 'Студия в цифрах',
     items: [
-      { value: '120+', label: 'реализованных проектов' },
-      { value: '8 лет', label: 'опыта в дизайне интерьеров' },
-      { value: '98%', label: 'клиентов рекомендуют нас' },
-      { value: '×2', label: 'быстрее продаётся объект с визуализацией' },
+      { icon: 'layers', value: '120+', label: 'реализованных проектов', description: 'квартиры, дома, коммерческие пространства' },
+      { icon: 'compass', value: '8 лет', label: 'опыта в дизайне интерьеров', description: 'от концепции до реализации' },
+      { icon: 'heart', value: '98%', label: 'клиентов рекомендуют нас', description: 'по итогам завершённых проектов' },
+      { icon: 'trending-up', value: '×2', label: 'быстрая продажа объекта', description: 'с визуализацией и хоумстейджингом' },
     ],
   },
   {
