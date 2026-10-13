@@ -4,9 +4,11 @@
  * молочный фон, надзаголовок, крупный гротеск в 1–3 строки, справа описание
  * с лаймовой CTA, ниже панорамное фото с подписью и нижняя строка с разделителем.
  *
- * Все тексты, медиа и параметры оформления приходят из CMS (Pages → блок hero)
- * и применяются через CSS-переменные на корне секции. Значения ниже — те же
- * стартовые, что и в схеме блока: секция остаётся рабочей до наполнения CMS.
+ * Тексты и медиа приходят из CMS (Pages → блок hero). Оформление — статичные
+ * CSS-токены на корне секции (группа «Оформление» выведена из CMS): значения
+ * — бывшие дефолты CMS-группы, совпадающие с design-токенами берутся из них.
+ * Из CMS остаются только контентные кадрировки: object-position фото и
+ * затемнение под подписью.
  */
 interface HeroCtaData {
   enabled?: boolean | null
@@ -47,8 +49,6 @@ interface BottomLineData {
   showDivider?: boolean | null
 }
 
-type AppearanceData = Record<string, string | number | boolean | null | undefined>
-
 /** Нормализованные поля hero: без null/undefined — шаблон и стили работают с чистыми типами */
 interface HeroViewData {
   eyebrow: string
@@ -70,7 +70,6 @@ interface HeroViewData {
 const props = defineProps<{
   hero?: HeroData | null
   bottomLine?: BottomLineData | null
-  appearance?: AppearanceData | null
 }>()
 
 const config = useRuntimeConfig()
@@ -125,53 +124,6 @@ const bottomLine = computed<Required<BottomLineData>>(() => {
   }
 })
 
-const appearance = computed<Record<string, string | number>>(() => {
-  const a = props.appearance ?? {}
-  return {
-    backgroundColor: str(a.backgroundColor as string, '#F8F7F3'),
-    textColor: str(a.textColor as string, '#080808'),
-    mutedTextColor: str(a.mutedTextColor as string, '#303030'),
-    accentColor: str(a.accentColor as string, '#D7EF28'),
-    accentTextColor: str(a.accentTextColor as string, '#080808'),
-    dividerColor: str(a.dividerColor as string, '#B8B8B5'),
-    captionColor: str(a.captionColor as string, '#FFFFFF'),
-    fontFamily: str(a.fontFamily as string, 'inter'),
-    titleWeight: str(a.titleWeight as string, '800'),
-    titleDesktopPx: num(a.titleDesktopPx, 116),
-    titleMobilePx: num(a.titleMobilePx, 48),
-    titleLineHeight: num(a.titleLineHeight, 0.98),
-    titleLetterSpacingEm: num(a.titleLetterSpacingEm, -0.045),
-    bodyDesktopPx: num(a.bodyDesktopPx, 22),
-    bodyMobilePx: num(a.bodyMobilePx, 18),
-    bodyLineHeight: num(a.bodyLineHeight, 1.4),
-    eyebrowPx: num(a.eyebrowPx, 12),
-    eyebrowLetterSpacingEm: num(a.eyebrowLetterSpacingEm, 0.3),
-    captionPx: num(a.captionPx, 14),
-    bottomLinePx: num(a.bottomLinePx, 14),
-    buttonTextPx: num(a.buttonTextPx, 18),
-    buttonHeightPx: num(a.buttonHeightPx, 56),
-    buttonPaddingXPx: num(a.buttonPaddingXPx, 28),
-    buttonRadiusPx: num(a.buttonRadiusPx, 0),
-    contentMaxWidthPx: num(a.contentMaxWidthPx, 1600),
-    desktopGutterPx: num(a.desktopGutterPx, 48),
-    mobileGutterPx: num(a.mobileGutterPx, 20),
-    headerHeightPx: num(a.headerHeightPx, 88),
-    heroTopPaddingPx: num(a.heroTopPaddingPx, 40),
-    heroBottomPaddingPx: num(a.heroBottomPaddingPx, 36),
-    heroColumnGapPx: num(a.heroColumnGapPx, 48),
-    titleColumnPercent: num(a.titleColumnPercent, 68),
-    descriptionButtonGapPx: num(a.descriptionButtonGapPx, 28),
-    mobileStackGapPx: num(a.mobileStackGapPx, 24),
-    imageWidth: str(a.imageWidth as string, 'full-bleed'),
-    imageDesktopRatio: str(a.imageDesktopRatio as string, '3:1'),
-    imageMobileRatio: str(a.imageMobileRatio as string, '4:3'),
-    imageRadiusPx: num(a.imageRadiusPx, 0),
-    captionInsetPx: num(a.captionInsetPx, 32),
-    bottomLinePaddingYPx: num(a.bottomLinePaddingYPx, 24),
-    dividerThicknessPx: num(a.dividerThicknessPx, 1),
-  }
-})
-
 /* ---------- медиа ---------- */
 const absUrl = (url?: string | null) =>
   url ? (url.startsWith('http') ? url : `${payloadBase}${url}`) : ''
@@ -185,88 +137,26 @@ const mobileImage = computed(() => (isMedia(hero.value.mobileImage) ? hero.value
 const desktopUrl = computed(() => absUrl(desktopImage.value?.url))
 const mobileUrl = computed(() => absUrl(mobileImage.value?.url ?? desktopImage.value?.url))
 
-/* ---------- оформление → CSS-переменные (§08) ---------- */
-// FONT_STACKS — общий с шапкой, apps/web/utils/font-stacks.ts
-
-const RATIO_CSS: Record<string, string> = {
-  '3:1': '3 / 1',
-  '16:9': '16 / 9',
-  '21:9': '21 / 9',
-  '4:3': '4 / 3',
-  '1:1': '1 / 1',
-  '3:4': '3 / 4',
-}
-
-// Размер «вписывается» в 1440px: при ширине экрана 1440 vw-часть даёт
-// ровно десктопное значение, ниже — плавно к мобильной границе через clamp()
-const fluidSize = (mobilePx: number, desktopPx: number) =>
-  `clamp(${mobilePx}px, ${(desktopPx / 14.4).toFixed(2)}vw, ${desktopPx}px)`
-
-const styleVars = computed(() => {
-  const a = appearance.value
-  const titleMobile = Number(a.titleMobilePx)
-  const titleDesktop = Number(a.titleDesktopPx)
-  const bodyMobile = Number(a.bodyMobilePx)
-  const bodyDesktop = Number(a.bodyDesktopPx)
-  const fontKey = String(a.fontFamily)
-  return {
-    '--h-bg': a.backgroundColor,
-    '--h-text': a.textColor,
-    '--h-muted': a.mutedTextColor,
-    '--h-accent': a.accentColor,
-    '--h-accent-text': a.accentTextColor,
-    '--h-divider-color': a.dividerColor,
-    '--h-caption-color': a.captionColor,
-    '--h-font': FONT_STACKS[fontKey] ?? FONT_STACKS.inter,
-    '--h-title-weight': a.titleWeight,
-    '--h-title-size': fluidSize(titleMobile, titleDesktop),
-    '--h-title-lh': String(a.titleLineHeight),
-    '--h-title-ls': `${a.titleLetterSpacingEm}em`,
-    '--h-body-size': fluidSize(bodyMobile, bodyDesktop),
-    '--h-body-lh': String(a.bodyLineHeight),
-    '--h-eyebrow-size': `${a.eyebrowPx}px`,
-    '--h-eyebrow-ls': `${a.eyebrowLetterSpacingEm}em`,
-    '--h-caption-size': `${a.captionPx}px`,
-    '--h-bottom-size': `${a.bottomLinePx}px`,
-    '--h-btn-text-size': `${a.buttonTextPx}px`,
-    '--h-btn-height': `${a.buttonHeightPx}px`,
-    '--h-btn-px': `${a.buttonPaddingXPx}px`,
-    '--h-btn-radius': `${a.buttonRadiusPx}px`,
-    '--h-max-w': `${a.contentMaxWidthPx}px`,
-    '--h-gutter-d': `${a.desktopGutterPx}px`,
-    '--h-gutter-m': `${a.mobileGutterPx}px`,
-    '--h-header-h': `${a.headerHeightPx}px`,
-    '--h-top-pad': `${a.heroTopPaddingPx}px`,
-    '--h-bottom-pad': `${a.heroBottomPaddingPx}px`,
-    '--h-col-gap': `${a.heroColumnGapPx}px`,
-    // Доля заголовка от ширины после gap, остальное — колонка описания (§08)
-    '--h-grid-cols': `${num(a.titleColumnPercent, 68)}fr ${100 - num(a.titleColumnPercent, 68)}fr`,
-    '--h-desc-cta-gap': `${a.descriptionButtonGapPx}px`,
-    '--h-stack-gap': `${a.mobileStackGapPx}px`,
-    '--h-img-ratio-d': RATIO_CSS[String(a.imageDesktopRatio)] ?? '3 / 1',
-    '--h-img-ratio-m': RATIO_CSS[String(a.imageMobileRatio)] ?? '4 / 3',
-    '--h-img-radius': `${a.imageRadiusPx}px`,
-    '--h-caption-inset': `${a.captionInsetPx}px`,
-    '--h-bottom-pad-y': `${a.bottomLinePaddingYPx}px`,
-    '--h-divider-thick': `${a.dividerThicknessPx}px`,
-    '--h-shade': String(hero.value.captionOverlayOpacity),
-    '--h-img-pos-d': `${hero.value.imagePositionX}% ${hero.value.imagePositionY}%`,
-    '--h-img-pos-m': `${hero.value.mobileImagePositionX}% ${hero.value.mobileImagePositionY}%`,
-  } as Record<string, string>
-})
+/* ---------- контентные CSS-переменные из CMS ---------- */
+// Статичное оформление — токены в <style> ниже; сюда попадает только то,
+// что редактор задаёт в hero-группе блока.
+const styleVars = computed(() => ({
+  '--h-shade': String(hero.value.captionOverlayOpacity),
+  '--h-img-pos-d': `${hero.value.imagePositionX}% ${hero.value.imagePositionY}%`,
+  '--h-img-pos-m': `${hero.value.mobileImagePositionX}% ${hero.value.mobileImagePositionY}%`,
+}) as Record<string, string>)
 
 /* ---------- кнопка ---------- */
 const ctaVisible = computed(() => cta.value.enabled && Boolean(cta.value.href))
 
 const ctaStyle = computed(() => {
-  const a = appearance.value
   switch (cta.value.variant) {
     case 'dark':
-      return { backgroundColor: String(a.textColor), color: String(a.backgroundColor) }
+      return { backgroundColor: 'var(--h-text)', color: 'var(--h-bg)' }
     case 'outline':
-      return { backgroundColor: 'transparent', color: String(a.textColor), border: `1px solid ${a.textColor}` }
+      return { backgroundColor: 'transparent', color: 'var(--h-text)', border: '1px solid var(--h-text)' }
     default:
-      return { backgroundColor: String(a.accentColor), color: String(a.accentTextColor) }
+      return { backgroundColor: 'var(--h-accent)', color: 'var(--h-accent-text)' }
   }
 })
 
@@ -329,10 +219,7 @@ const ctaAttrs = computed(() =>
     </div>
 
     <!-- Панорамное изображение с подписью (§03, строки 12–13) -->
-    <figure
-      class="hero-figure"
-      :class="{ 'hero-figure--contained': appearance.imageWidth === 'contained' }"
-    >
+    <figure class="hero-figure">
       <picture v-if="desktopUrl">
         <source v-if="mobileUrl && mobileImage" media="(max-width: 767px)" :srcset="mobileUrl" />
         <img
@@ -359,8 +246,63 @@ const ctaAttrs = computed(() =>
 </template>
 
 <style scoped>
-/* Значения всех переменных приходят из CMS-группы appearance (§08 спеки) */
+/* =========================================================
+ * Дизайн-токены hero (бывшая CMS-группа «Оформление», §08 спеки).
+ * Значения — стартовые из спеки/сида. Совпадающие с глобальной
+ * палитрой (assets/css/tokens.css) ссылаются на неё.
+ * ========================================================= */
 .hero {
+  /* Цвета */
+  --h-bg: #f8f7f3; /* молочный фон секции */
+  --h-text: #080808;
+  --h-muted: #303030;
+  --h-accent: var(--color-accent); /* фирменный лайм #d7ef28 */
+  --h-accent-text: #080808;
+  --h-divider-color: #b8b8b5;
+  --h-caption-color: #ffffff;
+
+  /* Типографика */
+  --h-font: var(--font-display); /* Inter + Manrope, как в шапке */
+  --h-title-weight: 800;
+  /* clamp «вписывает» десктопное значение в 1440px: на 1440 vw-часть
+     даёт ровно 116px, ниже — плавно к мобильной границе */
+  --h-title-size: clamp(44px, 8.06vw, 116px);
+  --h-title-lh: 0.98;
+  --h-title-ls: -0.045em;
+  --h-body-size: clamp(18px, 1.53vw, 22px);
+  --h-body-lh: 1.4;
+  --h-eyebrow-size: 12px;
+  --h-eyebrow-ls: 0.3em;
+  --h-caption-size: 14px;
+  --h-bottom-size: 14px;
+
+  /* Кнопка */
+  --h-btn-text-size: 18px;
+  --h-btn-height: 56px;
+  --h-btn-px: 28px;
+  --h-btn-radius: 0;
+
+  /* Layout */
+  --h-max-w: 1600px;
+  --h-gutter-d: 48px;
+  --h-gutter-m: 20px;
+  --h-header-h: 88px;
+  --h-top-pad: 40px;
+  --h-bottom-pad: 36px;
+  --h-col-gap: 48px;
+  /* Доля заголовка от ширины после gap, остальное — колонка описания */
+  --h-grid-cols: 68fr 32fr;
+  --h-desc-cta-gap: 28px;
+  --h-stack-gap: 24px;
+
+  /* Изображение */
+  --h-img-ratio-d: 3 / 1;
+  --h-img-ratio-m: 4 / 3;
+  --h-img-radius: 0;
+  --h-caption-inset: 32px;
+  --h-bottom-pad-y: 24px;
+  --h-divider-thick: 1px;
+
   --h-pad-x: var(--h-gutter-m);
 
   display: flex;
@@ -521,13 +463,6 @@ const ctaAttrs = computed(() =>
   isolation: isolate;
 }
 
-.hero-figure--contained {
-  max-width: var(--h-max-w);
-  margin-inline: auto;
-  padding-inline: var(--h-pad-x);
-  border-radius: 0;
-}
-
 .hero-img {
   display: block;
   width: 100%;
@@ -542,10 +477,6 @@ const ctaAttrs = computed(() =>
     aspect-ratio: var(--h-img-ratio-d);
     object-position: var(--h-img-pos-d);
   }
-}
-
-.hero-figure--contained .hero-img {
-  height: auto;
 }
 
 /* Затемнение нижней части для читаемости подписи: пик — у нижней кромки */

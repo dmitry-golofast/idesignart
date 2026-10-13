@@ -291,69 +291,6 @@ export interface Page {
                */
               showDivider?: boolean | null;
             };
-            /**
-             * Цвета, типографика и размеры экрана. Применяются через CSS-переменные.
-             */
-            appearance: {
-              backgroundColor?: string | null;
-              textColor?: string | null;
-              mutedTextColor?: string | null;
-              accentColor?: string | null;
-              accentTextColor?: string | null;
-              dividerColor?: string | null;
-              captionColor?: string | null;
-              fontFamily?: ('inter' | 'manrope' | 'system') | null;
-              titleWeight?: ('700' | '800' | '900') | null;
-              titleDesktopPx: number;
-              titleMobilePx: number;
-              titleLineHeight: number;
-              titleLetterSpacingEm: number;
-              bodyDesktopPx: number;
-              bodyMobilePx: number;
-              bodyLineHeight: number;
-              /**
-               * Размер шрифта бренда в шапке
-               */
-              brandPx: number;
-              /**
-               * Размер шрифта пунктов меню
-               */
-              navigationPx: number;
-              eyebrowPx: number;
-              eyebrowLetterSpacingEm: number;
-              captionPx: number;
-              bottomLinePx: number;
-              buttonTextPx: number;
-              buttonHeightPx: number;
-              buttonPaddingXPx: number;
-              buttonRadiusPx: number;
-              contentMaxWidthPx: number;
-              desktopGutterPx: number;
-              mobileGutterPx: number;
-              /**
-               * Учитывается в расчёте высоты экрана
-               */
-              headerHeightPx: number;
-              heroTopPaddingPx: number;
-              heroBottomPaddingPx: number;
-              heroColumnGapPx: number;
-              /**
-               * Доля ширины строки заголовка, остальное — описание и кнопка
-               */
-              titleColumnPercent: number;
-              descriptionButtonGapPx: number;
-              mobileStackGapPx: number;
-              imageWidth?: ('full-bleed' | 'contained') | null;
-              imageDesktopRatio?: ('3:1' | '16:9' | '21:9') | null;
-              imageMobileRatio?: ('4:3' | '1:1' | '3:4') | null;
-              imageRadiusPx: number;
-              /**
-               * На мобильном ограничивается боковым отступом
-               */
-              captionInsetPx: number;
-              bottomLinePaddingYPx: number;
-              dividerThicknessPx: number;
-            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
@@ -710,7 +647,7 @@ export interface Service {
     ogImage?: (number | null) | Media;
   };
   /**
-   * Сортировка на странице услуг.
+   * Меньше число — выше в сетке услуг на главной.
    */
   order?: number | null;
   featured?: boolean | null;
@@ -1108,53 +1045,6 @@ export interface PagesSelect<T extends boolean = true> {
                     leftText?: T;
                     rightText?: T;
                     showDivider?: T;
-                  };
-              appearance?:
-                | T
-                | {
-                    backgroundColor?: T;
-                    textColor?: T;
-                    mutedTextColor?: T;
-                    accentColor?: T;
-                    accentTextColor?: T;
-                    dividerColor?: T;
-                    captionColor?: T;
-                    fontFamily?: T;
-                    titleWeight?: T;
-                    titleDesktopPx?: T;
-                    titleMobilePx?: T;
-                    titleLineHeight?: T;
-                    titleLetterSpacingEm?: T;
-                    bodyDesktopPx?: T;
-                    bodyMobilePx?: T;
-                    bodyLineHeight?: T;
-                    brandPx?: T;
-                    navigationPx?: T;
-                    eyebrowPx?: T;
-                    eyebrowLetterSpacingEm?: T;
-                    captionPx?: T;
-                    bottomLinePx?: T;
-                    buttonTextPx?: T;
-                    buttonHeightPx?: T;
-                    buttonPaddingXPx?: T;
-                    buttonRadiusPx?: T;
-                    contentMaxWidthPx?: T;
-                    desktopGutterPx?: T;
-                    mobileGutterPx?: T;
-                    headerHeightPx?: T;
-                    heroTopPaddingPx?: T;
-                    heroBottomPaddingPx?: T;
-                    heroColumnGapPx?: T;
-                    titleColumnPercent?: T;
-                    descriptionButtonGapPx?: T;
-                    mobileStackGapPx?: T;
-                    imageWidth?: T;
-                    imageDesktopRatio?: T;
-                    imageMobileRatio?: T;
-                    imageRadiusPx?: T;
-                    captionInsetPx?: T;
-                    bottomLinePaddingYPx?: T;
-                    dividerThicknessPx?: T;
                   };
               id?: T;
               blockName?: T;
