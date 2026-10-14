@@ -16,6 +16,11 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'ru' },
+      // has-js: CSS scroll-reveal скрывает data-reveal только при JS
+      // (класс ставится до первого рендера — без мигания контента)
+      script: [
+        { innerHTML: "document.documentElement.classList.add('has-js')" },
+      ],
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },

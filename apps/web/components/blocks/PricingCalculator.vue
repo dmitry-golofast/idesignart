@@ -2,10 +2,18 @@
 import { computed, ref } from 'vue'
 
 /**
- * PricingCalculator — интерактивный расчёт стоимости.
- * Конверсионный элемент: даёт квалифицированный лид и оправданные ожидания.
- * Результат = ориентир; точный расчёт → отправка формы (лид в Payload).
+ * PricingCalculator — интерактивный расчёт стоимости (редизайн v3).
+ * Editorial-шапка «05», чипы-фильтры, результат — эспрессо-панель
+ * с крупной крем-цифрой и светлой пилюлей. Результат = ориентир;
+ * точный расчёт → отправка формы (лид в Payload).
  */
+const props = defineProps<{
+  /** Номер главы — присваивается по порядку блоков на странице (PageSections) */
+  num?: number
+}>()
+
+const secNum = computed(() => String(props.num ?? 1).padStart(2, '0'))
+
 const propertyTypes = [
   { label: 'Квартира', value: 'apartment', basePrice: 3000 },
   { label: 'Дом / коттедж', value: 'house', basePrice: 3500 },
@@ -45,7 +53,7 @@ const formattedPrice = computed(() =>
 )
 
 // Интеграция с лид-формой
-const { form, submit, pending, success } = useLeadForm()
+const { form, submit, pending } = useLeadForm()
 form.source = 'calculator'
 
 const showModal = ref(false)
@@ -60,37 +68,36 @@ async function requestDetailedQuote() {
 </script>
 
 <template>
-  <section class="section bg-surface-alt">
+  <section class="section section-full bg-[var(--color-surface-alt)]">
     <div class="container-app">
-      <div class="mb-10 max-w-2xl">
-        <p class="eyebrow">Прозрачные цены</p>
-        <h2 class="section-title mt-3">
-          Узнайте стоимость вашего проекта
-        </h2>
-        <p class="mt-4 text-[var(--color-ink-muted)]">
-          Предварительный расчёт за 30 секунд. Точную смету подготовим после брифинга.
-        </p>
+      <!-- Editorial-шапка -->
+      <div class="sec-head" data-reveal>
+        <span class="sec-num" aria-hidden="true">{{ secNum }}</span>
+        <h2 class="sec-title">Узнайте стоимость</h2>
       </div>
+      <p class="mt-6 max-w-md text-[15px] leading-relaxed text-[var(--color-ink-muted)]" data-reveal="fade" style="--reveal-delay: 120ms">
+        Предварительный расчёт за 30 секунд. Точную смету подготовим после брифинга.
+      </p>
 
-      <div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-8 lg:p-12">
-        <div class="grid gap-10 lg:grid-cols-[1fr_auto]">
+      <div
+        class="mt-10 rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 sm:p-10 lg:p-12"
+        data-reveal
+      >
+        <div class="grid gap-12 lg:grid-cols-[1fr_auto]">
           <!-- Контролы -->
-          <div class="space-y-8">
+          <div class="space-y-10">
             <!-- Тип объекта -->
             <div>
-              <label class="mb-3 block text-sm font-medium text-[var(--color-ink)]">
+              <p class="mb-4 text-[11px] font-medium tracking-[0.16em] text-[var(--color-ink-muted)] uppercase">
                 Тип объекта
-              </label>
+              </p>
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="pt in propertyTypes"
                   :key="pt.value"
                   type="button"
                   :aria-pressed="propertyType === pt.value"
-                  class="min-h-11 rounded-[var(--radius-pill)] px-5 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                  :class="propertyType === pt.value
-                    ? 'bg-[var(--color-lime)] text-[var(--color-lime-contrast)]'
-                    : 'bg-[var(--color-surface-alt)] text-[var(--color-ink)] hover:bg-[var(--color-line)]'"
+                  class="chip-filter"
                   @click="propertyType = pt.value"
                 >
                   {{ pt.label }}
@@ -100,11 +107,11 @@ async function requestDetailedQuote() {
 
             <!-- Площадь -->
             <div>
-              <div class="mb-3 flex items-center justify-between">
-                <label class="text-sm font-medium text-[var(--color-ink)]">
+              <div class="mb-4 flex items-end justify-between">
+                <p class="text-[11px] font-medium tracking-[0.16em] text-[var(--color-ink-muted)] uppercase">
                   Площадь
-                </label>
-                <span class="text-xl font-extrabold tracking-[-0.02em] text-[var(--color-ink)]">
+                </p>
+                <span class="font-display text-2xl font-extrabold tracking-[-0.02em] text-[var(--color-ink)]">
                   {{ area }} м²
                 </span>
               </div>
@@ -115,7 +122,7 @@ async function requestDetailedQuote() {
                 :step="5"
                 size="lg"
               />
-              <div class="mt-1 flex justify-between text-xs text-[var(--color-ink-subtle)]">
+              <div class="mt-2 flex justify-between text-xs text-[var(--color-ink-subtle)]">
                 <span>20 м²</span>
                 <span>500 м²</span>
               </div>
@@ -123,28 +130,28 @@ async function requestDetailedQuote() {
 
             <!-- Уровень услуги -->
             <div>
-              <label class="mb-3 block text-sm font-medium text-[var(--color-ink)]">
+              <p class="mb-4 text-[11px] font-medium tracking-[0.16em] text-[var(--color-ink-muted)] uppercase">
                 Уровень услуги
-              </label>
-              <div class="space-y-2">
+              </p>
+              <div class="space-y-2.5">
                 <button
                   v-for="sl in serviceLevels"
                   :key="sl.value"
                   type="button"
                   :aria-pressed="serviceLevel === sl.value"
-                  class="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors duration-200"
+                  class="flex w-full items-center justify-between rounded-[var(--radius-md)] border px-5 py-4 text-left transition-colors duration-200"
                   :class="serviceLevel === sl.value
                     ? 'border-[var(--color-ink)] bg-[var(--color-surface)]'
-                    : 'border-[var(--color-line)] bg-[var(--color-surface)] hover:border-[var(--color-ink-muted)]'"
+                    : 'border-[var(--color-line)] bg-transparent hover:border-[var(--color-ink-muted)]'"
                   @click="serviceLevel = sl.value"
                 >
                   <span>
-                    <span class="block text-sm font-bold text-[var(--color-ink)]">{{ sl.label }}</span>
+                    <span class="block text-[15px] font-bold text-[var(--color-ink)]">{{ sl.label }}</span>
                     <span class="block text-xs text-[var(--color-ink-muted)]">{{ sl.desc }}</span>
                   </span>
                   <span
-                    class="h-4 w-4 shrink-0 rounded-full border-2"
-                    :class="serviceLevel === sl.value ? 'border-[var(--color-ink)] bg-[var(--color-lime)]' : 'border-[var(--color-line)]'"
+                    class="h-4 w-4 shrink-0 rounded-full border-2 transition-colors duration-200"
+                    :class="serviceLevel === sl.value ? 'border-[var(--color-ink)] bg-[var(--color-gold)]' : 'border-[var(--color-line)]'"
                     aria-hidden="true"
                   />
                 </button>
@@ -152,27 +159,33 @@ async function requestDetailedQuote() {
             </div>
           </div>
 
-          <!-- Результат -->
-          <div class="flex flex-col justify-between rounded-xl bg-[var(--color-ink)] p-8 text-[var(--color-canvas)] lg:min-w-[280px]">
+          <!-- Результат: эспрессо-панель -->
+          <div class="flex flex-col justify-between rounded-[var(--radius-lg)] bg-[var(--color-espresso)] p-8 text-[#f6f1e7] lg:min-w-[300px]">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-canvas)]/50">
+              <p class="text-[11px] font-medium tracking-[0.16em] text-[#f6f1e7]/55 uppercase">
                 Ориентировочно
               </p>
-              <p class="mt-3 text-4xl font-extrabold tracking-[-0.02em] text-[var(--color-lime)]">
+              <p class="mt-4 font-display text-[clamp(2rem,3vw,2.75rem)] leading-none font-extrabold tracking-[-0.02em] text-[#f6f1e7]">
                 {{ formattedPrice }}
               </p>
-              <p class="mt-2 text-sm text-[var(--color-canvas)]/60">
+              <p class="mt-3 text-sm text-[#f6f1e7]/55">
                 от, за весь проект
               </p>
             </div>
             <button
               type="button"
-              class="btn-lime mt-8 w-full"
+              class="btn-pill btn-pill-light mt-10 w-full justify-between"
               :disabled="pending"
               @click="requestDetailedQuote"
             >
-              <UIcon v-if="pending" name="i-lucide-loader-circle" class="h-4 w-4 animate-spin" aria-hidden="true" />
-              {{ pending ? 'Отправляем...' : 'Получить точный расчёт' }}
+              <span>{{ pending ? 'Отправляем...' : 'Точный расчёт' }}</span>
+              <span class="btn-pill-orb" aria-hidden="true">
+                <UIcon v-if="pending" name="i-lucide-loader-circle" class="h-3.5 w-3.5 animate-spin" />
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5">
+                  <path d="M7 17 17 7" />
+                  <path d="M8 7h9v9" />
+                </svg>
+              </span>
             </button>
           </div>
         </div>

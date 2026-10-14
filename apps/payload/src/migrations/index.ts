@@ -8,6 +8,7 @@ import * as migration_20261013_084339_stats_cards__add_icon_description_image fr
 import * as migration_20261013_102414_services__add_cardImage_and_tagline from './20261013_102414_services__add_cardImage_and_tagline';
 import * as migration_20261013_102429_services__drop_icon__replaced_by_cardImage_ from './20261013_102429_services__drop_icon__replaced_by_cardImage_';
 import * as migration_20261013_124029_process_steps__add_description_and_sketch_fields from './20261013_124029_process_steps__add_description_and_sketch_fields';
+import * as migration_20261014_162547 from './20261014_162547';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261013_124029_process_steps__add_description_and_sketch_fields.up,
     down: migration_20261013_124029_process_steps__add_description_and_sketch_fields.down,
-    name: '20261013_124029_process_steps__add_description_and_sketch_fields'
+    name: '20261013_124029_process_steps__add_description_and_sketch_fields',
+  },
+  {
+    up: migration_20261014_162547.up,
+    down: migration_20261014_162547.down,
+    name: '20261014_162547'
   },
 ];

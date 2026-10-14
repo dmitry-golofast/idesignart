@@ -2,10 +2,12 @@
 import { computed, ref, watch } from 'vue'
 
 /**
- * AppHeader — шапка сайта. Контент из global «header» (CMS): пункты меню,
- * телефон, кнопка действия; оформление — собственные поля global'а,
- * предзаполненные в стиле hero-блока. Бренд — из Settings.
- * Пока данные CMS пустые, работают дефолты (бывший захардкоженный список).
+ * AppHeader — шапка сайта (редизайн v3, язык ayocin).
+ * Бренд слева, навигация по центру, справа — телефон и CTA-пилюля
+ * со стрелкой-орбом («Order Now»-стиль). Контент из global «header»
+ * (CMS): пункты меню, телефон, кнопка действия; оформление — поля
+ * global'а (кроме радиуса кнопки: пилюля фиксирована дизайном).
+ * Бренд — из Settings. Пока данные CMS пустые, работают дефолты.
  */
 interface NavItemData {
   label?: string | null
@@ -99,35 +101,30 @@ const cta = computed(() => {
   }
 })
 
-/* ---------- оформление → CSS-переменные ---------- */
+/* ---------- оформление → CSS-переменные (радиус кнопки фиксирован: пилюля) ---------- */
 const appearance = computed(() => {
   const a = hd.value.appearance ?? {}
   return {
-    backgroundColor: str(a.backgroundColor, '#F8F7F3'),
-    textColor: str(a.textColor, '#080808'),
-    mutedTextColor: str(a.mutedTextColor, '#303030'),
-    accentColor: str(a.accentColor, '#D7EF28'),
-    accentTextColor: str(a.accentTextColor, '#080808'),
+    backgroundColor: str(a.backgroundColor, '#F6F1E7'),
+    textColor: str(a.textColor, '#292019'),
+    mutedTextColor: str(a.mutedTextColor, '#7D7162'),
+    accentColor: str(a.accentColor, '#2B211A'),
+    accentTextColor: str(a.accentTextColor, '#F6F1E7'),
     fontFamily: str(a.fontFamily, 'inter'),
-    brandPx: num(a.brandPx, 30),
-    navigationPx: num(a.navigationPx, 16),
-    buttonTextPx: num(a.buttonTextPx, 18),
-    buttonHeightPx: num(a.buttonHeightPx, 56),
-    buttonPaddingXPx: num(a.buttonPaddingXPx, 28),
-    buttonRadiusPx: num(a.buttonRadiusPx, 0),
-    headerHeightPx: num(a.headerHeightPx, 88),
+    brandPx: num(a.brandPx, 22),
+    navigationPx: num(a.navigationPx, 15),
+    headerHeightPx: num(a.headerHeightPx, 76),
   }
 })
 
-const ctaStyle = computed(() => {
-  const a = appearance.value
+const ctaClass = computed(() => {
   switch (cta.value.variant) {
     case 'dark':
-      return { backgroundColor: a.textColor, color: a.backgroundColor }
+      return 'hd-cta hd-cta--light'
     case 'outline':
-      return { backgroundColor: 'transparent', color: a.textColor, border: `1px solid ${a.textColor}` }
+      return 'hd-cta hd-cta--outline'
     default:
-      return { backgroundColor: a.accentColor, color: a.accentTextColor }
+      return 'hd-cta'
   }
 })
 
@@ -141,13 +138,11 @@ const styleVars = computed(() => {
     '--hd-bg': a.backgroundColor,
     '--hd-text': a.textColor,
     '--hd-muted': a.mutedTextColor,
+    '--hd-accent': a.accentColor,
+    '--hd-accent-text': a.accentTextColor,
     '--hd-font': FONT_STACKS[a.fontFamily] ?? FONT_STACKS.inter,
     '--hd-brand-px': `${a.brandPx}px`,
     '--hd-nav-px': `${a.navigationPx}px`,
-    '--hd-btn-text-px': `${a.buttonTextPx}px`,
-    '--hd-btn-height': `${a.buttonHeightPx}px`,
-    '--hd-btn-px': `${a.buttonPaddingXPx}px`,
-    '--hd-btn-radius': `${a.buttonRadiusPx}px`,
     '--hd-height': `${a.headerHeightPx}px`,
   } as Record<string, string>
 })
@@ -159,7 +154,7 @@ const styleVars = computed(() => {
       <!-- Лого -->
       <NuxtLink to="/" class="hd-brand">{{ props.settings?.brand?.name || 'idesignart' }}</NuxtLink>
 
-      <!-- Десктоп-навигация -->
+      <!-- Десктоп-навигация по центру -->
       <nav class="hd-nav" aria-label="Основная навигация">
         <NuxtLink
           v-for="item in nav"
@@ -181,39 +176,36 @@ const styleVars = computed(() => {
         <a
           v-if="cta.enabled"
           :href="cta.href"
-          class="hd-cta"
-          :style="ctaStyle"
+          :class="ctaClass"
           v-bind="ctaAttrs"
         >
           <span>{{ cta.label }}</span>
-          <svg
-            v-if="cta.icon === 'arrow-up-right'"
-            class="hd-cta-arrow"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M7 17 17 7" />
-            <path d="M8 7h9v9" />
-          </svg>
-          <svg
-            v-else-if="cta.icon === 'arrow-right'"
-            class="hd-cta-arrow"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M4 12h16" />
-            <path d="m13 5 7 7-7 7" />
-          </svg>
+          <span class="hd-cta-orb" aria-hidden="true">
+            <svg
+              v-if="cta.icon === 'arrow-up-right'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M7 17 17 7" />
+              <path d="M8 7h9v9" />
+            </svg>
+            <svg
+              v-else-if="cta.icon === 'arrow-right'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 12h16" />
+              <path d="m13 5 7 7-7 7" />
+            </svg>
+          </span>
         </a>
 
         <button
@@ -228,7 +220,7 @@ const styleVars = computed(() => {
       </div>
     </div>
 
-    <!-- Мобильное меню: те же пункты из CMS (§09) -->
+    <!-- Мобильное меню: те же пункты из CMS -->
     <Transition
       enter-active-class="transition duration-[var(--duration-base)] ease-[var(--ease-premium)]"
       enter-from-class="opacity-0 -translate-y-2"
@@ -248,9 +240,9 @@ const styleVars = computed(() => {
             {{ item.label }}
           </NuxtLink>
           <a v-if="phoneHref" :href="phoneHref" class="hd-mobile-link">{{ phoneText }}</a>
-          <a v-if="cta.enabled" :href="cta.href" class="hd-cta hd-cta--mobile" :style="ctaStyle" v-bind="ctaAttrs">
+          <a v-if="cta.enabled" :href="cta.href" :class="ctaClass" class="hd-cta--mobile" v-bind="ctaAttrs">
             <span>{{ cta.label }}</span>
-            <span aria-hidden="true">↗</span>
+            <span class="hd-cta-orb" aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
@@ -263,18 +255,18 @@ const styleVars = computed(() => {
   position: sticky;
   top: 0;
   z-index: var(--z-header);
-  background-color: color-mix(in srgb, var(--hd-bg) 88%, transparent);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--hd-text) 8%, transparent);
+  background-color: color-mix(in srgb, var(--hd-bg) 90%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-line);
   color: var(--hd-text);
   font-family: var(--hd-font);
 }
 
 .hd-container {
   width: 100%;
-  max-width: 1600px;
+  max-width: var(--container-max);
   margin-inline: auto;
-  padding-inline: clamp(1rem, 4vw, 3rem);
+  padding-inline: clamp(1rem, 4vw, 4rem);
 }
 
 .hd-inner {
@@ -300,13 +292,35 @@ const styleVars = computed(() => {
 }
 
 .hd-link {
+  position: relative;
   font-size: var(--hd-nav-px);
   color: var(--hd-muted);
   text-decoration: none;
   transition: color var(--duration-base) var(--ease-premium);
 }
 
+.hd-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 1px;
+  background-color: var(--hd-text);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-base) var(--ease-premium);
+}
+
 .hd-link:hover,
+.hd-link--active {
+  color: var(--hd-text);
+}
+
+.hd-link:hover::after {
+  transform: scaleX(1);
+}
+
 .hd-link--active {
   color: var(--hd-text);
 }
@@ -319,7 +333,7 @@ const styleVars = computed(() => {
 .hd-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.25rem;
 }
 
 .hd-phone {
@@ -334,35 +348,67 @@ const styleVars = computed(() => {
   color: var(--hd-text);
 }
 
-/* Кнопка действия — в стиле hero: лаймовый прямоугольник со стрелкой */
+/* Кнопка действия — пилюля со стрелкой-орбом («Order Now» ayocin) */
 .hd-cta {
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  min-height: var(--hd-btn-height);
-  padding-inline: var(--hd-btn-px);
-  border-radius: var(--hd-btn-radius);
-  font-size: var(--hd-btn-text-px);
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.25rem 0.25rem 0.25rem 1.375rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--hd-accent);
+  color: var(--hd-accent-text);
+  font-size: 0.875rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1;
   text-decoration: none;
-  transition: filter var(--duration-base) var(--ease-premium);
+  transition: background-color var(--duration-base) var(--ease-premium),
+    transform var(--duration-fast) var(--ease-premium);
 }
 
-.hd-cta-arrow {
-  width: 1.15em;
-  height: 1.15em;
+.hd-cta-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 50%;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 0.875rem;
   flex-shrink: 0;
+}
+
+.hd-cta svg {
+  width: 0.8125rem;
+  height: 0.8125rem;
   transition: transform var(--duration-base) var(--ease-premium);
 }
 
-.hd-cta:hover {
-  filter: brightness(0.94);
+.hd-cta:hover svg {
+  transform: translate(2px, -2px);
 }
 
-.hd-cta:hover .hd-cta-arrow {
-  transform: translate(2px, -2px);
+/* Вариант dark: светлая пилюля */
+.hd-cta--light {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+}
+.hd-cta--light .hd-cta-orb {
+  background-color: var(--color-ink);
+  color: var(--color-canvas);
+}
+
+/* Вариант outline: прозрачная с hairline */
+.hd-cta--outline {
+  background-color: transparent;
+  color: var(--hd-text);
+  border: 1px solid color-mix(in srgb, var(--hd-text) 40%, transparent);
+}
+.hd-cta--outline .hd-cta-orb {
+  background-color: var(--hd-text);
+  color: var(--color-canvas);
 }
 
 .hd-cta:focus-visible {
@@ -410,7 +456,7 @@ const styleVars = computed(() => {
 
 /* Мобильное меню */
 .hd-mobile {
-  border-top: 1px solid color-mix(in srgb, var(--hd-text) 8%, transparent);
+  border-top: 1px solid var(--color-line);
 }
 
 .hd-mobile-inner {

@@ -82,7 +82,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
       <div class="container-app relative z-10 flex min-h-[70vh] flex-col justify-end pb-16 text-[var(--color-canvas)]">
-        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-lime)]">Кейс</p>
+        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-accent-deep)]">Кейс</p>
         <h1 class="max-w-4xl font-display text-h1">{{ project.title }}</h1>
         <p class="mt-4 max-w-2xl text-lg text-[var(--color-canvas)]/80">{{ project.excerpt }}</p>
 

@@ -3,12 +3,11 @@ import { computed } from 'vue'
 import type { Media } from '#shared/types/payload'
 
 /**
- * StatsSection — блок «Цифры» (статистика) v2.
+ * StatsSection — блок «Цифры» (редизайн v3, язык ayocin).
  *
- * Только карточки, без шапки секции: иконка с лаймовым акцентом,
- * крупное значение, подпись, черта и пояснение. Скетч-картинка
- * (поле «Фоновая картинка» в CMS) лежит полупрозрачно фоном,
- * текстовая зона снизу защищена белым градиентом.
+ * Editorial-колонки вместо карточек-боксов: hairline-верхняя линия,
+ * опциональное фото (поле «Фоновая картинка» в CMS), иконка-кольцо,
+ * крупная цифра-гротеск, подпись и пояснение. Появление — stagger.
  *
  * Всё управляется из CMS (блок «Цифры» → «Показатели»);
  * DEFAULT_ITEMS — демо-фолбэк, если блок ещё не заполнен.
@@ -79,48 +78,47 @@ function imageUrl(image: Media | null): string | null {
 </script>
 
 <template>
-  <section class="bg-white">
-    <div class="container-app section-sm">
+  <section class="section section-full bg-[var(--color-canvas)]">
+    <div class="container-app">
       <ul
-        class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
+        class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4"
         aria-label="Студия в цифрах"
       >
         <li
-          v-for="stat in cards"
+          v-for="(stat, i) in cards"
           :key="stat.value"
-          class="group relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] shadow-[var(--shadow-xs)] transition-[box-shadow,transform] duration-300 ease-[var(--ease-premium)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]"
+          class="flex flex-col border-t border-[var(--color-ink)] pt-5"
+          data-reveal
+          :style="{ '--reveal-delay': `${i * 110}ms` }"
         >
-          <!-- Фоновая картинка: скетч/фото, приглушена и увеличивается на hover -->
-          <div v-if="imageUrl(stat.image)" class="absolute inset-0" aria-hidden="true">
+          <!-- Фото-скетч из CMS: мягкая карточка над цифрой -->
+          <div
+            v-if="imageUrl(stat.image)"
+            class="mb-5 overflow-hidden rounded-[14px]"
+            aria-hidden="true"
+          >
             <NuxtImg
               :src="imageUrl(stat.image)!"
               alt=""
               sizes="sm:50vw lg:25vw 100vw"
               format="webp,avif"
-              class="h-full w-full object-cover transition-transform duration-500 ease-premium group-hover:scale-[1.04]"
+              class="aspect-[4/3] w-full object-cover"
             />
           </div>
-          <!-- Без картинки — мягкое лаймовое пятно, чтобы карточка не была пустой -->
-          <div
-            v-else
-            class="absolute -top-20 -right-14 h-56 w-56 rounded-full bg-[var(--color-accent-soft)] blur-2xl"
-            aria-hidden="true"
-          />
 
-          <!-- Белый градиент снизу: текстовая зона остаётся читаемой на любой картинке -->
-          <div
-            class="absolute inset-0 bg-linear-to-t from-surface from-10% via-surface/75 via-25% to-transparent"
-            aria-hidden="true"
-          />
+          <span class="icon-ring mb-5" aria-hidden="true">
+            <UIcon :name="stat.icon" class="h-4.5 w-4.5" />
+          </span>
 
-          <div class="relative flex h-full flex-col p-6 lg:p-7">
-            <p class="mt-10 font-display text-[clamp(2.5rem,3.4vw,3.5rem)] leading-none font-extrabold tracking-[-0.03em] text-[var(--color-ink)]">
-              {{ stat.value }}
-            </p>
-            <p class="mt-3 text-[17px] leading-snug font-semibold text-[var(--color-ink)] sm:text-lg">
-              {{ stat.label }}
-            </p>
-          </div>
+          <p class="font-display text-[clamp(2.75rem,3.6vw,3.75rem)] leading-none font-extrabold tracking-[-0.03em] text-[var(--color-ink)]">
+            {{ stat.value }}
+          </p>
+          <p class="mt-3 text-[17px] leading-snug font-semibold text-[var(--color-ink)] sm:text-lg">
+            {{ stat.label }}
+          </p>
+          <p v-if="stat.description" class="mt-1.5 text-sm leading-snug text-[var(--color-ink-muted)]">
+            {{ stat.description }}
+          </p>
         </li>
       </ul>
     </div>

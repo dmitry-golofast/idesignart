@@ -43,7 +43,7 @@ const { form, submit, pending, success, error, errors, downloadUrl } = useSubscr
 </script>
 
 <template>
-  <section v-if="enabled" class="section bg-[var(--color-accent-soft)]">
+  <section v-if="enabled" class="section section-full bg-[var(--color-accent-soft)]">
     <div class="container-app">
       <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <!-- Левая часть: изображение гида -->

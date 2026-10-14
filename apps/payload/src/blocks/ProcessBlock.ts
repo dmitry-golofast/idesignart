@@ -27,6 +27,12 @@ export const ProcessBlock: Block = {
         { name: 'description', type: 'textarea', label: 'Описание (раскрывается по клику)', required: true },
         { name: 'duration', type: 'text', label: 'Срок (напр. «2 недели»)' },
         {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'Фоновая картинка шага (меняется при скролле)',
+        },
+        {
           name: 'sketch',
           type: 'select',
           label: 'Чертёж на листе (рисуется на canvas)',

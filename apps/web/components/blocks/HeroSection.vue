@@ -1,14 +1,15 @@
 <script setup lang="ts">
 /**
- * HeroSection — главный экран по спеке hero-payload-cms-spec.md:
- * молочный фон, надзаголовок, крупный гротеск в 1–3 строки, справа описание
- * с лаймовой CTA, ниже панорамное фото с подписью и нижняя строка с разделителем.
+ * HeroSection — главный экран в языке ayocin.com (редизайн v3):
+ * панорамное фото-фон во весь экран, над ним гигантский заголовок
+ * во всю ширину (строки выезжают из-под маски), угловые метаданные
+ * («• eyebrow», «© год»), внизу — описание, CTA-пилюля со стрелкой
+ * и нижняя строка с hairline.
  *
- * Тексты и медиа приходят из CMS (Pages → блок hero). Оформление — статичные
- * CSS-токены на корне секции (группа «Оформление» выведена из CMS): значения
- * — бывшие дефолты CMS-группы, совпадающие с design-токенами берутся из них.
- * Из CMS остаются только контентные кадрировки: object-position фото и
- * затемнение под подписью.
+ * Тексты и медиа приходят из CMS (Pages → блок hero): eyebrow,
+ * titleLines, description, cta, image/mobileImage, imageCaption,
+ * bottomLine. Контентные кадрировки (object-position, затемнение)
+ * — из CMS, оформление — статичные токены.
  */
 interface HeroCtaData {
   enabled?: boolean | null
@@ -26,7 +27,7 @@ interface HeroMediaData {
 
 interface HeroData {
   eyebrow?: string | null
-  titleLines?: { text?: string | null; id?: string }[] | null
+  titleLines?: { text?: string; id?: string }[] | null
   description?: string | null
   cta?: HeroCtaData | null
   image?: HeroMediaData | number | null
@@ -49,7 +50,7 @@ interface BottomLineData {
   showDivider?: boolean | null
 }
 
-/** Нормализованные поля hero: без null/undefined — шаблон и стили работают с чистыми типами */
+/** Нормализованные поля hero: без null/undefined — шаблон работает с чистыми типами */
 interface HeroViewData {
   eyebrow: string
   titleLines: { text: string; id?: string }[]
@@ -75,7 +76,7 @@ const props = defineProps<{
 const config = useRuntimeConfig()
 const payloadBase = config.public.payloadApiUrl as string
 
-/* ---------- безопасное чтение полей со значениями по умолчанию из спеки ---------- */
+/* ---------- безопасное чтение полей со значениями по умолчанию ---------- */
 const str = (v: unknown, d: string) => (typeof v === 'string' && v.length > 0 ? v : d)
 const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d)
 const bool = (v: unknown, d: boolean) => (typeof v === 'boolean' ? v : d)
@@ -96,7 +97,7 @@ const hero = computed<HeroViewData>(() => {
     imagePositionY: num(h.imagePositionY, 50),
     mobileImagePositionX: num(h.mobileImagePositionX, 50),
     mobileImagePositionY: num(h.mobileImagePositionY, 50),
-    captionOverlayOpacity: num(h.captionOverlayOpacity, 0.15),
+    captionOverlayOpacity: num(h.captionOverlayOpacity, 0.32),
     image: h.image ?? null,
     mobileImage: h.mobileImage ?? null,
   }
@@ -118,8 +119,8 @@ const bottomLine = computed<Required<BottomLineData>>(() => {
   const b = props.bottomLine ?? {}
   return {
     enabled: bool(b.enabled, true),
-    leftText: str(b.leftText, 'Ваш объект. Новый взгляд.'),
-    rightText: str(b.rightText, 'Виртуальный хоумстейджинг'),
+    leftText: str(b.leftText, 'Листайте вниз'),
+    rightText: str(b.rightText, 'idesignart'),
     showDivider: bool(b.showDivider, true),
   }
 })
@@ -137,9 +138,10 @@ const mobileImage = computed(() => (isMedia(hero.value.mobileImage) ? hero.value
 const desktopUrl = computed(() => absUrl(desktopImage.value?.url))
 const mobileUrl = computed(() => absUrl(mobileImage.value?.url ?? desktopImage.value?.url))
 
+/** Есть ли фон-фото: на нём текст кремовый, без — тёмный на креме */
+const hasPhoto = computed(() => Boolean(desktopUrl.value))
+
 /* ---------- контентные CSS-переменные из CMS ---------- */
-// Статичное оформление — токены в <style> ниже; сюда попадает только то,
-// что редактор задаёт в hero-группе блока.
 const styleVars = computed(() => ({
   '--h-shade': String(hero.value.captionOverlayOpacity),
   '--h-img-pos-d': `${hero.value.imagePositionX}% ${hero.value.imagePositionY}%`,
@@ -149,14 +151,15 @@ const styleVars = computed(() => ({
 /* ---------- кнопка ---------- */
 const ctaVisible = computed(() => cta.value.enabled && Boolean(cta.value.href))
 
-const ctaStyle = computed(() => {
+const ctaClass = computed(() => {
   switch (cta.value.variant) {
     case 'dark':
-      return { backgroundColor: 'var(--h-text)', color: 'var(--h-bg)' }
+      return 'hero-cta btn-pill btn-pill-light'
     case 'outline':
-      return { backgroundColor: 'transparent', color: 'var(--h-text)', border: '1px solid var(--h-text)' }
+      return 'hero-cta btn-pill hero-cta--outline'
     default:
-      return { backgroundColor: 'var(--h-accent)', color: 'var(--h-accent-text)' }
+      // accent на фото — светлая пилюля (читаемее), без фото — тёмная
+      return hasPhoto.value ? 'hero-cta btn-pill btn-pill-light' : 'hero-cta btn-pill'
   }
 })
 
@@ -168,76 +171,99 @@ const ctaAttrs = computed(() =>
 </script>
 
 <template>
-  <section class="hero" :style="styleVars">
-    <!-- Надзаголовок + заголовок + описание/кнопка (§03, строки 07–11) -->
-    <div class="hero-head hero-container">
-      <p v-if="hero.eyebrow" class="hero-eyebrow">{{ hero.eyebrow }}</p>
-
-      <div class="hero-grid">
-        <h1 class="hero-title">
-          <span v-for="(line, i) in hero.titleLines" :key="line.id ?? i" class="hero-title-line">
-            {{ line.text }}
-          </span>
-        </h1>
-
-        <div class="hero-aside">
-          <p v-if="hero.description" class="hero-description">{{ hero.description }}</p>
-
-          <a v-if="ctaVisible" :href="cta.href" class="hero-cta" :style="ctaStyle" v-bind="ctaAttrs">
-            <span>{{ cta.label }}</span>
-            <svg
-              v-if="cta.icon === 'arrow-up-right'"
-              class="hero-cta-arrow"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M7 17 17 7" />
-              <path d="M8 7h9v9" />
-            </svg>
-            <svg
-              v-else-if="cta.icon === 'arrow-right'"
-              class="hero-cta-arrow"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 12h16" />
-              <path d="m13 5 7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Панорамное изображение с подписью (§03, строки 12–13) -->
-    <figure class="hero-figure">
-      <picture v-if="desktopUrl">
+  <section class="hero" :class="{ 'hero--photo': hasPhoto }" :style="styleVars">
+    <!-- Фон-фото: во всю секцию, объект-кавер; затемнение снизу под текст -->
+    <div v-if="hasPhoto" class="hero-bg" aria-hidden="true">
+      <picture>
         <source v-if="mobileUrl && mobileImage" media="(max-width: 767px)" :srcset="mobileUrl" />
         <img
-          class="hero-img"
+          class="hero-bg-img"
           :src="desktopUrl"
           :alt="hero.imageAlt"
           fetchpriority="high"
           decoding="async"
         />
       </picture>
-      <div class="hero-shade" aria-hidden="true" />
-      <figcaption v-if="hero.showImageCaption && hero.imageCaption" class="hero-caption">
-        {{ hero.imageCaption }}
-      </figcaption>
-    </figure>
+      <div class="hero-shade" />
+    </div>
 
-    <!-- Нижняя строка с разделителем (§03, строки 14–16) -->
-    <div v-if="bottomLine.enabled" class="hero-bottom hero-container">
+    <div class="hero-container">
+      <!-- Гигантский заголовок во всю ширину, строки из-под маски -->
+      <h1 v-if="hero.titleLines.length" class="hero-title" data-reveal-line>
+        <span
+          v-for="(line, i) in hero.titleLines"
+          :key="line.id ?? i"
+          class="reveal-line"
+          :style="{ '--reveal-delay': `${120 + i * 140}ms` }"
+        >
+          <span class="reveal-line-inner">{{ line.text }}</span>
+        </span>
+      </h1>
+
+      <!-- Угловые метаданные под заголовком -->
+      <div v-if="hero.eyebrow" class="hero-meta">
+        <p class="meta-label">{{ hero.eyebrow }}</p>
+        <span class="hero-meta-right">© {{ new Date().getFullYear() }}</span>
+      </div>
+
+      <!-- Низ: описание + CTA слева, caption справа -->
+      <div class="hero-foot">
+        <div class="hero-foot-main">
+          <p v-if="hero.description" class="hero-description" data-reveal style="--reveal-delay: 420ms">
+            {{ hero.description }}
+          </p>
+
+          <a
+            v-if="ctaVisible"
+            :href="cta.href"
+            :class="ctaClass"
+            style="--reveal-delay: 560ms"
+            data-reveal
+            v-bind="ctaAttrs"
+          >
+            <span>{{ cta.label }}</span>
+            <span class="btn-pill-orb" aria-hidden="true">
+              <svg
+                v-if="cta.icon === 'arrow-up-right'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M7 17 17 7" />
+                <path d="M8 7h9v9" />
+              </svg>
+              <svg
+                v-else-if="cta.icon === 'arrow-right'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 12h16" />
+                <path d="m13 5 7 7-7 7" />
+              </svg>
+            </span>
+          </a>
+        </div>
+
+        <p
+          v-if="hero.showImageCaption && hero.imageCaption && hasPhoto"
+          class="hero-caption"
+          data-reveal="fade"
+          style="--reveal-delay: 700ms"
+        >
+          {{ hero.imageCaption }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Нижняя строка с hairline -->
+    <div v-if="bottomLine.enabled" class="hero-bottom">
       <p class="hero-bottom-text">{{ bottomLine.leftText }}</p>
       <span v-if="bottomLine.showDivider" class="hero-divider" aria-hidden="true" />
       <p class="hero-bottom-text">{{ bottomLine.rightText }}</p>
@@ -247,294 +273,217 @@ const ctaAttrs = computed(() =>
 
 <style scoped>
 /* =========================================================
- * Дизайн-токены hero (бывшая CMS-группа «Оформление», §08 спеки).
- * Значения — стартовые из спеки/сида. Совпадающие с глобальной
- * палитрой (assets/css/tokens.css) ссылаются на неё.
+ * Hero v3 — язык ayocin: полноэкранная секция, фото-фон,
+ * гигантский заголовок, угловые метаданные.
  * ========================================================= */
 .hero {
-  /* Цвета */
-  --h-bg: #f8f7f3; /* молочный фон секции */
-  --h-text: #080808;
-  --h-muted: #303030;
-  --h-accent: var(--color-accent); /* фирменный лайм #d7ef28 */
-  --h-accent-text: #080808;
-  --h-divider-color: #b8b8b5;
-  --h-caption-color: #ffffff;
+  --h-text: var(--color-ink);
+  --h-muted: var(--color-ink-muted);
+  --h-onphoto: #fdfaf3; /* крем-текст на фото */
 
-  /* Типографика */
-  --h-font: var(--font-display); /* Inter + Manrope, как в шапке */
-  --h-title-weight: 800;
-  /* clamp «вписывает» десктопное значение в 1440px: на 1440 vw-часть
-     даёт ровно 116px, ниже — плавно к мобильной границе */
-  --h-title-size: clamp(44px, 8.06vw, 116px);
-  --h-title-lh: 0.98;
-  --h-title-ls: -0.045em;
-  --h-body-size: clamp(18px, 1.53vw, 22px);
-  --h-body-lh: 1.4;
-  --h-eyebrow-size: 12px;
-  --h-eyebrow-ls: 0.3em;
-  --h-caption-size: 14px;
-  --h-bottom-size: 14px;
-
-  /* Кнопка */
-  --h-btn-text-size: 18px;
-  --h-btn-height: 56px;
-  --h-btn-px: 28px;
-  --h-btn-radius: 0;
-
-  /* Layout — общие токены контейнера сайта (как у блока «Чем мы можем помочь») */
-  --h-max-w: var(--container-max);
-  --h-header-h: 88px;
-  --h-top-pad: 40px;
-  --h-bottom-pad: 36px;
-  --h-col-gap: 48px;
-  /* Доля заголовка от ширины после gap, остальное — колонка описания */
-  --h-grid-cols: 68fr 32fr;
-  --h-desc-cta-gap: 28px;
-  --h-stack-gap: 24px;
-
-  /* Изображение */
-  --h-img-ratio-d: 3 / 1;
-  --h-img-ratio-m: 4 / 3;
-  --h-img-radius: 0;
-  --h-caption-inset: 32px;
-  --h-bottom-pad-y: 24px;
-  --h-divider-thick: 1px;
-
-  --h-pad-x: var(--container-pad);
-
-  display: flex;
-  flex-direction: column;
-  background-color: var(--h-bg);
-  color: var(--h-text);
-  font-family: var(--h-font);
-  /* Только горизонталь: вертикальный overflow не прячем,
-     чтобы на низких окнах нижняя строка уходила в скролл, а не обрезалась */
-  overflow-x: clip;
-}
-
-@media (min-width: 768px) {
-  .hero {
-    /* Экран ровно без учёта шапки: фиксированная высота делает фото
-       гибким наполнителем между контентом и нижней строкой.
-       640px — пол: на совсем низких окнах секция скроллится */
-    height: max(calc(100svh - var(--h-header-h)), 640px);
-  }
-
-  /* Композиция «в один экран»: шапка контента и нижняя строка фиксированы,
-     фото растягивается/ужимается (object-fit cover компенсирует) —
-     нижняя строка всегда в первом экране */
-  .hero-head,
-  .hero-bottom {
-    flex-shrink: 0;
-  }
-
-  .hero-figure {
-    flex: 1 1 auto;
-    min-height: 240px;
-  }
-}
-
-.hero-container {
-  width: 100%;
-  max-width: var(--h-max-w);
-  margin-inline: auto;
-  padding-inline: var(--h-pad-x);
-}
-
-/* ---------- верхняя часть ---------- */
-.hero-head {
-  padding-top: var(--h-top-pad);
-  padding-bottom: var(--h-bottom-pad);
-}
-
-.hero-eyebrow {
-  margin: 0 0 var(--h-stack-gap);
-  font-size: var(--h-eyebrow-size);
-  line-height: 1.3;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: var(--h-eyebrow-ls);
-  color: var(--h-muted);
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--h-stack-gap);
-  align-items: end;
-}
-
-@media (min-width: 1200px) {
-  .hero-grid {
-    grid-template-columns: var(--h-grid-cols);
-    column-gap: var(--h-col-gap);
-  }
-}
-
-.hero-title {
-  margin: 0;
-  font-family: inherit;
-  font-weight: var(--h-title-weight);
-  font-size: var(--h-title-size);
-  line-height: var(--h-title-lh);
-  letter-spacing: var(--h-title-ls);
-  color: var(--h-text);
-  /* Перенос длинных слов без горизонтального скролла (§05, §12) */
-  overflow-wrap: anywhere;
-  hyphens: auto;
-}
-
-.hero-title-line {
-  display: block;
-}
-
-.hero-aside {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--h-desc-cta-gap);
-}
-
-.hero-description {
-  margin: 0;
-  font-size: var(--h-body-size);
-  line-height: var(--h-body-lh);
-  color: var(--h-muted);
-}
-
-/* ---------- кнопка (§06) ---------- */
-.hero-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  width: 100%;
-  min-height: var(--h-btn-height);
-  padding-inline: var(--h-btn-px);
-  border-radius: var(--h-btn-radius);
-  font-size: var(--h-btn-text-size);
-  font-weight: 600;
-  line-height: 1.2;
-  text-decoration: none;
-  transition: filter var(--duration-base) var(--ease-premium);
-}
-
-.hero-cta-arrow {
-  width: 1.25em;
-  height: 1.25em;
-  flex-shrink: 0;
-  transition: transform var(--duration-base) var(--ease-premium);
-}
-
-.hero-cta:hover {
-  filter: brightness(0.94);
-}
-
-.hero-cta:hover .hero-cta-arrow {
-  transform: translate(2px, -2px);
-}
-
-.hero-cta:focus-visible {
-  outline: 2px solid var(--h-text);
-  outline-offset: 2px;
-}
-
-@media (min-width: 768px) {
-  .hero-cta {
-    width: auto;
-    justify-content: center;
-  }
-
-  .hero-cta:hover .hero-cta-arrow {
-    transform: translate(3px, -3px);
-  }
-}
-
-/* ---------- изображение (§05, §09) ---------- */
-.hero-figure {
   position: relative;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background-color: var(--color-canvas);
+  color: var(--h-text);
+  font-family: var(--font-display);
   overflow: hidden;
-  border-radius: var(--h-img-radius);
+}
+
+.hero--photo {
+  color: var(--h-onphoto);
+}
+
+/* ---------- фон-фото ---------- */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   isolation: isolate;
 }
 
-.hero-img {
-  display: block;
+.hero-bg-img {
   width: 100%;
   height: 100%;
-  aspect-ratio: var(--h-img-ratio-m);
   object-fit: cover;
   object-position: var(--h-img-pos-m);
 }
 
 @media (min-width: 768px) {
-  .hero-img {
-    aspect-ratio: var(--h-img-ratio-d);
+  .hero-bg-img {
     object-position: var(--h-img-pos-d);
   }
 }
 
-/* Затемнение нижней части для читаемости подписи: пик — у нижней кромки */
+/* Мягкое затемнение: сильнее у нижней кромки — под описание и caption.
+   На всю высоту — лёгкий тёплый тон, чтобы заголовок читался на любом фото */
 .hero-shade {
   position: absolute;
-  inset: auto 0 0;
-  height: 45%;
-  background: linear-gradient(
-    to top,
-    rgba(8, 8, 8, var(--h-shade)) 0%,
-    rgba(8, 8, 8, calc(var(--h-shade) * 0.7)) 35%,
-    transparent 100%
-  );
+  inset: 0;
+  background:
+    linear-gradient(
+      to top,
+      rgba(24, 18, 13, 0.78) 0%,
+      rgba(24, 18, 13, calc(var(--h-shade) * 0.9)) 32%,
+      rgba(24, 18, 13, calc(var(--h-shade) * 0.42)) 62%,
+      rgba(24, 18, 13, 0.18) 100%
+    );
   pointer-events: none;
 }
 
-.hero-caption {
-  position: absolute;
-  left: min(var(--h-caption-inset), var(--h-pad-x));
-  bottom: min(var(--h-caption-inset), var(--h-pad-x));
-  font-size: var(--h-caption-size);
-  line-height: 1.3;
-  letter-spacing: 0.02em;
-  color: var(--h-caption-color);
+/* ---------- контент: компактная группа по центру вертикали ---------- */
+.hero-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1 1 auto;
+  padding-top: clamp(5rem, 10vh, 7rem); /* место под sticky-шапку */
+  padding-bottom: 1.25rem;
 }
 
-/* ---------- нижняя строка (§07) ---------- */
+/* Заголовок — гигантский, во всю ширину (ayocin «ATMOS LAMP») */
+.hero-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(3rem, 10.5vw, 13rem);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: currentColor;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- метаданные-углы ---------- */
+.hero-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: clamp(1.25rem, 3vh, 2.25rem);
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+}
+
+.hero--photo .hero-meta {
+  border-top-color: rgba(253, 250, 243, 0.32);
+}
+
+.meta-label {
+  color: currentColor;
+  opacity: 0.85;
+}
+
+.hero-meta-right {
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  color: currentColor;
+  opacity: 0.7;
+}
+
+/* ---------- низ секции: описание и CTA примыкают к группе ---------- */
+.hero-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: clamp(1.5rem, 4vh, 2.75rem);
+}
+
+.hero-foot-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.75rem;
+  max-width: 34rem;
+}
+
+.hero-description {
+  margin: 0;
+  font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: currentColor;
+}
+
+/* ---------- кнопка ---------- */
+.hero-cta {
+  min-height: 3.5rem;
+}
+
+.hero-cta--outline {
+  background-color: transparent;
+  border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+  color: currentColor;
+}
+.hero-cta--outline .btn-pill-orb {
+  background-color: currentColor;
+}
+.hero-cta--outline .btn-pill-orb svg {
+  color: var(--color-canvas);
+}
+.hero-cta--outline:hover {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.hero-caption {
+  margin: 0;
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: currentColor;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* ---------- нижняя строка ---------- */
 .hero-bottom {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding-top: var(--h-bottom-pad-y);
-  padding-bottom: var(--h-bottom-pad-y);
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding: 1.25rem var(--container-pad);
 }
 
 .hero-bottom-text {
   margin: 0;
-  font-size: var(--h-bottom-size);
-  line-height: 1.4;
-  color: var(--h-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: currentColor;
+  opacity: 0.7;
 }
 
 .hero-divider {
   flex: 1;
-  height: var(--h-divider-thick);
-  background-color: var(--h-divider-color);
+  height: 1px;
+  background-color: color-mix(in srgb, currentColor 22%, transparent);
 }
 
-@media (max-width: 767px) {
-  /* На мобильном подписи остаются колонкой, но разделитель-линия между ними
-     делает композицию осознанной, а не «сломанной строкой» */
+@media (max-width: 639px) {
   .hero-bottom {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .hero-divider {
-    display: block;
-    width: 100%;
-    flex: none;
+    display: none;
+  }
+
+  .hero-foot {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

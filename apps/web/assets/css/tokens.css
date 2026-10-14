@@ -3,72 +3,81 @@
  * Единый источник правды для всех компонентов.
  * Nuxt UI (через ui.primary/neutral) и кастомные блоки ссылаются сюда.
  *
- * Палитра вдохновлена Norm Architects (тёплый нейтрал) +
- * Studio Ashby (терракотовый акцент).
+ * Палитра редизайна v3 — в языке ayocin.com (Obys):
+ * тёплый крем + глубокий эспрессо, editorial-типографика,
+ * hairline-разделители вместо теней, жёлтый — только деталь-обводка.
  */
 
 @theme {
   /* =========================================================
-   * Палитра — тёплый нейтрал + терракотовый акцент
+   * Палитра — крем/эспрессо (ayocin)
    * ========================================================= */
 
-  /* Нейтральная база (тёплый графит, не серый) */
-  --color-canvas: #faf8f5; /* фон страницы, тёплый белый */
-  --color-surface: #ffffff; /* карточки, модалки */
-  --color-surface-alt: #f3efe9; /* чередующиеся секции */
+  /* Нейтральная база — тёплый крем, не серый */
+  --color-canvas: #f6f1e7; /* фон страницы, крем */
+  --color-surface: #fdfaf3; /* карточки, модалки — светлей крема */
+  --color-surface-alt: #ece4d3; /* чередующиеся секции, тауп-подложка */
 
-  --color-ink: #1a1816; /* основной текст */
-  --color-ink-muted: #6b6660; /* вторичный текст */
-  --color-ink-subtle: #9b958d; /* плейсхолдеры, метаданные */
+  --color-ink: #292019; /* основной текст, эспрессо */
+  --color-ink-muted: #7d7162; /* вторичный текст */
+  --color-ink-subtle: #a79b88; /* плейсхолдеры, метаданные */
 
-  --color-line: #e7e0d6; /* границы, разделители */
+  --color-line: #ded3bf; /* hairline-границы, разделители */
 
-  /* Акцент — фирменный лайм hero v2 (спека hero §08, works §02).
-     Лайм — только для ЗАЛИВОК/чипов/деталей с тёмным текстом;
-     для текста на светлом использовать --color-accent-deep (оливковый). */
-  --color-accent: #d7ef28; /* CTA-заливки, активные элементы */
-  --color-accent-soft: #f4f9d3; /* фоны-подложки, badge */
-  --color-accent-deep: #6f8a0c; /* текстовые акценты, hover на светлом */
-  --color-accent-contrast: #101010; /* текст на акценте */
+  /* Акцент — глубокий эспрессо (кнопки-пилюли, как «Order Now» у ayocin).
+     Текст на акценте — крем. */
+  --color-accent: #2b211a;
+  --color-accent-soft: #efe8d8; /* фоны-подложки, badge */
+  --color-accent-deep: #8a6f4d; /* текстовые акценты, hover на светлом */
+  --color-accent-contrast: #f6f1e7; /* текст на акценте */
+
+  /* Декоративный жёлтый — обводки чипов, детали, прогресс
+     (как «members only» chip у ayocin). Для заливок не использовать. */
+  --color-gold: #e0b73f;
+  --color-gold-contrast: #292019;
+
+  /* Легаси-имя (лайн-акцент старой темы) — маппим на золото,
+     чтобы старые usages не рассыпались до чистки */
+  --color-lime: #e0b73f;
+  --color-lime-contrast: #292019;
 
   /* Вторичный акцент — пыльно-зелёный (доп._badge) */
-  --color-sage: #7a8b6f;
-  --color-sage-soft: #e2e7dd;
+  --color-sage: #8b8f77;
+  --color-sage-soft: #e6e7db;
 
-  /* Фирменный лайм hero v2 (спека hero §08, блок «Наши работы» §02)
-     — текст на лайме всегда почти чёрный */
-  --color-lime: #d7ef28;
-  --color-lime-contrast: #101010;
+  /* Тёмная секция — эспрессо-панели (CTA, футер, alternate) */
+  --color-espresso: #261e17;
+  --color-espresso-soft: #332a21;
 
   /* Состояния */
-  --color-success: #4a7c59;
+  --color-success: #5d7a54;
   --color-warning: #c8924a;
-  --color-error: #b5533c;
+  --color-error: #b05237;
   --color-info: #4a6c7a;
 
   /* =========================================================
    * Типографика
    * ========================================================= */
 
-  /* Семейства.
-     --font-display: единый гротеск заголовков (язык hero v2 и «Наших работ»);
-    serif Fraunces выведен из оборота для консистентности. */
+  /* Семейства — единый гротеск (Inter), editorial-масштаб заголовков */
   --font-display: "Inter", "Manrope", system-ui, -apple-system, sans-serif;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", monospace;
 
-  /* Размерная шкала (clamp → адаптив без media-queries) */
-  --text-display: clamp(2.75rem, 6vw, 6rem); /* H1 hero */
-  --text--display--line-height: 1.05;
-  --text--display--letter-spacing: -0.03em;
+  /* Размерная шкала (clamp → адаптив без media-queries).
+     Верхние границы взяты с запасом под 1920: до этого порога
+     vw-часть растёт свободно — типографика масштабируется */
+  --text-display: clamp(2.75rem, 6vw, 8rem); /* H1 hero */
+  --text--display--line-height: 1.02;
+  --text--display--letter-spacing: -0.035em;
 
-  --text-h1: clamp(2.25rem, 4vw, 3.5rem);
-  --text--h1--line-height: 1.1;
-  --text--h1--letter-spacing: -0.02em;
+  --text-h1: clamp(2.25rem, 4vw, 4.5rem);
+  --text--h1--line-height: 1.08;
+  --text--h1--letter-spacing: -0.03em;
 
-  --text-h2: clamp(1.75rem, 3vw, 2.5rem);
-  --text--h2--line-height: 1.15;
-  --text--h2--letter-spacing: -0.02em;
+  --text-h2: clamp(1.75rem, 3vw, 3.25rem);
+  --text--h2--line-height: 1.12;
+  --text--h2--letter-spacing: -0.025em;
 
   --text-h3: clamp(1.25rem, 2vw, 1.5rem);
   --text--h3--line-height: 1.25;
@@ -92,32 +101,33 @@
   --tracking-caps: 0.08em; /* uppercase лейблы */
 
   /* =========================================================
-   * Скругления — мягкие, премиум
+   * Скругления — крупные, мягкие (ayocin: карты 16–24px, кнопки-pill)
    * ========================================================= */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-pill: 9999px;
 
   /* =========================================================
-   * Тени — тёплые, мягкие (не дефолтные серые)
+   * Тени — минимум; премиум держится на hairline и воздухе.
+   * Оставлены только для overlay-слоёв.
    * ========================================================= */
-  --shadow-xs: 0 1px 2px rgba(26, 24, 22, 0.04);
-  --shadow-card: 0 2px 8px rgba(26, 24, 22, 0.06),
-    0 8px 24px rgba(26, 24, 22, 0.04);
-  --shadow-hover: 0 8px 24px rgba(26, 24, 22, 0.12),
-    0 16px 48px rgba(26, 24, 22, 0.08);
-  --shadow-overlay: 0 24px 64px rgba(26, 24, 22, 0.24);
+  --shadow-xs: 0 1px 2px rgba(41, 32, 25, 0.04);
+  --shadow-card: 0 1px 2px rgba(41, 32, 25, 0.03), 0 6px 20px rgba(41, 32, 25, 0.04);
+  --shadow-hover: 0 10px 32px rgba(41, 32, 25, 0.1), 0 20px 56px rgba(41, 32, 25, 0.07);
+  --shadow-overlay: 0 24px 64px rgba(38, 30, 23, 0.28);
 
   /* =========================================================
    * Layout
    * ========================================================= */
-  --container-max: 1440px;
+  /* Контейнер флюидовый до 1920: на больших экранах контент
+     масштабируется вместе с вьюпортом, а не центрируется в узком лимите */
+  --container-max: 1920px;
   --container-narrow: 880px; /* статьи, long-read */
-  --container-wide: 1600px; /* галереи, full-bleed */
-  --container-pad: clamp(1rem, 4vw, 3rem);
-  --section-gap: clamp(4rem, 8vw, 8rem);
+  --container-wide: 2100px; /* галереи, full-bleed */
+  --container-pad: clamp(1rem, 4vw, 4rem);
+  --section-gap: clamp(4.5rem, 9vw, 9rem);
   --section-gap-sm: clamp(2.5rem, 5vw, 4rem);
 
   /* Z-index шкала */
@@ -129,13 +139,16 @@
   --z-toast: 400;
 
   /* =========================================================
-   * Motion — медленные, дорогие (премиум feel)
+   * Motion — медленные, дорогие (премиум feel, ayocin)
    * ========================================================= */
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   --duration-fast: 0.2s;
-  --duration-base: 0.4s;
-  --duration-slow: 0.7s;
+  --duration-base: 0.5s;
+  --duration-slow: 0.9s;
+
+  /* Reveal (появление блоков при скролле) */
+  --reveal-distance: 34px;
 }

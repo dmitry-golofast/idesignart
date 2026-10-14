@@ -357,6 +357,7 @@ export interface Page {
                   title: string;
                   description: string;
                   duration?: string | null;
+                  image?: (number | null) | Media;
                   sketch?: ('plan' | 'iso' | 'elevation' | 'perspective') | null;
                   id?: string | null;
                 }[]
@@ -1116,6 +1117,7 @@ export interface PagesSelect<T extends boolean = true> {
                     title?: T;
                     description?: T;
                     duration?: T;
+                    image?: T;
                     sketch?: T;
                     id?: T;
                   };

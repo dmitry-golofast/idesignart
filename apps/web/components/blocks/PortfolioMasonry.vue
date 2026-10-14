@@ -3,19 +3,12 @@ import { computed, ref } from 'vue'
 import type { Category, Project } from '#shared/types/payload'
 
 /**
- * PortfolioMasonry — блок «Наши работы» (спека works-section-v3).
+ * PortfolioMasonry — блок «Наши работы» (редизайн v3, язык ayocin).
  *
- * Шапка: слева заголовок, справа три компактные инфо-карточки
- * (без описательного текста и CTA-кнопки). Ниже — фильтры-чипы
- * и асимметричная сетка «1 крупный проект + 2 компактных справа»,
- * остальные проекты — обычной сеткой под ней.
- *
- * Всё управляется из CMS:
- *  - проекты: ручной выбор в блоке либо авто-режим (featured + limit);
- *  - фильтры: категории типа «Проект» (Контент → Категории);
- *  - факт-карточки: поля блока.
- *
- * На главной показывает выбранные/featured; на /portfolio — все.
+ * Editorial-шапка: номер главы + заголовок + hairline, справа —
+ * факт-метрики с иконками-кольцами. Фильтры — пилюли-чипы
+ * (активная — эспрессо-заливка). Сетка «1 крупный + 2 компактных»
+ * сохранена, появление — stagger при скролле.
  */
 const props = defineProps<{
   projects?: (Project | number)[] | null
@@ -24,7 +17,11 @@ const props = defineProps<{
   limit?: number
   showFilters?: boolean
   facts?: { icon?: string | null; value?: string | null; label?: string | null }[] | null
+  /** Номер главы — присваивается по порядку блоков на странице (PageSections) */
+  num?: number
 }>()
+
+const secNum = computed(() => String(props.num ?? 1).padStart(2, '0'))
 
 /**
  * Проекты, выбранные вручную в админке (depth=3 отдаёт их объектами
@@ -42,7 +39,7 @@ const allProjects = computed(() =>
 )
 
 /**
- * Фильтры — категории типа «Проект» из CMS (спека §05),
+ * Фильтры — категории типа «Проект» из CMS,
  * фильтрация клиентская, без перезагрузки страницы.
  */
 const { data: categoriesData } = usePayload<{ docs: Category[] }>('categories', {
@@ -70,9 +67,8 @@ const side = computed(() => visibleProjects.value.slice(1, 3))
 const rest = computed(() => visibleProjects.value.slice(3))
 
 /**
- * Инфо-карточки справа от заголовка (спека §04).
- * Значения по умолчанию — демонстрационные, редактируются в админке
- * (блок «Сетка проектов» → «Инфо-карточки»).
+ * Факт-метрики справа от заголовка (язык ayocin: icon-ring + текст).
+ * Значения по умолчанию — демонстрационные, редактируются в админке.
  */
 interface FactCard {
   icon: string
@@ -102,69 +98,76 @@ const factIcons: Record<string, string> = {
 </script>
 
 <template>
-  <section class="section">
+  <section class="section section-full">
     <div class="container-app">
-      <!-- Шапка: слева лейбл + заголовок + фильтры, справа инфо-карточки (по макету) -->
-      <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-        <div class="max-w-xl shrink-0">
-          <!-- Лейбл по спеке §18: 12px, 600, caps, широкий трекинг, нейтральный цвет -->
-          <p class="text-xs font-semibold tracking-[0.24em] text-[var(--color-ink-muted)] uppercase">
-            {{ eyebrow || 'Портфолио' }}
-          </p>
-          <!-- Заголовок по спеке §20: жирный гротеск, 38–76px, плотный интерлиньяж -->
-          <h2
-            id="works-title"
-            class="mt-3 font-sans text-[clamp(2.375rem,6vw,4.75rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-[var(--color-ink)]"
-          >
-            {{ title || 'Наши работы' }}
-          </h2>
+      <!-- Editorial-шапка: номер + заголовок + hairline -->
+      <div class="sec-head" data-reveal>
+        <span class="sec-num" aria-hidden="true">{{ secNum }}</span>
+        <h2 id="works-title" class="sec-title">{{ title || 'Наши работы' }}</h2>
+      </div>
 
-          <!-- Фильтры-чипы: категории типа «Проект» из CMS, под заголовком -->
-          <div
-            v-if="showFilters !== false && categories.length"
-            class="mt-4 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible"
-            role="group"
-            aria-label="Фильтр проектов по типу объекта"
+      <!-- Строка под шапкой: фильтры слева, факт-метрики справа -->
+      <div class="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <!-- Фильтры-чипы: категории типа «Проект» из CMS -->
+        <div
+          v-if="showFilters !== false && categories.length"
+          class="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible"
+          role="group"
+          aria-label="Фильтр проектов по типу объекта"
+          data-reveal
+          style="--reveal-delay: 100ms"
+        >
+          <button
+            type="button"
+            :aria-pressed="activeSlug === null"
+            class="chip-filter shrink-0"
+            @click="activeSlug = null"
           >
-            <button
-              type="button"
-              :aria-pressed="activeSlug === null"
-              class="min-h-11 shrink-0 rounded-[var(--radius-pill)] px-5 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-              :class="activeSlug === null
-                ? 'bg-[var(--color-lime)] text-[var(--color-lime-contrast)]'
-                : 'bg-[var(--color-surface-alt)] text-[var(--color-ink)] hover:bg-[var(--color-line)]'"
-              @click="activeSlug = null"
-            >
-              Все
-            </button>
-            <button
-              v-for="c in categories"
-              :key="c.id"
-              type="button"
-              :aria-pressed="activeSlug === c.slug"
-              class="min-h-11 shrink-0 rounded-[var(--radius-pill)] px-5 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-              :class="activeSlug === c.slug
-                ? 'bg-[var(--color-lime)] text-[var(--color-lime-contrast)]'
-                : 'bg-[var(--color-surface-alt)] text-[var(--color-ink)] hover:bg-[var(--color-line)]'"
-              @click="activeSlug = c.slug"
-            >
-              {{ c.title }}
-            </button>
-          </div>
+            Все
+          </button>
+          <button
+            v-for="c in categories"
+            :key="c.id"
+            type="button"
+            :aria-pressed="activeSlug === c.slug"
+            class="chip-filter shrink-0"
+            @click="activeSlug = c.slug"
+          >
+            {{ c.title }}
+          </button>
         </div>
+
+        <!-- Факт-метрики: иконка-кольцо + значение + подпись -->
+        <ul
+          v-if="factCards.length"
+          class="grid shrink-0 gap-5 sm:grid-cols-3 lg:max-w-xl lg:gap-8"
+          data-reveal="fade"
+          style="--reveal-delay: 200ms"
+        >
+          <li v-for="(f, i) in factCards" :key="i" class="flex flex-col gap-3">
+            <span class="icon-ring" aria-hidden="true">
+              <UIcon :name="factIcons[f.icon] || factIcons.layers" class="h-4.5 w-4.5" />
+            </span>
+            <div>
+              <p class="text-[15px] leading-snug font-medium text-[var(--color-ink)]">{{ f.value }}</p>
+              <p class="mt-1 text-xs leading-snug text-[var(--color-ink-muted)]">{{ f.label }}</p>
+            </div>
+          </li>
+        </ul>
       </div>
 
       <!-- Сетка проектов: 1 крупный + 2 компактных, остальные ниже -->
       <template v-if="visibleProjects.length">
-        <div class="mt-6 grid gap-4 md:grid-cols-[1.63fr_1fr] md:grid-rows-2">
+        <div class="mt-8 grid gap-4 md:grid-cols-[1.63fr_1fr] md:grid-rows-2 lg:gap-5">
           <BlocksPortfolioProjectCard
             v-if="feature"
             :project="feature"
             :cover="populated(feature.coverImage)"
             :large="true"
             :sizes="'lg:60vw 100vw'"
-            class="h-[320px] sm:h-[440px] md:row-span-2 md:h-auto"
-            :class="side.length === 0 ? 'md:col-span-2 md:min-h-[420px]' : ''"
+            class="h-[300px] sm:h-[380px] md:row-span-2 md:h-auto"
+            :class="side.length === 0 ? 'md:col-span-2 md:min-h-[380px]' : ''"
+            data-reveal="zoom"
           />
           <BlocksPortfolioProjectCard
             v-for="(p, i) in side"
@@ -172,30 +175,34 @@ const factIcons: Record<string, string> = {
             :project="p"
             :cover="populated(p.coverImage)"
             :sizes="'lg:38vw 100vw'"
-            class="h-[320px] md:col-start-2"
+            class="h-[300px] md:col-start-2"
             :class="[
               i === 0 ? 'md:row-start-1' : 'md:row-start-2',
-              side.length === 1 ? 'md:row-span-2 md:h-auto md:min-h-[252px]' : 'md:h-[184px]',
+              side.length === 1 ? 'md:row-span-2 md:h-auto md:min-h-[240px]' : 'md:h-[172px]',
             ]"
+            data-reveal="zoom"
+            :style="{ '--reveal-delay': `${(i + 1) * 130}ms` }"
           />
         </div>
 
-        <div v-if="rest.length" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-if="rest.length" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           <BlocksPortfolioProjectCard
-            v-for="p in rest"
+            v-for="(p, i) in rest"
             :key="p.id"
             :project="p"
             :cover="populated(p.coverImage)"
             :sizes="'sm:50vw lg:33vw 100vw'"
-            class="h-[320px]"
+            class="h-[300px]"
+            data-reveal
+            :style="{ '--reveal-delay': `${(i % 3) * 110}ms` }"
           />
         </div>
       </template>
 
-      <!-- Пустая категория (спека §05.50) -->
+      <!-- Пустая категория -->
       <div
         v-else
-        class="mt-6 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line)] px-6 py-12 text-center"
+        class="mt-10 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line)] px-6 py-12 text-center"
       >
         <p class="text-[var(--color-ink-muted)]">В этой категории пока нет проектов.</p>
         <button type="button" class="link-arrow mt-3 text-sm" @click="activeSlug = null">
