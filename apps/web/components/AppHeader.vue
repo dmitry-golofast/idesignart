@@ -143,8 +143,15 @@ const styleVars = computed(() => {
     '--hd-font': FONT_STACKS[a.fontFamily] ?? FONT_STACKS.inter,
     '--hd-brand-px': `${a.brandPx}px`,
     '--hd-nav-px': `${a.navigationPx}px`,
-    '--hd-height': `${a.headerHeightPx}px`,
   } as Record<string, string>
+})
+
+// Высота шапки — на <html>, а не на самом <header>: её вычитают из вьюпорта
+// блоки вроде hero («первый экран = вьюпорт минус шапка»)
+useHead({
+  htmlAttrs: {
+    style: () => `--hd-height:${appearance.value.headerHeightPx}px`,
+  },
 })
 </script>
 
@@ -255,6 +262,10 @@ const styleVars = computed(() => {
   position: sticky;
   top: 0;
   z-index: var(--z-header);
+  /* Общая высота шапки (включая нижнюю линию) = --hd-height:
+     эту же величину из вьюпорта вычитает hero («первый экран») */
+  height: var(--hd-height);
+  box-sizing: border-box;
   background-color: color-mix(in srgb, var(--hd-bg) 90%, transparent);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-line);
@@ -274,7 +285,7 @@ const styleVars = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  height: var(--hd-height);
+  height: calc(var(--hd-height) - 1px); /* минус нижняя линия шапки */
 }
 
 .hd-brand {

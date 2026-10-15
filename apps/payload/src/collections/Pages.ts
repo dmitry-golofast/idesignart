@@ -1,10 +1,8 @@
 import { CollectionConfig, Field } from 'payload'
 import { HeroBlock } from '../blocks/HeroBlock'
-import { StatsBlock } from '../blocks/StatsBlock'
 import { ServicesBlock } from '../blocks/ServicesBlock'
 import { PortfolioBlock } from '../blocks/PortfolioBlock'
 import { ProcessBlock } from '../blocks/ProcessBlock'
-import { PricingBlock } from '../blocks/PricingBlock'
 import { TestimonialsBlock } from '../blocks/TestimonialsBlock'
 import { ContentBlock } from '../blocks/ContentBlock'
 import { CtaBlock } from '../blocks/CtaBlock'
@@ -80,11 +78,9 @@ export const Pages: CollectionConfig = {
       },
       blocks: [
         HeroBlock,
-        StatsBlock,
         ServicesBlock,
         PortfolioBlock,
         ProcessBlock,
-        PricingBlock,
         TestimonialsBlock,
         ContentBlock,
         CtaBlock,

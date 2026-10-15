@@ -27,7 +27,6 @@ const CHAPTER_BLOCKS = new Set([
   'portfolio-grid',
   'process-steps',
   'testimonials',
-  'pricing-calculator',
 ])
 
 /** Номер главы для конкретной секции — по порядку следования на странице */
@@ -45,11 +44,9 @@ function chapterNum(s: PageSection): number | undefined {
 // Резолвим компоненты один раз (Nuxt auto-import)
 // Имена соответствуют структуре: components/blocks/HeroSection.vue → BlocksHeroSection
 const HeroSection = resolveComponent('BlocksHeroSection')
-const StatsSection = resolveComponent('BlocksStatsSection')
 const ServicesGrid = resolveComponent('BlocksServicesGrid')
 const PortfolioMasonry = resolveComponent('BlocksPortfolioMasonry')
 const ProcessSteps = resolveComponent('BlocksProcessSteps')
-const PricingCalculator = resolveComponent('BlocksPricingCalculator')
 const TestimonialsSection = resolveComponent('BlocksTestimonialsSection')
 const ContentSection = resolveComponent('BlocksContentSection')
 const CtaBanner = resolveComponent('BlocksCtaBanner')
@@ -57,11 +54,9 @@ const ContactForm = resolveComponent('BlocksContactForm')
 
 const blockMap: Record<string, any> = {
   hero: HeroSection,
-  stats: StatsSection,
   'services-grid': ServicesGrid,
   'portfolio-grid': PortfolioMasonry,
   'process-steps': ProcessSteps,
-  'pricing-calculator': PricingCalculator,
   testimonials: TestimonialsSection,
   content: ContentSection,
   'cta-banner': CtaBanner,

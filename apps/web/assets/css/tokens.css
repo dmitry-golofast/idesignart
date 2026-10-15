@@ -152,3 +152,47 @@
   /* Reveal (появление блоков при скролле) */
   --reveal-distance: 34px;
 }
+
+/* =========================================================
+ * Анимации — Tailwind v4: токены --animate-* генерируют
+ * утилиты animate-* (например animate-line-draw)
+ * ========================================================= */
+@theme {
+  /* Отрисовка hairline слева направо: старт через 0.2s после
+     запуска (reveal), длительность --duration-slow */
+  --animate-line-draw: line-draw var(--duration-slow) var(--ease-premium) 0.2s both;
+
+  @keyframes line-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* «Надувание водного пузыря»: карточка раздувается из малой точки
+     с упругими отскоками (surface tension) */
+  --animate-bubble-in: bubble-in 0.85s var(--ease-premium) both;
+
+  @keyframes bubble-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.07);
+    }
+    70% {
+      transform: scale(0.965);
+    }
+    87% {
+      transform: scale(1.02);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}

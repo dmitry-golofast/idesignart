@@ -145,11 +145,14 @@
   }
 
   .sec-num {
-    font-size: clamp(1.75rem, 3.2vw, 4rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    /* Размер заголовка; белая заливка цифр с эспрессо-контуром —
+       читаемость на любом фоне (фото, крем, тауп) */
+    font-size: clamp(2.5rem, 5.5vw, 7rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--color-ink);
+    color: var(--color-surface);
+    -webkit-text-stroke: clamp(1.5px, 0.03em, 3px) var(--color-espresso);
   }
 
   .sec-title {

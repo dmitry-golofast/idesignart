@@ -6,10 +6,12 @@ export const ServicesBlock: Block = {
   fields: [
     { name: 'title', type: 'text', label: 'Заголовок', required: true, defaultValue: 'Чем мы можем помочь' },
     {
-      name: 'description',
-      type: 'textarea',
-      label: 'Описание (справа от заголовка)',
-      defaultValue: 'Полный цикл: от планировки и визуализации до реализации под ключ.',
+      name: 'bgImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Фоновое изображение блока',
+      description:
+        'Арт во всю секцию; рисунок прижимается к левому краю. Если пусто — берётся фото первой услуги.',
     },
   ],
 }

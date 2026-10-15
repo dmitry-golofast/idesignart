@@ -7,9 +7,9 @@
  * и нижняя строка с hairline.
  *
  * Тексты и медиа приходят из CMS (Pages → блок hero): eyebrow,
- * titleLines, description, cta, image/mobileImage, imageCaption,
- * bottomLine. Контентные кадрировки (object-position, затемнение)
- * — из CMS, оформление — статичные токены.
+ * titleLines, description, cta, image/mobileImage, imageCaption.
+ * Контентные кадрировки (object-position, затемнение) — из CMS,
+ * оформление — статичные токены.
  */
 interface HeroCtaData {
   enabled?: boolean | null
@@ -43,13 +43,6 @@ interface HeroData {
   captionOverlayOpacity?: number | null
 }
 
-interface BottomLineData {
-  enabled?: boolean | null
-  leftText?: string | null
-  rightText?: string | null
-  showDivider?: boolean | null
-}
-
 /** Нормализованные поля hero: без null/undefined — шаблон работает с чистыми типами */
 interface HeroViewData {
   eyebrow: string
@@ -68,9 +61,12 @@ interface HeroViewData {
   mobileImage?: HeroMediaData | number | null
 }
 
+// inheritAttrs: false — CMS может присылать поле bottomLine, но компонент
+// от него не зависит; без этого флага объект попал бы атрибутом в DOM.
+defineOptions({ inheritAttrs: false })
+
 const props = defineProps<{
   hero?: HeroData | null
-  bottomLine?: BottomLineData | null
 }>()
 
 const config = useRuntimeConfig()
@@ -112,16 +108,6 @@ const cta = computed<{ enabled: boolean; label: string; href: string; newTab: bo
     newTab: bool(c.newTab, false),
     variant: c.variant ?? 'accent',
     icon: c.icon ?? 'arrow-up-right',
-  }
-})
-
-const bottomLine = computed<Required<BottomLineData>>(() => {
-  const b = props.bottomLine ?? {}
-  return {
-    enabled: bool(b.enabled, true),
-    leftText: str(b.leftText, 'Листайте вниз'),
-    rightText: str(b.rightText, 'idesignart'),
-    showDivider: bool(b.showDivider, true),
   }
 })
 
@@ -168,6 +154,18 @@ const ctaAttrs = computed(() =>
     ? { target: '_blank', rel: 'noopener noreferrer' }
     : {},
 )
+
+/** Иконка CMS-CTA → имя Iconify (lucide); '' — орб-стрелка не рисуется */
+const ctaOrbIcon = computed(() => {
+  switch (cta.value.icon) {
+    case 'arrow-up-right':
+      return 'i-lucide-arrow-up-right'
+    case 'arrow-right':
+      return 'i-lucide-arrow-right'
+    default:
+      return ''
+  }
+})
 </script>
 
 <template>
@@ -200,10 +198,19 @@ const ctaAttrs = computed(() =>
         </span>
       </h1>
 
-      <!-- Угловые метаданные под заголовком -->
+      <!-- Угловые метаданные под заголовком: линия отрисовывается
+           слева направо (animate-line-draw), текст появляется следом -->
       <div v-if="hero.eyebrow" class="hero-meta">
-        <p class="meta-label">{{ hero.eyebrow }}</p>
-        <span class="hero-meta-right">© {{ new Date().getFullYear() }}</span>
+        <span
+          class="hero-meta-line origin-left animate-line-draw"
+          aria-hidden="true"
+          data-reveal="fade"
+          style="--reveal-delay: 200ms"
+        />
+        <div class="hero-meta-row" data-reveal="fade" style="--reveal-delay: 850ms">
+          <p class="meta-label">{{ hero.eyebrow }}</p>
+          <span class="hero-meta-right">© {{ new Date().getFullYear() }}</span>
+        </div>
       </div>
 
       <!-- Низ: описание + CTA слева, caption справа -->
@@ -213,42 +220,22 @@ const ctaAttrs = computed(() =>
             {{ hero.description }}
           </p>
 
-          <a
+          <UButton
             v-if="ctaVisible"
-            :href="cta.href"
+            :to="cta.href"
+            size="xl"
+            color="neutral"
+            variant="soft"
             :class="ctaClass"
             style="--reveal-delay: 560ms"
             data-reveal
             v-bind="ctaAttrs"
           >
-            <span>{{ cta.label }}</span>
-            <span class="btn-pill-orb" aria-hidden="true">
-              <svg
-                v-if="cta.icon === 'arrow-up-right'"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M7 17 17 7" />
-                <path d="M8 7h9v9" />
-              </svg>
-              <svg
-                v-else-if="cta.icon === 'arrow-right'"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M4 12h16" />
-                <path d="m13 5 7 7-7 7" />
-              </svg>
+            {{ cta.label }}
+            <span v-if="ctaOrbIcon" class="btn-pill-orb" aria-hidden="true">
+              <UIcon :name="ctaOrbIcon" />
             </span>
-          </a>
+          </UButton>
         </div>
 
         <p
@@ -260,13 +247,6 @@ const ctaAttrs = computed(() =>
           {{ hero.imageCaption }}
         </p>
       </div>
-    </div>
-
-    <!-- Нижняя строка с hairline -->
-    <div v-if="bottomLine.enabled" class="hero-bottom">
-      <p class="hero-bottom-text">{{ bottomLine.leftText }}</p>
-      <span v-if="bottomLine.showDivider" class="hero-divider" aria-hidden="true" />
-      <p class="hero-bottom-text">{{ bottomLine.rightText }}</p>
     </div>
   </section>
 </template>
@@ -284,7 +264,11 @@ const ctaAttrs = computed(() =>
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  /* Весь первый экран: вьюпорт минус sticky-шапка (--hd-height задаёт AppHeader на <html>).
+     Фолбэки: vh для старых браузеров → svh → dvh (актуальная высота с панелями мобильных) */
+  min-height: calc(100vh - var(--hd-height, 76px));
+  min-height: calc(100svh - var(--hd-height, 76px));
+  min-height: calc(100dvh - var(--hd-height, 76px));
   background-color: var(--color-canvas);
   color: var(--h-text);
   font-family: var(--font-display);
@@ -360,19 +344,42 @@ const ctaAttrs = computed(() =>
   overflow-wrap: anywhere;
 }
 
-/* ---------- метаданные-углы ---------- */
+/* ---------- метаданные-углы: линия + строка под ней ---------- */
 .hero-meta {
+  display: flex;
+  flex-direction: column;
+  margin-top: clamp(1.25rem, 3vh, 2.25rem);
+}
+
+/* Hairline — рисуется утилитой animate-line-draw (scaleX слева направо) */
+.hero-meta-line {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background-color: color-mix(in srgb, currentColor 26%, transparent);
+}
+
+.hero--photo .hero-meta-line {
+  background-color: rgba(253, 250, 243, 0.32);
+}
+
+/* Анимация стартует только когда reveal-система добавит .is-revealed
+   (сам элемент с data-reveal="fade"). Без JS класс .has-js не ставится:
+   анимация не на паузе — линия просто отрисовывается при загрузке */
+.has-js .hero-meta-line {
+  animation-play-state: paused;
+}
+
+.has-js .hero-meta-line.is-revealed {
+  animation-play-state: running;
+}
+
+.hero-meta-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: clamp(1.25rem, 3vh, 2.25rem);
   padding-top: 1rem;
-  border-top: 1px solid color-mix(in srgb, currentColor 26%, transparent);
-}
-
-.hero--photo .hero-meta {
-  border-top-color: rgba(253, 250, 243, 0.32);
 }
 
 .meta-label {
@@ -412,9 +419,56 @@ const ctaAttrs = computed(() =>
   color: currentColor;
 }
 
-/* ---------- кнопка ---------- */
+/* ---------- кнопка: крупнее обычных пилюль — главный CTA страницы.
+   Scoped-стили без каскадных слоёв, поэтому перебивают утилиты UButton
+   (rounded-md, font-medium, px/py, gap-2, bg-elevated): форму и цвет
+   вариантов дублируем здесь из main.css, layered-глобальные классы
+   (.btn-pill, .btn-pill-light) утилитами перекрываются ---------- */
 .hero-cta {
-  min-height: 3.5rem;
+  min-height: 4.25rem;
+  gap: 1rem;
+  padding: 0.625rem 0.625rem 0.625rem 1.75rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--duration-base) var(--ease-premium),
+    transform var(--duration-fast) var(--ease-premium);
+}
+
+/* тёмная эспрессо-пилюля (accent без фото) */
+.hero-cta:not(.hero-cta--outline) {
+  background-color: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+.hero-cta:not(.hero-cta--outline):hover {
+  background-color: var(--color-espresso-soft);
+}
+.hero-cta:not(.hero-cta--outline):active {
+  transform: translateY(1px);
+}
+
+/* крем-пилюля на фото / вариант dark */
+.hero-cta.btn-pill-light {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+}
+.hero-cta.btn-pill-light:hover {
+  background-color: #ffffff;
+}
+
+.hero-cta .btn-pill-orb {
+  width: 2.875rem;
+  height: 2.875rem;
+}
+
+/* UIcon рендерит иконку span-ом с CSS-маской (svg нет) */
+.hero-cta .btn-pill-orb .iconify {
+  width: 1.125rem;
+  height: 1.125rem;
+  transition: transform var(--duration-base) var(--ease-premium);
+}
+.hero-cta:hover .btn-pill-orb .iconify {
+  transform: translate(2px, -2px);
 }
 
 .hero-cta--outline {
@@ -424,8 +478,6 @@ const ctaAttrs = computed(() =>
 }
 .hero-cta--outline .btn-pill-orb {
   background-color: currentColor;
-}
-.hero-cta--outline .btn-pill-orb svg {
   color: var(--color-canvas);
 }
 .hero-cta--outline:hover {
@@ -442,45 +494,7 @@ const ctaAttrs = computed(() =>
   white-space: nowrap;
 }
 
-/* ---------- нижняя строка ---------- */
-.hero-bottom {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  width: 100%;
-  max-width: var(--container-max);
-  margin-inline: auto;
-  padding: 1.25rem var(--container-pad);
-}
-
-.hero-bottom-text {
-  margin: 0;
-  font-size: 0.6875rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: currentColor;
-  opacity: 0.7;
-}
-
-.hero-divider {
-  flex: 1;
-  height: 1px;
-  background-color: color-mix(in srgb, currentColor 22%, transparent);
-}
-
 @media (max-width: 639px) {
-  .hero-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .hero-divider {
-    display: none;
-  }
-
   .hero-foot {
     flex-direction: column;
     align-items: flex-start;

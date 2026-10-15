@@ -296,26 +296,8 @@ export interface Page {
             blockType: 'hero';
           }
         | {
-            items?:
-              | {
-                  icon?: ('layers' | 'house' | 'leaf' | 'compass' | 'heart' | 'trending-up') | null;
-                  value: string;
-                  label: string;
-                  description?: string | null;
-                  /**
-                   * Скетч или фото интерьера — показывается полупрозрачно в верхней части карточки, текст остаётся на белой подложке
-                   */
-                  image?: (number | null) | Media;
-                  id?: string | null;
-                }[]
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'stats';
-          }
-        | {
             title: string;
-            description?: string | null;
+            bgImage?: (number | null) | Media;
             id?: string | null;
             blockName?: string | null;
             blockType: 'services-grid';
@@ -365,13 +347,6 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'process-steps';
-          }
-        | {
-            eyebrow?: string | null;
-            title: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'pricing-calculator';
           }
         | {
             eyebrow?: string | null;
@@ -1061,27 +1036,11 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        stats?:
-          | T
-          | {
-              items?:
-                | T
-                | {
-                    icon?: T;
-                    value?: T;
-                    label?: T;
-                    description?: T;
-                    image?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
         'services-grid'?:
           | T
           | {
               title?: T;
-              description?: T;
+              bgImage?: T;
               id?: T;
               blockName?: T;
             };
@@ -1121,14 +1080,6 @@ export interface PagesSelect<T extends boolean = true> {
                     sketch?: T;
                     id?: T;
                   };
-              id?: T;
-              blockName?: T;
-            };
-        'pricing-calculator'?:
-          | T
-          | {
-              eyebrow?: T;
-              title?: T;
               id?: T;
               blockName?: T;
             };

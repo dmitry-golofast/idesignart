@@ -131,17 +131,56 @@ const SERVICES: {
     palette: ['#e2e7dd', '#b8c2ab', '#6f7d63'],
     order: 5,
   },
+  {
+    slug: 'house-design',
+    title: 'Дизайн дома',
+    shortDescription: 'Частный дом как целостная история — архитектура, интерьер и свет в одном ключе.',
+    tagline: 'Пространство для жизни',
+    palette: ['#e8e2d5', '#cdbfa6', '#7d6a4e'],
+    order: 6,
+  },
+  {
+    slug: 'custom-furniture',
+    title: 'Мебель на заказ',
+    shortDescription: 'Предметы, которых нет в магазинах: спроектированы под ваше помещение и сценарии.',
+    tagline: 'Сделано под вас',
+    palette: ['#e9e1d2', '#d1b98f', '#8a6842'],
+    order: 7,
+  },
+  {
+    slug: 'home-staging',
+    title: 'Хоумстейджинг',
+    shortDescription: 'Подготовка объекта к продаже: декор, свет и детали, ускоряющие сделку.',
+    tagline: 'Быстрая продажа объекта',
+    palette: ['#eae6de', '#c9c2b2', '#5f594c'],
+    order: 8,
+  },
+  {
+    slug: 'turnkey-renovation',
+    title: 'Ремонт под ключ',
+    shortDescription: 'Доводим проект до готового интерьера: бригады, сроки и качество под нашим контролем.',
+    tagline: 'Реализация без хлопот',
+    palette: ['#eae3d6', '#cfc0a8', '#7a6a50'],
+    order: 9,
+  },
+  {
+    slug: 'horeca-design',
+    title: 'Дизайн кафе',
+    shortDescription: 'Пространства HoReCa, которые работают на поток: сценарии гостей, свет и материалы.',
+    tagline: 'Атмосфера для гостей',
+    palette: ['#e9e4da', '#c2b6a0', '#5d5344'],
+    order: 10,
+  },
 ]
 
 /**
  * Целевой состав главной (воронка): hero (уже на странице) → услуги →
- * работы → процесс → цифры → отзывы → калькулятор → форма.
+ * работы → процесс → отзывы → форма.
  */
 const TARGET_SECTIONS: Record<string, unknown>[] = [
   {
     blockType: 'services-grid',
     title: 'Чем мы можем помочь',
-    description: 'Полный цикл: от планировки и визуализации до реализации под ключ.',
   },
   {
     blockType: 'portfolio-grid',
@@ -168,15 +207,6 @@ const TARGET_SECTIONS: Record<string, unknown>[] = [
     ],
   },
   {
-    blockType: 'stats',
-    items: [
-      { icon: 'layers', value: '120+', label: 'реализованных проектов', description: 'квартиры, дома, коммерческие пространства' },
-      { icon: 'compass', value: '8 лет', label: 'опыта в дизайне интерьеров', description: 'от концепции до реализации' },
-      { icon: 'heart', value: '98%', label: 'клиентов рекомендуют нас', description: 'по итогам завершённых проектов' },
-      { icon: 'trending-up', value: '×2', label: 'быстрая продажа объекта', description: 'с визуализацией и хоумстейджингом' },
-    ],
-  },
-  {
     blockType: 'testimonials',
     eyebrow: 'Отзывы',
     title: 'Что говорят клиенты',
@@ -185,11 +215,6 @@ const TARGET_SECTIONS: Record<string, unknown>[] = [
       { quote: 'Смета не выросла ни на рубль — всё зафиксировали в документации. Надзор снял с нас все вопросы со строителями.', author: 'Дмитрий К.', role: 'Дом 210 м²' },
       { quote: 'Шоурум после редизайна стал главным «продающим» элементом: трафик и средний чек выросли заметно.', author: 'Мария В.', role: 'Шоурум мебели, 280 м²' },
     ],
-  },
-  {
-    blockType: 'pricing-calculator',
-    eyebrow: 'Прозрачные цены',
-    title: 'Узнайте стоимость вашего проекта',
   },
   {
     blockType: 'contact-form',
