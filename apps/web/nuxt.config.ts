@@ -120,6 +120,12 @@ export default defineNuxtConfig({
   // ===== Экспериментальные / nitro =====
   nitro: {
     compressPublicAssets: true,
+    experimental: {
+      // crossws: чтобы server/routes/_next/webpack-hmr.ts обслуживал
+      // WebSocket-апгрейд HMR-админки Payload (без этого апгрейд уходит
+      // в http-прокси, рвётся и роняет dev-сервер — см. комментарий там).
+      websocket: true,
+    },
     prerender: {
       // Статичных маршрутов нет — все динамические из Payload.
       // Можно добавить crawlLinks для SSG.
