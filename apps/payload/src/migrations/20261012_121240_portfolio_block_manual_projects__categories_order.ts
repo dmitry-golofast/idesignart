@@ -2,8 +2,10 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TYPE "public"."enum_pages_blocks_portfolio_grid_facts_icon" ADD VALUE 'leaf' BEFORE 'compass';
-  ALTER TYPE "public"."enum__pages_v_blocks_portfolio_grid_facts_icon" ADD VALUE 'leaf' BEFORE 'compass';
+   /* IF NOT EXISTS: начальная миграция (перегенерирована 20260922) уже
+      создаёт enum с 'leaf', на свежей БД повторный ADD VALUE падал бы */
+   ALTER TYPE "public"."enum_pages_blocks_portfolio_grid_facts_icon" ADD VALUE IF NOT EXISTS 'leaf' BEFORE 'compass';
+  ALTER TYPE "public"."enum__pages_v_blocks_portfolio_grid_facts_icon" ADD VALUE IF NOT EXISTS 'leaf' BEFORE 'compass';
   CREATE TABLE "pages_rels" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"order" integer,
