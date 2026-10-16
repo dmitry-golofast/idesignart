@@ -2,9 +2,13 @@
 import { computed } from 'vue'
 
 /**
- * ContactForm — основная форма захвата лидов (редизайн v3, язык ayocin).
- * Поля с hairline-подчёркиванием (как email-строка в футере ayocin),
- * микро-лейблы caps, кнопка — светлая/тёмная пилюля со стрелкой-орбом.
+ * ContactForm — форма захвата лидов (редизайн v4, «карточка на фоне сцены»).
+ * Фон секции — интерьерное фото во весь вьюпорт (статичный ассет
+ * /images/contact/bg.webp), прижато к левому краю (ваза у левой кромки),
+ * справа стена уходит под карточку формы. Слева — eyebrow с линией,
+ * заголовок, описание и trust-пункты с иконками-кольцами; справа —
+ * кремовая карточка с box-полями (hairline-рамка, radius-md).
+ * Кнопка — тёмная пилюля с орбом-стрелкой (btn-pill).
  * Валидация через useLeadForm (zod), отправка в Payload (коллекция leads).
  */
 
@@ -14,7 +18,6 @@ const props = defineProps<{
   description?: string
   defaultService?: string
   source?: string
-  variant?: 'light' | 'dark'
 }>()
 
 const { data: servicesData } = useServices()
@@ -31,8 +34,6 @@ const { form, submit, pending, success, error, errors } = useLeadForm()
 if (props.defaultService) form.service = props.defaultService
 if (props.source) form.source = props.source
 
-const isDark = computed(() => props.variant === 'dark')
-
 const trustPoints = [
   { icon: 'i-lucide-clock', text: 'Ответ в течение рабочего дня' },
   { icon: 'i-lucide-shield-check', text: 'Договор и фиксированная смета' },
@@ -41,48 +42,54 @@ const trustPoints = [
 </script>
 
 <template>
-  <section
-    class="section section-full"
-    :class="isDark ? 'cf cf--dark bg-[var(--color-espresso)]' : 'cf bg-[var(--color-canvas)]'"
-  >
-    <div class="container-app">
-      <div class="grid gap-14 lg:grid-cols-2 lg:gap-24">
+  <section class="section section-full cf">
+    <!-- Фон-сцена: интерьерное фото, ваза прижата к левому краю,
+         правая (пустая) часть стены уходит под карточку формы -->
+    <div class="cf-bg" aria-hidden="true" data-reveal="fade">
+      <img
+        src="/images/contact/bg.webp"
+        alt=""
+        class="cf-bg-img"
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="cf-bg-veil" />
+    </div>
+
+    <div class="container-app cf-inner">
+      <div class="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
         <!-- Левая колонка — текст -->
         <div>
-          <p class="eyebrow" data-reveal="fade">{{ eyebrow || 'Связаться' }}</p>
-          <h2 class="section-title mt-4" data-reveal>{{ title || 'Расскажите о вашем проекте' }}</h2>
+          <p class="eyebrow cf-eyebrow" data-reveal="fade">{{ eyebrow || 'Связаться' }}</p>
+          <h2 class="section-title mt-5 max-w-2xl" data-reveal>{{ title || 'Расскажите о вашем проекте' }}</h2>
           <p
-            class="mt-5 max-w-md text-[17px] leading-relaxed"
-            :class="isDark ? 'text-[#f6f1e7]/65' : 'text-[var(--color-ink-muted)]'"
+            class="mt-5 max-w-md text-[17px] leading-relaxed text-[var(--color-ink-muted)]"
             data-reveal="fade"
             style="--reveal-delay: 120ms"
           >
             {{ description || 'Ответим в течение рабочего дня. Консультация — бесплатно.' }}
           </p>
 
-          <!-- Доп. контакты: иконка-кольцо + текст -->
-          <ul v-if="!isDark" class="mt-10 space-y-5">
+          <!-- Trust-пункты: иконка-кольцо + текст -->
+          <ul class="mt-10 space-y-5">
             <li
               v-for="point in trustPoints"
               :key="point.icon"
               class="flex items-center gap-4 text-sm text-[var(--color-ink-muted)]"
               data-reveal="fade"
             >
-              <span class="icon-ring !h-11 !w-11" aria-hidden="true">
-                <UIcon :name="point.icon" class="h-4 w-4" />
+              <span class="icon-ring" aria-hidden="true">
+                <UIcon :name="point.icon" class="h-5 w-5" />
               </span>
               <span>{{ point.text }}</span>
             </li>
           </ul>
         </div>
 
-        <!-- Правая колонка — форма -->
-        <div>
+        <!-- Правая колонка — карточка формы -->
+        <div class="cf-card" data-reveal style="--reveal-delay: 150ms">
           <!-- Состояние успеха -->
-          <div
-            v-if="success"
-            class="flex flex-col items-start border-t border-[var(--color-line)] pt-8"
-          >
+          <div v-if="success" class="flex flex-col items-start pt-2">
             <span class="icon-ring !h-14 !w-14 text-[var(--color-success)]" aria-hidden="true">
               <UIcon name="i-lucide-check" class="h-6 w-6" />
             </span>
@@ -93,7 +100,7 @@ const trustPoints = [
           </div>
 
           <!-- Форма -->
-          <form v-else class="cf-form" data-reveal style="--reveal-delay: 150ms" @submit.prevent="submit">
+          <form v-else class="cf-form" @submit.prevent="submit">
             <!-- Имя -->
             <div class="cf-field">
               <label class="cf-label" for="lead-name">Имя *</label>
@@ -109,7 +116,7 @@ const trustPoints = [
             </div>
 
             <!-- Контакты: email + телефон -->
-            <div class="grid gap-7 sm:grid-cols-2 sm:gap-6">
+            <div class="grid gap-5 sm:grid-cols-2">
               <div class="cf-field">
                 <label class="cf-label" for="lead-email">Email</label>
                 <input
@@ -135,13 +142,13 @@ const trustPoints = [
                 <p v-if="errors.phone" class="cf-error">{{ errors.phone }}</p>
               </div>
             </div>
-            <p v-if="errors.contact" class="cf-error -mt-3">{{ errors.contact }}</p>
+            <p v-if="errors.contact" class="cf-error -mt-2">{{ errors.contact }}</p>
 
             <!-- Услуга -->
             <div v-if="serviceOptions.length" class="cf-field">
               <label class="cf-label" for="lead-service">Интересует услуга</label>
               <div class="relative">
-                <select id="lead-service" v-model="form.service" class="cf-input appearance-none pr-8">
+                <select id="lead-service" v-model="form.service" class="cf-input appearance-none pr-10">
                   <option :value="''" disabled>Выберите услугу</option>
                   <option v-for="opt in serviceOptions" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
@@ -149,7 +156,7 @@ const trustPoints = [
                 </select>
                 <UIcon
                   name="i-lucide-chevron-down"
-                  class="pointer-events-none absolute top-1/2 right-1 h-4 w-4 -translate-y-1/2 text-[var(--color-ink-subtle)]"
+                  class="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-[var(--color-ink-subtle)]"
                   aria-hidden="true"
                 />
               </div>
@@ -162,7 +169,7 @@ const trustPoints = [
                 id="lead-message"
                 v-model="form.message"
                 class="cf-input cf-textarea"
-                rows="3"
+                rows="4"
                 placeholder="Тип помещения, площадь, сроки, пожелания..."
               />
               <p v-if="errors.message" class="cf-error">{{ errors.message }}</p>
@@ -170,7 +177,7 @@ const trustPoints = [
 
             <!-- Согласие -->
             <div class="cf-field">
-              <label class="flex items-start gap-3 text-sm" :class="isDark ? 'text-[#f6f1e7]/60' : 'text-[var(--color-ink-muted)]'">
+              <label class="flex items-start gap-3 text-sm text-[var(--color-ink-muted)]">
                 <input v-model="form.consent" type="checkbox" class="cf-checkbox mt-0.5" />
                 <span>
                   Согласен с
@@ -185,7 +192,7 @@ const trustPoints = [
               {{ error }}
             </div>
 
-            <button type="submit" class="btn-pill mt-2 w-full justify-between" :disabled="pending">
+            <button type="submit" class="btn-pill mt-1 w-full justify-between" :disabled="pending">
               <span>{{ pending ? 'Отправляем...' : 'Отправить заявку' }}</span>
               <span class="btn-pill-orb" aria-hidden="true">
                 <UIcon v-if="pending" name="i-lucide-loader-circle" class="h-4 w-4 animate-spin" />
@@ -203,21 +210,75 @@ const trustPoints = [
 </template>
 
 <style scoped>
-/* Поля с hairline-подчёркиванием — как email-строка футера ayocin */
 .cf {
+  position: relative;
   color: var(--color-ink);
+}
+
+/* ---------- Фон-сцена ---------- */
+.cf-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.cf-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Ваза и столик — у левой кромки; правую (пустую) часть
+     картинки можем безопасно резать — там карточка формы */
+  object-position: left center;
+}
+
+/* Лёгкая кремовая вуаль — выравнивает тон фото с фоном страницы
+   и гарантирует контраст текста слева */
+.cf-bg-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--color-canvas) 34%, transparent) 0%,
+    color-mix(in srgb, var(--color-canvas) 18%, transparent) 50%,
+    color-mix(in srgb, var(--color-canvas) 26%, transparent) 100%
+  );
+}
+
+.cf-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* Eyebrow с линией-тире после текста (как в макете: «СВЯЗАТЬСЯ ——») */
+.cf-eyebrow::after {
+  content: "";
+  display: inline-block;
+  width: 3.5rem;
+  height: 1px;
+  margin-left: 1em;
+  vertical-align: middle;
+  background-color: currentColor;
+  opacity: 0.45;
+}
+
+/* ---------- Карточка формы ---------- */
+.cf-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-hover);
+  padding: clamp(1.5rem, 2.8vw, 2.75rem);
 }
 
 .cf-form {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.375rem;
 }
 
 .cf-field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4375rem;
 }
 
 .cf-label {
@@ -230,14 +291,13 @@ const trustPoints = [
 
 .cf-input {
   width: 100%;
-  border: none;
-  border-bottom: 1px solid var(--color-line);
+  border: 1px solid var(--color-line);
   background: transparent;
-  padding: 0.75rem 0;
-  font-size: 1.0625rem;
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1.125rem;
+  font-size: 1rem;
   line-height: 1.4;
   color: var(--color-ink);
-  border-radius: 0;
   transition: border-color var(--duration-base) var(--ease-premium);
 }
 
@@ -247,26 +307,12 @@ const trustPoints = [
 
 .cf-input:focus {
   outline: none;
-  border-bottom-color: var(--color-ink);
+  border-color: var(--color-ink);
 }
 
 .cf-textarea {
   resize: vertical;
-  min-height: 5.5rem;
-}
-
-.cf--dark .cf-label,
-.cf--dark .cf-input::placeholder {
-  color: color-mix(in srgb, #f6f1e7 55%, transparent);
-}
-
-.cf--dark .cf-input {
-  border-bottom-color: rgba(246, 241, 231, 0.25);
-  color: #f6f1e7;
-}
-
-.cf--dark .cf-input:focus {
-  border-bottom-color: #f6f1e7;
+  min-height: 7rem;
 }
 
 /* Чекбокс — квадрат с тонкой рамкой, акцент при выборе */
@@ -290,16 +336,6 @@ const trustPoints = [
   background-size: 0.75rem;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-.cf--dark .cf-checkbox {
-  border-color: rgba(246, 241, 231, 0.3);
-}
-
-.cf--dark .cf-checkbox:checked {
-  background-color: #f6f1e7;
-  border-color: #f6f1e7;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23292019' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
 }
 
 .cf-checkbox:focus-visible {
