@@ -33,14 +33,20 @@ function hasPrefix(path: string, prefixes: string[]) {
 }
 
 // Обрыв соединения клиентом или upstream (закрытие вкладки, отмена навигации,
-// HMR/SSE-стримы админки). Отвечать уже нечем — ошибку нужно поглотить.
+// отмена загрузок картинок, HMR/SSE-стримы админки). Отвечать уже нечем —
+// ошибку нужно поглотить. Фильтр широкий нарочно: undici при abort клиента
+// кидает DOMException AbortError без code, h3 — «socket hang up» без code.
 function isConnectionAbort(err: unknown) {
-  const code = (err as { code?: string } | null)?.code
+  const e = err as { code?: string; name?: string; message?: string } | null
   return (
-    code === 'ECONNRESET' ||
-    code === 'ECONNABORTED' ||
-    code === 'EPIPE' ||
-    code === 'ERR_STREAM_PREMATURE_CLOSE'
+    e?.code === 'ECONNRESET' ||
+    e?.code === 'ECONNABORTED' ||
+    e?.code === 'EPIPE' ||
+    e?.code === 'ERR_STREAM_PREMATURE_CLOSE' ||
+    e?.name === 'AbortError' ||
+    e?.name === 'TimeoutError' ||
+    (typeof e?.message === 'string' &&
+      /abort|premature|socket hang up|ECONN/i.test(e.message))
   )
 }
 
@@ -57,6 +63,17 @@ export default defineEventHandler(async (event) => {
   // x-forwarded-host обязан совпадать с origin браузера, иначе save падает
   // 500 «Invalid Server Actions request». Host при проксировании становится
   // localhost:3001, поэтому явно возвращаем хост исходного запроса.
+
+  // Глотаем ошибки стримов на уровне событий. try/catch ниже ловит только
+  // reject промиса proxyRequest; при обрыве сокета (навигация в админке,
+  // закрытие вкладки, отмена поллинга) Node эмитит 'error' на req/res/socket —
+  // без слушателя это uncaughtException и нативный крэш nuxi на Windows
+  // (exit 0xFFFFFFFF / 0xC0000005), роняющий весь pnpm dev.
+  const node = event.node
+  node.req.on('error', () => {})
+  node.res.on('error', () => {})
+  node.req.socket.on('error', () => {})
+
   try {
     return await proxyRequest(event, `${target}${event.path}`, {
       headers: {

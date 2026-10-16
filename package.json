@@ -16,7 +16,8 @@
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",
     "kill-ports": "powershell -Command \"Get-NetTCPConnection -LocalPort 3000,3001 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; Write-Output 'Ports 3000,3001 cleared'\"",
-    "clean": "pnpm -r exec rimraf .nuxt .output dist node_modules/.cache .next"
+    "clean": "pnpm -r exec rimraf .nuxt .output dist node_modules/.cache .next",
+    "dev:watch": "node scripts/dev-watch.mjs"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",
