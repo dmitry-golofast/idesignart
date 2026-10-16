@@ -192,7 +192,7 @@ const trustPoints = [
               {{ error }}
             </div>
 
-            <button type="submit" class="btn-pill mt-1 w-full justify-between" :disabled="pending">
+            <button type="submit" class="btn-pill mt-1 self-start" :disabled="pending">
               <span>{{ pending ? 'Отправляем...' : 'Отправить заявку' }}</span>
               <span class="btn-pill-orb" aria-hidden="true">
                 <UIcon v-if="pending" name="i-lucide-loader-circle" class="h-4 w-4 animate-spin" />
