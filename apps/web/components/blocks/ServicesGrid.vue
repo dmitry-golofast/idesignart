@@ -58,7 +58,7 @@ const honeyCells = computed(() => {
   let start = 0
   let k = 0 // плоский индекс ячейки — для каскадных задержек
   for (let ri = 0; ri < MAX_ROWS && start < services.value.length; ri++) {
-    const size = ROW_SIZES[ri % ROW_SIZES.length]
+    const size = ROW_SIZES[ri % ROW_SIZES.length]!
     const row = services.value
       .slice(start, start + size)
       .map((_, ci) => ({ svcIdx: start + ci, i: k++ }))
@@ -80,7 +80,7 @@ onMounted(() => {
   const delays = Array.from({ length: total }, (_, i) => HEX_BASE_DELAY + i * 160)
   for (let i = delays.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[delays[i], delays[j]] = [delays[j], delays[i]]
+    ;[delays[i], delays[j]] = [delays[j]!, delays[i]!]
   }
   hexDelays.value = delays
 })
@@ -94,7 +94,7 @@ const rowStyle = (ri: number) => ({
   '--row-shift': `calc((var(--hx) + var(--hexgap)) * ${ri} / 2)`,
 })
 
-function imageUrl(media: { url?: string } | null | undefined): string | null {
+function imageUrl(media: { url?: string | null } | null | undefined): string | null {
   const url = media?.url
   if (!url) return null
   return url.startsWith('http') ? url : `${payloadBase}${url}`
