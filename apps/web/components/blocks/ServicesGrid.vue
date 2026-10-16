@@ -7,16 +7,20 @@ import type { Media, Service } from '#shared/types/payload'
  *
  * Фон блока — изображение во всю секцию: рисунок читается слева
  * (object-position: left), правую половину успокаивает кремовая вуаль.
- * Весь контент — 10 одинаковых шестигранников-сот (ряды 4/3/3), они
- * занимают всю правую сторону (размер ячейки считается от высоты
- * вьюпорта); каждый ряд сдвинут на пол-ячейки правее предыдущего —
+ * При появлении блока фон показывает секвенцию «чертёж → рендер»:
+ * первым проявляется ч/б чертёж (статичный ассет bg-sketch.webp),
+ * поверх него крестфейдом «прорисовывается» цветной рендер финальной
+ * сцены (статичный ассет bg-render.webp)
+ * с лёгким наездом камеры. Весь контент — 10 одинаковых шестигранников-сот
+ * (ряды 4/3/3), они занимают всю правую сторону (размер ячейки считается
+ * от высоты вьюпорта); каждый ряд сдвинут на пол-ячейки правее предыдущего —
  * слева получается «лестница» пчелиных сот. Рамка соты — pointy-top
  * по референсу gex.svg (полигон 448×512, stroke #696852, 3px, miter).
  * Внутри соты — фото услуги (клип по форме соты), градиент под текст,
  * tagline и название. Появление сот — по очереди в случайном порядке
- * при прокрутке до блока: чистый fade без смещения («на своих
- * местах»); задержки перемешиваются на клиенте после монтирования,
- * чтобы не ловить hydration mismatch.
+ * с базовой задержкой (после «прорисовки» рендера): чистый fade без
+ * смещения («на своих местах»); задержки перемешиваются на клиенте
+ * после монтирования, чтобы не ловить hydration mismatch.
  *
  * Данные: услуги из Payload через useServices() либо через props.
  */
@@ -45,15 +49,6 @@ const services = computed(() =>
     .map((s) => ({ ...s, cardImage: populated(s.cardImage) })),
 )
 
-/* ---------- фон блока: рисунок слева ---------- */
-const bgUrl = computed(() => {
-  const raw = populated(props.bgImage)?.url ?? services.value[0]?.cardImage?.url
-  if (!raw) return null
-  return raw.startsWith('http') ? raw : `${payloadBase}${raw}`
-})
-
-const bgAlt = computed(() => populated(props.bgImage)?.alt ?? services.value[0]?.cardImage?.alt ?? '')
-
 /* ---------- раскладка сот: ряды 4 / 3 / 3 = 10 ячеек ---------- */
 const ROW_SIZES = [4, 3]
 const MAX_ROWS = 3
@@ -74,11 +69,15 @@ const honeyCells = computed(() => {
 })
 
 /* Случайный порядок появления: перемешиваем задержки на клиенте
-   после монтирования (Math.random на SSR сломал бы гидратацию) */
+   после монтирования (Math.random на SSR сломал бы гидратацию).
+   Базовая задержка — соты начинаю проявляться, когда фон уже
+   «прорисовался» (ч/б чертёж → цветной рендер) */
+const HEX_BASE_DELAY = 1900
+
 const hexDelays = ref<number[]>([])
 onMounted(() => {
   const total = honeyCells.value.reduce((acc, row) => acc + row.length, 0)
-  const delays = Array.from({ length: total }, (_, i) => i * 160)
+  const delays = Array.from({ length: total }, (_, i) => HEX_BASE_DELAY + i * 160)
   for (let i = delays.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[delays[i], delays[j]] = [delays[j], delays[i]]
@@ -87,7 +86,7 @@ onMounted(() => {
 })
 
 const hexStyle = (i: number) => ({
-  '--hex-delay': `${hexDelays.value[i] ?? i * 120}ms`,
+  '--hex-delay': `${hexDelays.value[i] ?? HEX_BASE_DELAY + i * 120}ms`,
 })
 
 /* Диагональная укладка: каждый ряд на пол-ячейки правее предыдущего */
@@ -105,13 +104,22 @@ function imageUrl(media: { url?: string } | null | undefined): string | null {
 <template>
   <section class="svc-full">
     <!-- Фон-изображение: рисунок прижат к левому краю, справа — вуаль.
-         Обычный <img> без IPX-ресайза (как в hero): исходник — webp из CMS,
-         а sizes="100vw" на абсолютном URL генерирует srcset в 1–2px -->
-    <div v-if="bgUrl" class="svc-bg" aria-hidden="true" data-reveal="fade">
+         Секвенция при появлении блока: сначала ч/б чертёж, затем цветной
+         рендер «прорисовывается» крестфейдом (статичная пара ассетов
+         bg-sketch.webp + bg-render.webp одной сцены), после —
+         проявляются соты (базовая задержка в hexDelays) -->
+    <div class="svc-bg" aria-hidden="true" data-reveal="fade">
       <img
-        :src="bgUrl"
-        :alt="bgAlt"
-        class="svc-bg-img"
+        src="/images/services/bg-sketch.webp"
+        alt=""
+        class="svc-bg-img svc-bg-sketch"
+        loading="lazy"
+        decoding="async"
+      />
+      <img
+        src="/images/services/bg-render.webp"
+        alt=""
+        class="svc-bg-img svc-bg-photo"
         loading="lazy"
         decoding="async"
       />
@@ -183,15 +191,17 @@ function imageUrl(media: { url?: string } | null | undefined): string | null {
  * 8 сот с фото и текстом, рамка-контур по референсу gex.svg
  * ========================================================= */
 
-/* Весь первый экран: вьюпорт минус sticky-шапка (--hd-height на <html>).
-   Фолбэки: vh для старых браузеров → svh → dvh */
+/* Ровно первый экран: вьюпорт минус sticky-шапка (--hd-height на <html>).
+   Фолбэки: vh для старых браузеров → svh → dvh. Высота жёсткая: соты,
+   не влезающие по вертикали, слегка обрезаются нижней границей секции
+   (overflow: hidden) — блок не растягивает страницу */
 .svc-full {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - var(--hd-height, 76px));
-  min-height: calc(100svh - var(--hd-height, 76px));
-  min-height: calc(100dvh - var(--hd-height, 76px));
+  height: calc(100vh - var(--hd-height, 76px));
+  height: calc(100svh - var(--hd-height, 76px));
+  height: calc(100dvh - var(--hd-height, 76px));
   padding-top: clamp(1.5rem, 4vh, 3rem);
   padding-bottom: clamp(1.25rem, 3vh, 2.5rem);
   overflow: hidden;
@@ -206,12 +216,38 @@ function imageUrl(media: { url?: string } | null | undefined): string | null {
   isolation: isolate;
 }
 
-/* cover + прижим к левому краю: рисунок изображения читается слева */
+/* Слои фона друг на друге (абсолютные): снизу ч/б чертёж, сверху рендер */
 .svc-bg-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: left center;
+}
+
+/* Секвенция фона: ч/б чертёж виден сразу (нижний слой), цветной рендер
+   «прорисовывается» поверх него крестфейдом с лёгким наездом камеры —
+   как рендер кадра. Без JS (нет .has-js) сразу виден рендер;
+   при prefers-reduced-motion глобальное правило гасит длительность,
+   здесь дополнительно снимаем задержку */
+.has-js .svc-bg-photo {
+  opacity: 0;
+  transform: scale(1.035);
+  transition:
+    opacity 1.4s var(--ease-premium) 1.15s,
+    transform 1.7s var(--ease-premium) 1.15s;
+}
+
+.has-js .svc-bg.is-revealed .svc-bg-photo {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .has-js .svc-bg-photo {
+    transition-delay: 0ms;
+  }
 }
 
 /* Вуаль: справа кремовая подложка под соты, сверху — лёгкая смывка
@@ -237,28 +273,34 @@ function imageUrl(media: { url?: string } | null | undefined): string | null {
   position: relative;
   z-index: 1;
   flex: 1 1 auto;
+  /* min-height: 0 — позволяет сотам сжаться до слота и обрезаться
+     нижней границей секции, а не распирать её */
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 /* ---------- справа: соты на всю правую сторону ----------
-   Размер ячейки — от высоты вьюпорта: три ряда (2.5 высоты соты
-   с перекрытием) должны занимать пространство под шапкой блока */
+   Блок увеличен ×1.3: соты намеренно выходят за правый и нижний
+   края и частично обрезаются секцией (overflow: hidden у .svc-full).
+   Верх прижат к слоту под заголовком (justify-content: flex-start):
+   соты не поднимаются выше hairline-линии под «Чем мы можем помочь» */
 .svc-honey {
   --hexgap: clamp(6px, 0.6vw, 10px);
-  --hx: clamp(
-    8.5rem,
-    min(14vw, calc((100svh - 280px) / 2.9)),
-    16.5rem
+  --hx: calc(
+    clamp(8.5rem, min(14vw, calc((100svh - 280px) / 2.9)), 16.5rem) * 1.3
   );
   --hh: calc(var(--hx) * 512 / 448); /* высота по референсу gex.svg */
   flex: 1 1 auto;
+  /* Позволяем контейнеру сжаться до слота: ряды перельются за нижний
+     край и обрежутся секцией, а не растянут её */
+  min-height: 0;
   margin-left: auto; /* кластер прижат к правой половине блока */
   margin-top: clamp(1rem, 2.5vh, 2rem);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   width: fit-content;
 }
 
@@ -315,15 +357,16 @@ a.svc-hex:hover .svc-hex-img {
 }
 
 /* Градиент: тёплый тёмный тон по всей соте — читаемость текста
-   в центре, чуть плотнее к нижней вершине */
+   в центре (полоса tagline + title, ~40–70% высоты), чуть плотнее
+   к нижней вершине */
 .svc-hex-shade {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(24, 18, 13, 0.78) 0%,
-    rgba(24, 18, 13, 0.34) 48%,
-    rgba(24, 18, 13, 0.14) 100%
+    rgba(24, 18, 13, 0.8) 0%,
+    rgba(24, 18, 13, 0.5) 55%,
+    rgba(24, 18, 13, 0.24) 100%
   );
 }
 
@@ -375,7 +418,10 @@ a.svc-hex:hover .svc-hex-img {
   font-size: 0.5625rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  opacity: 0.78;
+  opacity: 0.92;
+  /* Тень обязательна: tagline — самый мелкий текст соты, на светлых
+     рендерах без неё пропадает (у title тень была изначально) */
+  text-shadow: 0 1px 10px rgba(24, 18, 13, 0.6);
 }
 
 .svc-hex-title {
@@ -410,12 +456,13 @@ a.svc-hex:hover .svc-hex-img {
   }
 }
 
-/* ---------- мобильный: соты по центру, мельче ----------
-   Верхний ряд — 4 соты: 21.5vw × 4 + зазоры помещаются в контейнер */
+/* ---------- мобильный: соты по центру, крупнее ----------
+   Верхний ряд — 4 соты: 28vw × 4 не помещаются в контейнер
+   намеренно — крайние соты обрезаются краями экрана */
 @media (max-width: 1023px) {
   .svc-honey {
     margin-inline: auto;
-    --hx: clamp(5rem, 21.5vw, 8rem);
+    --hx: calc(clamp(5rem, 21.5vw, 8rem) * 1.3);
   }
 
   .svc-hex-body {

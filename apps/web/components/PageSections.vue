@@ -45,7 +45,7 @@ function chapterNum(s: PageSection): number | undefined {
 // Имена соответствуют структуре: components/blocks/HeroSection.vue → BlocksHeroSection
 const HeroSection = resolveComponent('BlocksHeroSection')
 const ServicesGrid = resolveComponent('BlocksServicesGrid')
-const PortfolioMasonry = resolveComponent('BlocksPortfolioMasonry')
+const PortfolioShowcase = resolveComponent('BlocksPortfolioShowcase')
 const ProcessSteps = resolveComponent('BlocksProcessSteps')
 const TestimonialsSection = resolveComponent('BlocksTestimonialsSection')
 const ContentSection = resolveComponent('BlocksContentSection')
@@ -55,7 +55,7 @@ const ContactForm = resolveComponent('BlocksContactForm')
 const blockMap: Record<string, any> = {
   hero: HeroSection,
   'services-grid': ServicesGrid,
-  'portfolio-grid': PortfolioMasonry,
+  'portfolio-grid': PortfolioShowcase,
   'process-steps': ProcessSteps,
   testimonials: TestimonialsSection,
   content: ContentSection,

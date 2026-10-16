@@ -145,14 +145,13 @@
   }
 
   .sec-num {
-    /* Размер заголовка; белая заливка цифр с эспрессо-контуром —
-       читаемость на любом фоне (фото, крем, тауп) */
+    /* Размер заголовка; цифры залиты эспрессо с прозрачностью 30% */
     font-size: clamp(2.5rem, 5.5vw, 7rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--color-surface);
-    -webkit-text-stroke: clamp(1.5px, 0.03em, 3px) var(--color-espresso);
+    color: var(--color-espresso);
+    opacity: 0.3;
   }
 
   .sec-title {

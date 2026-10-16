@@ -68,11 +68,6 @@ function imageUrl(image: Media | null): string | null {
 /* --- scroll-driven состояние --- */
 const rootEl = ref<HTMLElement | null>(null)
 const progress = ref(0)
-// Заголовок уменьшился (одноразовый триггер по подскроллу к секции)
-const titleShrunk = ref(false)
-// Задержка между приходом к блоку и стартом уменьшения заголовка
-const SHRINK_DELAY_MS = 500
-let shrinkTimer: ReturnType<typeof setTimeout> | null = null
 // Порог переключения — на полшага позже середины: сцена меняется, когда
 // следующая шаг-зона уже наполовину пройдена, а не на границе шага
 const active = computed(() => {
@@ -90,14 +85,6 @@ function updateProgress() {
   const scrollable = el.offsetHeight - window.innerHeight
   const passed = Math.min(Math.max(-rect.top, 0), scrollable)
   progress.value = scrollable > 0 ? passed / scrollable : 0
-  // Заголовок главы по умолчанию крупный (как sec-title у других глав);
-  // при подскролле к блоку через паузу анимированно уменьшается до рабочего
-  if (!titleShrunk.value && shrinkTimer === null && rect.top < window.innerHeight * 0.85) {
-    shrinkTimer = setTimeout(() => {
-      titleShrunk.value = true
-      shrinkTimer = null
-    }, SHRINK_DELAY_MS)
-  }
 }
 function onScroll() {
   if (!ticking) {
@@ -113,10 +100,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', onScroll)
-  if (shrinkTimer !== null) {
-    clearTimeout(shrinkTimer)
-    shrinkTimer = null
-  }
 })
 </script>
 
@@ -162,15 +145,8 @@ onBeforeUnmount(() => {
         <div class="absolute inset-x-0 top-0 pt-[96px]">
           <div class="container-app">
             <div class="flex items-baseline gap-[clamp(1.5rem,4vw,4rem)] pb-5">
-              <span class="font-display text-[clamp(1.75rem,3.2vw,4rem)] leading-none font-bold tracking-[-0.02em] text-[#f6f1e7]">
-                {{ secNum }}
-              </span>
-              <h2
-                class="process-title font-display text-[clamp(1.75rem,3.2vw,3.5rem)] leading-none font-extrabold tracking-[-0.03em] text-[#f6f1e7]"
-                :class="{ 'is-shrunk': titleShrunk }"
-              >
-                {{ title || 'Как мы работаем' }}
-              </h2>
+              <span class="sec-num process-num" aria-hidden="true">{{ secNum }}</span>
+              <h2 class="sec-title process-title">{{ title || 'Как мы работаем' }}</h2>
             </div>
             <!-- Линия-прогресс: заполняется золотым по мере прохождения шагов -->
             <div class="relative h-px bg-[#f6f1e7]/25">
@@ -258,17 +234,15 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Заголовок главы: по умолчанию — размер sec-title (как у «Чем мы можем
-   помочь»); при подскролле к секции (is-shrunk) анимированно уменьшается
-   до рабочего размера. Гейт под .has-js: без JS заголовок сразу рабочего
-   размера. Scoped-стили без слоёв перебивают tailwind-утилиты размера */
-.has-js .process-title {
-  font-size: clamp(2.5rem, 5.5vw, 7rem);
-  transition: font-size var(--duration-slow) var(--ease-premium);
+/* Заголовок главы — общие классы .sec-num/.sec-title (как у других
+   блоков, без анимации масштаба); цвета адаптированы под тёмную сцену */
+.process-num {
+  color: #f6f1e7;
+  opacity: 0.25;
 }
 
-.has-js .process-title.is-shrunk {
-  font-size: clamp(1.75rem, 3.2vw, 3.5rem);
+.process-title {
+  color: #f6f1e7;
 }
 
 /* Смена шага: текст уезжает вверх, новый приезжает снизу (ayocin-стиль) */
