@@ -130,13 +130,13 @@ const badge = computed(() => {
     (c): c is Category => Boolean(c) && typeof c === 'object',
   )
   if (cats[0]?.title) return cats[0].title
-  const pt = current.value?.meta?.propertyType
+  const pt = current.value?.details?.propertyType
   return pt ? propertyLabels[pt] : null
 })
 
 /** Строка метаданных: локация · площадь · год */
 const metaLine = computed(() => {
-  const m = current.value?.meta
+  const m = current.value?.details
   return [m?.location, m?.area ? `${m.area} м²` : null, m?.year ? String(m.year) : null]
     .filter(Boolean)
     .join(' · ')
@@ -175,7 +175,7 @@ function updateProgress() {
   const vh = window.innerHeight
   if (rect.top > vh * 1.5 || rect.bottom < -vh * 0.5) return // блок далеко — не тратимся
   const hd = parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--hd-height'),
+    getComputedStyle(document.documentElement).getPropertyValue('--header-height'),
   )
   const headerH = Number.isFinite(hd) ? hd : 76
   // Точка «блок полностью на экране»: верх секции упёрся в sticky-шапку
@@ -381,10 +381,10 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   /* Минус sticky-шапка: при переходе по якорю блок целиком виден под ней
-     (--hd-height задаёт AppHeader на <html>, как в hero) */
-  min-height: calc(100vh - var(--hd-height, 76px));
-  min-height: calc(100svh - var(--hd-height, 76px));
-  min-height: calc(100dvh - var(--hd-height, 76px));
+     (--header-height — токен в tokens.css) */
+  min-height: calc(100vh - var(--header-height, 76px));
+  min-height: calc(100svh - var(--header-height, 76px));
+  min-height: calc(100dvh - var(--header-height, 76px));
   padding-top: calc(76px + clamp(1.25rem, 3vh, 2.5rem));
   padding-bottom: clamp(1.25rem, 2.5vh, 2rem);
   padding-inline: var(--container-pad);

@@ -1,16 +1,15 @@
 import type { Field } from 'payload'
 
 /**
- * Общие поля стиля и кнопки, переиспользуются hero-блоком (§06, §08 спеки)
- * и global «Шапка сайта» (header).
+ * Общие поля и кнопка, переиспользуются hero-блоком (§06 спеки)
+ * и global «header».
  *
- * Все цвета — HEX #RRGGBB, числовые поля с min/max, ссылки — только
- * относительные пути /…, якоря #… и абсолютные HTTPS.
+ * Ссылки — только относительные пути /…, якоря #… и абсолютные HTTPS.
  * Обязательность полей выключенной CTA проверяется серверно (§12),
  * в админке они дополнительно скрываются через admin.condition.
+ * Оформление (цвета, размеры) в CMS не живёт — оно зашито в CSS-токены
+ * фронтенда (tokens.css и scoped-стили компонентов).
  */
-
-const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/
 
 /** Валидация ссылки: /…, #…, https://… — остальное отклоняем (§06) */
 export const validateHref = (value: unknown): true | string => {
@@ -31,22 +30,6 @@ const validateRequiredWhenEnabled = (value: unknown, options: any): true | strin
   }
   return true
 }
-
-/** Валидация HEX-цвета формата #RRGGBB (§08) */
-export const validateHexColor = (value: unknown): true | string => {
-  if (value === null || value === undefined || value === '') return true
-  return HEX_COLOR_RE.test(String(value)) || 'Введите цвет в формате #RRGGBB'
-}
-
-/** Цветовое поле с проверкой HEX (§08) */
-export const hexColor = (name: string, label: string, defaultValue: string): Field => ({
-  type: 'text',
-  name,
-  label,
-  defaultValue,
-  maxLength: 7,
-  validate: validateHexColor,
-})
 
 /** Числовое поле стиля с min/max из таблицы §08 */
 export const num = (

@@ -5,8 +5,10 @@ import { computed, ref, watch } from 'vue'
  * AppHeader — шапка сайта (редизайн v3, язык ayocin).
  * Бренд слева, навигация по центру, справа — телефон и CTA-пилюля
  * со стрелкой-орбом («Order Now»-стиль). Контент из global «header»
- * (CMS): пункты меню, телефон, кнопка действия; оформление — поля
- * global'а (кроме радиуса кнопки: пилюля фиксирована дизайном).
+ * (CMS): пункты меню, кнопка действия. Телефон из CMS не приходит —
+ * берётся из контактов Settings, затем из env-переменной.
+ * Оформление в CMS не живёт — цвета/шрифты берутся из дизайн-токенов
+ * tokens.css, размеры зашиты в scoped-стилях этого компонента.
  * Бренд — из Settings. Пока данные CMS пустые, работают дефолты.
  */
 interface NavItemData {
@@ -27,9 +29,7 @@ interface HeaderCtaData {
 
 interface HeaderData {
   navigation?: NavItemData[] | null
-  phone?: string | null
   cta?: HeaderCtaData | null
-  appearance?: Record<string, string | number | boolean | null | undefined> | null
 }
 
 interface SettingsData {
@@ -60,7 +60,6 @@ if (import.meta.client) {
 
 /* ---------- безопасное чтение полей CMS ---------- */
 const str = (v: unknown, d: string) => (typeof v === 'string' && v.length > 0 ? v : d)
-const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d)
 const bool = (v: unknown, d: boolean) => (typeof v === 'boolean' ? v : d)
 
 // Якорные пункты прокручивают до блоков на главной; «О студии» и «Блог» — страницы
@@ -80,10 +79,9 @@ const nav = computed<NavItemData[]>(() => {
   return items.length > 0 ? items : DEFAULT_NAV
 })
 
-const phoneText = computed(() =>
-  str(hd.value.phone, '') ||
-  str(props.settings?.contacts?.phone, '') ||
-  str(config.public.phone as string, ''),
+// Телефон из CMS не приходит: сначала контакты Settings, затем env-переменная
+const phoneText = computed(
+  () => str(props.settings?.contacts?.phone, '') || str(config.public.phone as string, ''),
 )
 const phoneHref = computed(() =>
   phoneText.value ? `tel:${phoneText.value.replace(/[^\d+]/g, '')}` : '',
@@ -101,22 +99,6 @@ const cta = computed(() => {
   }
 })
 
-/* ---------- оформление → CSS-переменные (радиус кнопки фиксирован: пилюля) ---------- */
-const appearance = computed(() => {
-  const a = hd.value.appearance ?? {}
-  return {
-    backgroundColor: str(a.backgroundColor, '#F6F1E7'),
-    textColor: str(a.textColor, '#292019'),
-    mutedTextColor: str(a.mutedTextColor, '#7D7162'),
-    accentColor: str(a.accentColor, '#2B211A'),
-    accentTextColor: str(a.accentTextColor, '#F6F1E7'),
-    fontFamily: str(a.fontFamily, 'inter'),
-    brandPx: num(a.brandPx, 22),
-    navigationPx: num(a.navigationPx, 15),
-    headerHeightPx: num(a.headerHeightPx, 76),
-  }
-})
-
 const ctaClass = computed(() => {
   switch (cta.value.variant) {
     case 'dark':
@@ -131,32 +113,10 @@ const ctaClass = computed(() => {
 const ctaAttrs = computed(() =>
   cta.value.newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {},
 )
-
-const styleVars = computed(() => {
-  const a = appearance.value
-  return {
-    '--hd-bg': a.backgroundColor,
-    '--hd-text': a.textColor,
-    '--hd-muted': a.mutedTextColor,
-    '--hd-accent': a.accentColor,
-    '--hd-accent-text': a.accentTextColor,
-    '--hd-font': FONT_STACKS[a.fontFamily] ?? FONT_STACKS.inter,
-    '--hd-brand-px': `${a.brandPx}px`,
-    '--hd-nav-px': `${a.navigationPx}px`,
-  } as Record<string, string>
-})
-
-// Высота шапки — на <html>, а не на самом <header>: её вычитают из вьюпорта
-// блоки вроде hero («первый экран = вьюпорт минус шапка»)
-useHead({
-  htmlAttrs: {
-    style: () => `--hd-height:${appearance.value.headerHeightPx}px`,
-  },
-})
 </script>
 
 <template>
-  <header class="hd" :style="styleVars">
+  <header class="hd">
     <div class="hd-container hd-inner">
       <!-- Лого -->
       <NuxtLink to="/" class="hd-brand">{{ props.settings?.brand?.name || 'idesignart' }}</NuxtLink>
@@ -262,15 +222,15 @@ useHead({
   position: sticky;
   top: 0;
   z-index: var(--z-header);
-  /* Общая высота шапки (включая нижнюю линию) = --hd-height:
-     эту же величину из вьюпорта вычитает hero («первый экран») */
-  height: var(--hd-height);
+  /* Общая высота шапки (включая нижнюю линию) = --header-height (tokens.css):
+     эту же величину из вьюпорта вычитают блоки первого экрана */
+  height: var(--header-height);
   box-sizing: border-box;
-  background-color: color-mix(in srgb, var(--hd-bg) 90%, transparent);
+  background-color: color-mix(in srgb, var(--color-canvas) 90%, transparent);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-line);
-  color: var(--hd-text);
-  font-family: var(--hd-font);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
 }
 
 .hd-container {
@@ -285,14 +245,14 @@ useHead({
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  height: calc(var(--hd-height) - 1px); /* минус нижняя линия шапки */
+  height: calc(var(--header-height) - 1px); /* минус нижняя линия шапки */
 }
 
 .hd-brand {
-  font-size: var(--hd-brand-px);
+  font-size: 1.375rem; /* 22px */
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--hd-text);
+  color: var(--color-ink);
   text-decoration: none;
 }
 
@@ -304,8 +264,8 @@ useHead({
 
 .hd-link {
   position: relative;
-  font-size: var(--hd-nav-px);
-  color: var(--hd-muted);
+  font-size: 0.9375rem; /* 15px */
+  color: var(--color-ink-muted);
   text-decoration: none;
   transition: color var(--duration-base) var(--ease-premium);
 }
@@ -317,7 +277,7 @@ useHead({
   bottom: -6px;
   width: 100%;
   height: 1px;
-  background-color: var(--hd-text);
+  background-color: var(--color-ink);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--duration-base) var(--ease-premium);
@@ -325,7 +285,7 @@ useHead({
 
 .hd-link:hover,
 .hd-link--active {
-  color: var(--hd-text);
+  color: var(--color-ink);
 }
 
 .hd-link:hover::after {
@@ -333,11 +293,11 @@ useHead({
 }
 
 .hd-link--active {
-  color: var(--hd-text);
+  color: var(--color-ink);
 }
 
 .hd-link:focus-visible {
-  outline: 2px solid var(--hd-text);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 
@@ -349,14 +309,14 @@ useHead({
 
 .hd-phone {
   display: none;
-  font-size: calc(var(--hd-nav-px) - 1px);
-  color: var(--hd-muted);
+  font-size: 0.875rem; /* 14px */
+  color: var(--color-ink-muted);
   text-decoration: none;
   transition: color var(--duration-base) var(--ease-premium);
 }
 
 .hd-phone:hover {
-  color: var(--hd-text);
+  color: var(--color-ink);
 }
 
 /* Кнопка действия — пилюля со стрелкой-орбом («Order Now» ayocin) */
@@ -368,8 +328,8 @@ useHead({
   min-height: 3rem;
   padding: 0.25rem 0.25rem 0.25rem 1.375rem;
   border-radius: var(--radius-pill);
-  background-color: var(--hd-accent);
-  color: var(--hd-accent-text);
+  background-color: var(--color-accent);
+  color: var(--color-accent-contrast);
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1;
@@ -414,16 +374,16 @@ useHead({
 /* Вариант outline: прозрачная с hairline */
 .hd-cta--outline {
   background-color: transparent;
-  color: var(--hd-text);
-  border: 1px solid color-mix(in srgb, var(--hd-text) 40%, transparent);
+  color: var(--color-ink);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 40%, transparent);
 }
 .hd-cta--outline .hd-cta-orb {
-  background-color: var(--hd-text);
+  background-color: var(--color-ink);
   color: var(--color-canvas);
 }
 
 .hd-cta:focus-visible {
-  outline: 2px solid var(--hd-text);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 
@@ -435,13 +395,13 @@ useHead({
   height: 2.5rem;
   border: none;
   background: transparent;
-  color: var(--hd-text);
+  color: var(--color-ink);
   font-size: 1.375rem;
   cursor: pointer;
 }
 
 .hd-burger:focus-visible {
-  outline: 2px solid var(--hd-text);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 
@@ -483,14 +443,14 @@ useHead({
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   font-size: 1rem;
-  color: var(--hd-muted);
+  color: var(--color-ink-muted);
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-premium), color var(--duration-base) var(--ease-premium);
 }
 
 .hd-mobile-link:hover {
-  color: var(--hd-text);
-  background-color: color-mix(in srgb, var(--hd-text) 5%, transparent);
+  color: var(--color-ink);
+  background-color: color-mix(in srgb, var(--color-ink) 5%, transparent);
 }
 
 .hd-cta--mobile {

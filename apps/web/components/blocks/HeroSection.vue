@@ -264,11 +264,11 @@ const ctaOrbIcon = computed(() => {
   position: relative;
   display: flex;
   flex-direction: column;
-  /* Весь первый экран: вьюпорт минус sticky-шапка (--hd-height задаёт AppHeader на <html>).
+  /* Весь первый экран: вьюпорт минус sticky-шапка (--header-height — токен в tokens.css).
      Фолбэки: vh для старых браузеров → svh → dvh (актуальная высота с панелями мобильных) */
-  min-height: calc(100vh - var(--hd-height, 76px));
-  min-height: calc(100svh - var(--hd-height, 76px));
-  min-height: calc(100dvh - var(--hd-height, 76px));
+  min-height: calc(100vh - var(--header-height, 76px));
+  min-height: calc(100svh - var(--header-height, 76px));
+  min-height: calc(100dvh - var(--header-height, 76px));
   background-color: var(--color-canvas);
   color: var(--h-text);
   font-family: var(--font-display);

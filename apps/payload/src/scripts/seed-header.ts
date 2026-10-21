@@ -1,6 +1,6 @@
 /**
- * Наполнение global «header» (Шапка сайта) стартовыми данными:
- * пункты меню, кнопка «Зарегистрироваться» (/register), оформление в стиле hero.
+ * Наполнение global «header» стартовыми данными:
+ * пункты меню и кнопка «Зарегистрироваться» (/register).
  * Плюс создание страницы-заглушки /register в Pages, если её нет.
  *
  * Идемпотентен: непустые поля не перезаписывает — правки из админки не затирает.
@@ -20,23 +20,6 @@ const DEFAULT_NAV = [
   { label: 'Контакты', href: '/#contact-form' },
 ]
 
-/** Оформление шапки — значения из оформления hero-блока (§08 спеки) */
-const appearance = {
-  backgroundColor: '#F8F7F3',
-  textColor: '#080808',
-  mutedTextColor: '#303030',
-  accentColor: '#D7EF28',
-  accentTextColor: '#080808',
-  fontFamily: 'inter',
-  brandPx: 30,
-  navigationPx: 16,
-  buttonTextPx: 18,
-  buttonHeightPx: 56,
-  buttonPaddingXPx: 28,
-  buttonRadiusPx: 0,
-  headerHeightPx: 88,
-}
-
 async function main() {
   console.log('[seed-header] старт')
   const payload = await getPayload({ config: payloadConfig })
@@ -52,7 +35,6 @@ async function main() {
         header.navigation && header.navigation.length > 0
           ? header.navigation
           : DEFAULT_NAV,
-      phone: header.phone ?? null,
       cta: {
         enabled: header.cta?.enabled ?? true,
         label: header.cta?.label || 'Зарегистрироваться',
@@ -61,7 +43,6 @@ async function main() {
         icon: header.cta?.icon || 'arrow-up-right',
         variant: header.cta?.variant || 'accent',
       },
-      appearance,
     },
   })
   payload.logger.info('Global header заполнен')

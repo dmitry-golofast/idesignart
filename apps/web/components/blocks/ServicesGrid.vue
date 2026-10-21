@@ -191,7 +191,7 @@ function imageUrl(media: { url?: string | null } | null | undefined): string | n
  * 8 сот с фото и текстом, рамка-контур по референсу gex.svg
  * ========================================================= */
 
-/* Ровно первый экран: вьюпорт минус sticky-шапка (--hd-height на <html>).
+/* Ровно первый экран: вьюпорт минус sticky-шапка (--header-height — токен в tokens.css).
    Фолбэки: vh для старых браузеров → svh → dvh. Высота жёсткая: соты,
    не влезающие по вертикали, слегка обрезаются нижней границей секции
    (overflow: hidden) — блок не растягивает страницу */
@@ -199,9 +199,9 @@ function imageUrl(media: { url?: string | null } | null | undefined): string | n
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--hd-height, 76px));
-  height: calc(100svh - var(--hd-height, 76px));
-  height: calc(100dvh - var(--hd-height, 76px));
+  height: calc(100vh - var(--header-height, 76px));
+  height: calc(100svh - var(--header-height, 76px));
+  height: calc(100dvh - var(--header-height, 76px));
   padding-top: clamp(1.5rem, 4vh, 3rem);
   padding-bottom: clamp(1.25rem, 3vh, 2.5rem);
   overflow: hidden;

@@ -130,6 +130,10 @@
   --section-gap: clamp(4.5rem, 9vw, 9rem);
   --section-gap-sm: clamp(2.5rem, 5vw, 4rem);
 
+  /* Высота sticky-шапки. Задаётся в коде (не в CMS): из неё вычитают
+     вьюпорт блоки первого экрана («первый экран = вьюпорт минус шапка») */
+  --header-height: 76px;
+
   /* Z-index шкала */
   --z-base: 0;
   --z-content: 10;
