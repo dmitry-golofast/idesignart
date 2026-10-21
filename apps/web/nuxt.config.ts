@@ -50,6 +50,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   vite: {
     plugins: [tailwindcss()],
+    // zod (useLeadForm) без пребандла Vite подхватывает в рантайме при первом
+    // заходе на страницу с формой и делает одноразовый reload страницы
+    optimizeDeps: { include: ['zod'] },
   },
 
   // ===== Runtime config =====
