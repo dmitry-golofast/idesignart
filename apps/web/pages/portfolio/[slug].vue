@@ -23,10 +23,10 @@ const project = computed<Project>(() => data.value!.docs[0]!)
 const coverImage = computed(() => populated(project.value.coverImage))
 
 useSeo({
-  title: project.value.seo?.title || `${project.value.title} — дизайн-проект`,
-  description: project.value.seo?.description || project.value.excerpt,
-  keywords: project.value.seo?.keywords,
+  title: project.value.meta?.title || `${project.value.title} — дизайн-проект`,
+  description: project.value.meta?.description || project.value.excerpt,
   image: coverImage.value?.url,
+  noindex: project.value.meta?.noindex ?? false,
   type: 'article',
 })
 
@@ -38,7 +38,7 @@ function imgUrl(url?: string) {
   return url.startsWith('http') ? url : `${payloadBase}${url}`
 }
 
-const meta = computed(() => project.value.meta || {})
+const details = computed(() => project.value.details || {})
 
 const propertyLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', office: 'Офис',
@@ -87,22 +87,22 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
         <p class="mt-4 max-w-2xl text-lg text-[var(--color-canvas)]/80">{{ project.excerpt }}</p>
 
         <!-- Метаданные -->
-        <dl v-if="meta" class="mt-8 grid grid-cols-2 gap-6 text-sm sm:grid-cols-4">
-          <div v-if="meta.area">
+        <dl v-if="details" class="mt-8 grid grid-cols-2 gap-6 text-sm sm:grid-cols-4">
+          <div v-if="details.area">
             <dt class="text-[var(--color-canvas)]/50">Площадь</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ meta.area }} м²</dd>
+            <dd class="mt-1 text-[var(--color-canvas)]">{{ details.area }} м²</dd>
           </div>
-          <div v-if="meta.propertyType">
+          <div v-if="details.propertyType">
             <dt class="text-[var(--color-canvas)]/50">Тип</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ propertyLabels[meta.propertyType] || meta.propertyType }}</dd>
+            <dd class="mt-1 text-[var(--color-canvas)]">{{ propertyLabels[details.propertyType] || details.propertyType }}</dd>
           </div>
-          <div v-if="meta.style">
+          <div v-if="details.style">
             <dt class="text-[var(--color-canvas)]/50">Стиль</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ styleLabels[meta.style] || meta.style }}</dd>
+            <dd class="mt-1 text-[var(--color-canvas)]">{{ styleLabels[details.style] || details.style }}</dd>
           </div>
-          <div v-if="meta.duration">
+          <div v-if="details.duration">
             <dt class="text-[var(--color-canvas)]/50">Срок</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ meta.duration }}</dd>
+            <dd class="mt-1 text-[var(--color-canvas)]">{{ details.duration }}</dd>
           </div>
         </dl>
       </div>

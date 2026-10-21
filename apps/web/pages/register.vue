@@ -11,9 +11,9 @@ const page = computed(() => pageData.value?.docs?.[0])
 const sections = computed(() => page.value?.sections || [])
 
 useSeo({
-  title: page.value?.seo?.title || page.value?.title || 'Регистрация — idesignart',
-  description: page.value?.seo?.description,
-  noindex: true,
+  title: page.value?.meta?.title || page.value?.title || 'Регистрация — idesignart',
+  description: page.value?.meta?.description,
+  noindex: page.value?.meta?.noindex ?? true,
 })
 </script>
 

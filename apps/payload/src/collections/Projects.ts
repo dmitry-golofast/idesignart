@@ -87,8 +87,9 @@ export const Projects: CollectionConfig = {
       },
     },
     // ===== Метаданные проекта (SEO + социальное доказательство) =====
+    // Имя 'meta' занято группой SEO-плагина (@payloadcms/plugin-seo)
     {
-      name: 'meta',
+      name: 'details',
       type: 'group',
       label: 'Параметры проекта',
       admin: {
@@ -162,17 +163,6 @@ export const Projects: CollectionConfig = {
         { name: 'author', type: 'text' },
         { name: 'role', type: 'text' },
         { name: 'photo', type: 'upload', relationTo: 'media' },
-      ],
-    },
-    // ===== SEO =====
-    {
-      name: 'seo',
-      type: 'group',
-      fields: [
-        { name: 'title', type: 'text' },
-        { name: 'description', type: 'textarea' },
-        { name: 'keywords', type: 'text' },
-        { name: 'ogImage', type: 'upload', relationTo: 'media' },
       ],
     },
     {

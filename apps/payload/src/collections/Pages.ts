@@ -1,4 +1,4 @@
-import { CollectionConfig, Field } from 'payload'
+import { CollectionConfig } from 'payload'
 import { HeroBlock } from '../blocks/HeroBlock'
 import { ServicesBlock } from '../blocks/ServicesBlock'
 import { PortfolioBlock } from '../blocks/PortfolioBlock'
@@ -8,35 +8,8 @@ import { ContentBlock } from '../blocks/ContentBlock'
 import { CtaBlock } from '../blocks/CtaBlock'
 import { ContactBlock } from '../blocks/ContactBlock'
 
-const seoFields: Field[] = [
-  {
-    name: 'seo',
-    type: 'group',
-    admin: {
-      description: 'Метаданные страницы для поисковых систем и социальных сетей.',
-    },
-    fields: [
-      { name: 'title', type: 'text', label: 'Meta Title (≤60 симв.)' },
-      {
-        name: 'description',
-        type: 'textarea',
-        label: 'Meta Description (≤160 симв.)',
-      },
-      {
-        name: 'keywords',
-        type: 'text',
-        label: 'Ключевые слова (для справки, в выдаче не используется)',
-      },
-      { name: 'ogImage', type: 'upload', relationTo: 'media' },
-      {
-        name: 'noindex',
-        type: 'checkbox',
-        defaultValue: false,
-        label: 'Скрыть из индексации',
-      },
-    ],
-  },
-]
+// SEO-поля (meta.title/description/image/noindex) добавляет плагин
+// @payloadcms/plugin-seo — см. payload.config.ts
 
 export const Pages: CollectionConfig = {
   slug: 'pages',
@@ -87,7 +60,6 @@ export const Pages: CollectionConfig = {
         ContactBlock,
       ],
     },
-    ...seoFields,
   ],
   timestamps: true,
 }

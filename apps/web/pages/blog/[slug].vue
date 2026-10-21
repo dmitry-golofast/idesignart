@@ -20,10 +20,10 @@ const author = computed(() => populated(post.value.author))
 const category = computed(() => populated(post.value.category))
 
 useSeo({
-  title: post.value.seo?.title || post.value.title,
-  description: post.value.seo?.description || post.value.excerpt,
-  keywords: post.value.seo?.keywords,
+  title: post.value.meta?.title || post.value.title,
+  description: post.value.meta?.description || post.value.excerpt,
   image: coverImage.value?.url,
+  noindex: post.value.meta?.noindex ?? false,
   type: 'article',
   publishedTime: post.value.publishedAt,
   modifiedTime: post.value.updatedAt,

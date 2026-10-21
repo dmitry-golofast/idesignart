@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "payload run src/serve.ts",
-    "build": "payload build",
     "start": "payload start",
     "generate:types": "payload generate:types",
     "lint": "eslint .",
@@ -13,6 +12,7 @@
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.0.0",
+    "@payloadcms/plugin-seo": "^3.86.0",
     "@payloadcms/richtext-lexical": "^3.0.0",
     "graphql": "^16.9.0",
     "payload": "^3.0.0",
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "next": "15.4.11"
   }
 }

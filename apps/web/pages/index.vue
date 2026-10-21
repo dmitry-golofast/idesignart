@@ -21,15 +21,15 @@ const renderKey = computed(() => {
   return `home-${s.length}-${s.map((x: any) => x.blockType).join(',')}`
 })
 
-// SEO из CMS (§11 спеки hero): title/description/ogImage — обычные поля Pages
-const seoOgImage = page.value?.seo?.ogImage
-const ogImageUrl = seoOgImage && typeof seoOgImage === 'object' ? seoOgImage.url : undefined
+// SEO из CMS: группа meta добавляется плагином @payloadcms/plugin-seo
+const seoImage = page.value?.meta?.image
+const ogImageUrl = seoImage && typeof seoImage === 'object' ? seoImage.url : undefined
 
 useSeo({
-  title: page.value?.seo?.title || page.value?.title || 'idesignart — дизайн интерьера и 3D-визуализация',
-  description: page.value?.seo?.description,
-  keywords: page.value?.seo?.keywords,
+  title: page.value?.meta?.title || page.value?.title || 'idesignart — дизайн интерьера и 3D-визуализация',
+  description: page.value?.meta?.description,
   image: ogImageUrl,
+  noindex: page.value?.meta?.noindex ?? false,
 })
 </script>
 

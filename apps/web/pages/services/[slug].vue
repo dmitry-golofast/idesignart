@@ -28,10 +28,10 @@ const relatedProjects = computed(() =>
 )
 
 useSeo({
-  title: service.value.seo?.title || service.value.title,
-  description: service.value.seo?.description || service.value.shortDescription,
-  keywords: service.value.seo?.keywords,
+  title: service.value.meta?.title || service.value.title,
+  description: service.value.meta?.description || service.value.shortDescription,
   image: heroImage.value?.url ?? undefined,
+  noindex: service.value.meta?.noindex ?? false,
   type: 'website',
 })
 

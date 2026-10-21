@@ -79,17 +79,8 @@ export const Posts: CollectionConfig = {
         description: 'В минутах (можно оставить пустым — посчитается автоматически).',
       },
     },
-    {
-      name: 'seo',
-      type: 'group',
-      fields: [
-        { name: 'title', type: 'text' },
-        { name: 'description', type: 'textarea' },
-        { name: 'keywords', type: 'text' },
-        { name: 'ogImage', type: 'upload', relationTo: 'media' },
-        { name: 'noindex', type: 'checkbox', defaultValue: false },
-      ],
-    },
+    // SEO-поля (meta.title/description/image/noindex) добавляет плагин
+    // @payloadcms/plugin-seo — см. payload.config.ts
     {
       name: 'relatedPosts',
       type: 'relationship',

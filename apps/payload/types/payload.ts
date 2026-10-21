@@ -297,6 +297,9 @@ export interface Page {
           }
         | {
             title: string;
+            /**
+             * Арт во всю секцию; рисунок прижимается к левому краю. Если пусто — берётся фото первой услуги.
+             */
             bgImage?: (number | null) | Media;
             id?: string | null;
             blockName?: string | null;
@@ -408,14 +411,13 @@ export interface Page {
           }
       )[]
     | null;
-  /**
-   * Метаданные страницы для поисковых систем и социальных сетей.
-   */
-  seo?: {
+  meta?: {
     title?: string | null;
     description?: string | null;
-    keywords?: string | null;
-    ogImage?: (number | null) | Media;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
     noindex?: boolean | null;
   };
   updatedAt: string;
@@ -458,7 +460,7 @@ export interface Project {
   /**
    * Эти данные → структурированный сниппет в выдаче и фильтры на сайте.
    */
-  meta?: {
+  details?: {
     area?: number | null;
     propertyType?: ('apartment' | 'house' | 'office' | 'hospitality' | 'retail' | 'other') | null;
     style?: ('modern' | 'minimal' | 'scandi' | 'loft' | 'classic' | 'neoclassic' | 'japandi' | 'other') | null;
@@ -509,16 +511,19 @@ export interface Project {
     role?: string | null;
     photo?: (number | null) | Media;
   };
-  seo?: {
-    title?: string | null;
-    description?: string | null;
-    keywords?: string | null;
-    ogImage?: (number | null) | Media;
-  };
   /**
    * Показывать на главной в «Избранных проектах».
    */
   featured?: boolean | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    noindex?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -627,17 +632,20 @@ export interface Service {
    * Кейсы по этой услуге.
    */
   relatedProjects?: (number | Project)[] | null;
-  seo?: {
-    title?: string | null;
-    description?: string | null;
-    keywords?: string | null;
-    ogImage?: (number | null) | Media;
-  };
   /**
    * Меньше число — выше в сетке услуг на главной.
    */
   order?: number | null;
   featured?: boolean | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    noindex?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -686,14 +694,16 @@ export interface Post {
    * В минутах (можно оставить пустым — посчитается автоматически).
    */
   readingTime?: number | null;
-  seo?: {
+  relatedPosts?: (number | Post)[] | null;
+  meta?: {
     title?: string | null;
     description?: string | null;
-    keywords?: string | null;
-    ogImage?: (number | null) | Media;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
     noindex?: boolean | null;
   };
-  relatedPosts?: (number | Post)[] | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1134,13 +1144,12 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
-  seo?:
+  meta?:
     | T
     | {
         title?: T;
         description?: T;
-        keywords?: T;
-        ogImage?: T;
+        image?: T;
         noindex?: T;
       };
   updatedAt?: T;
@@ -1165,7 +1174,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         id?: T;
       };
   categories?: T;
-  meta?:
+  details?:
     | T
     | {
         area?: T;
@@ -1186,15 +1195,15 @@ export interface ProjectsSelect<T extends boolean = true> {
         role?: T;
         photo?: T;
       };
-  seo?:
+  featured?: T;
+  meta?:
     | T
     | {
         title?: T;
         description?: T;
-        keywords?: T;
-        ogImage?: T;
+        image?: T;
+        noindex?: T;
       };
-  featured?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1241,16 +1250,16 @@ export interface ServicesSelect<T extends boolean = true> {
         id?: T;
       };
   relatedProjects?: T;
-  seo?:
+  order?: T;
+  featured?: T;
+  meta?:
     | T
     | {
         title?: T;
         description?: T;
-        keywords?: T;
-        ogImage?: T;
+        image?: T;
+        noindex?: T;
       };
-  order?: T;
-  featured?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1270,16 +1279,15 @@ export interface PostsSelect<T extends boolean = true> {
   author?: T;
   publishedAt?: T;
   readingTime?: T;
-  seo?:
+  relatedPosts?: T;
+  meta?:
     | T
     | {
         title?: T;
         description?: T;
-        keywords?: T;
-        ogImage?: T;
+        image?: T;
         noindex?: T;
       };
-  relatedPosts?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1413,7 +1421,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * Глобальные настройки сайта: контакты, SEO по умолчанию, интеграции.
+ * Глобальные настройки сайта: контакты, SEO (дефолты — группа meta от плагина), верификация, интеграции.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "settings".
@@ -1444,31 +1452,14 @@ export interface Setting {
      */
     mapEmbed?: string | null;
   };
-  socialProof?: {
-    stats?:
-      | {
-          value: string;
-          label: string;
-          id?: string | null;
-        }[]
-      | null;
-    pressLogos?:
-      | {
-          name?: string | null;
-          logo?: (number | null) | Media;
-          url?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-  };
   seoDefaults?: {
-    title?: string | null;
     /**
-     * Шаблон: %s — разделитель
+     * Код Google Search Console (google-site-verification)
      */
-    descriptionTemplate?: string | null;
-    defaultOgImage?: (number | null) | Media;
     googleVerification?: string | null;
+    /**
+     * Код Яндекс Вебмастера (yandex-verification)
+     */
     yandexVerification?: string | null;
   };
   analytics?: {
@@ -1476,18 +1467,20 @@ export interface Setting {
     yandexMetrikaId?: string | null;
     plausibleDomain?: string | null;
   };
-  leadMagnet?: {
-    enabled?: boolean | null;
+  meta?: {
     title?: string | null;
-    subtitle?: string | null;
-    guideFile?: (number | null) | Media;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
     image?: (number | null) | Media;
+    noindex?: boolean | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
- * Меню, телефон и кнопка действия в шапке. Оформление предзаполнено в стиле hero и управляется независимо.
+ * Меню и кнопка действия в шапке сайта.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
@@ -1505,10 +1498,6 @@ export interface Header {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Пусто — берётся из контактов (Settings), затем из переменных окружения
-   */
-  phone?: string | null;
   cta?: {
     enabled?: boolean | null;
     label?: string | null;
@@ -1519,24 +1508,6 @@ export interface Header {
     newTab?: boolean | null;
     icon?: ('arrow-up-right' | 'arrow-right' | 'none') | null;
     variant?: ('accent' | 'dark' | 'outline') | null;
-  };
-  /**
-   * Предзаполнено в стиле hero-блока; управляется независимо от него
-   */
-  appearance: {
-    backgroundColor?: string | null;
-    textColor?: string | null;
-    mutedTextColor?: string | null;
-    accentColor?: string | null;
-    accentTextColor?: string | null;
-    fontFamily?: ('inter' | 'manrope' | 'system') | null;
-    brandPx: number;
-    navigationPx: number;
-    buttonTextPx: number;
-    buttonHeightPx: number;
-    buttonPaddingXPx: number;
-    buttonRadiusPx: number;
-    headerHeightPx: number;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1565,31 +1536,9 @@ export interface SettingsSelect<T extends boolean = true> {
         address?: T;
         mapEmbed?: T;
       };
-  socialProof?:
-    | T
-    | {
-        stats?:
-          | T
-          | {
-              value?: T;
-              label?: T;
-              id?: T;
-            };
-        pressLogos?:
-          | T
-          | {
-              name?: T;
-              logo?: T;
-              url?: T;
-              id?: T;
-            };
-      };
   seoDefaults?:
     | T
     | {
-        title?: T;
-        descriptionTemplate?: T;
-        defaultOgImage?: T;
         googleVerification?: T;
         yandexVerification?: T;
       };
@@ -1600,14 +1549,13 @@ export interface SettingsSelect<T extends boolean = true> {
         yandexMetrikaId?: T;
         plausibleDomain?: T;
       };
-  leadMagnet?:
+  meta?:
     | T
     | {
-        enabled?: T;
         title?: T;
-        subtitle?: T;
-        guideFile?: T;
+        description?: T;
         image?: T;
+        noindex?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1626,7 +1574,6 @@ export interface HeaderSelect<T extends boolean = true> {
         newTab?: T;
         id?: T;
       };
-  phone?: T;
   cta?:
     | T
     | {
@@ -1636,23 +1583,6 @@ export interface HeaderSelect<T extends boolean = true> {
         newTab?: T;
         icon?: T;
         variant?: T;
-      };
-  appearance?:
-    | T
-    | {
-        backgroundColor?: T;
-        textColor?: T;
-        mutedTextColor?: T;
-        accentColor?: T;
-        accentTextColor?: T;
-        fontFamily?: T;
-        brandPx?: T;
-        navigationPx?: T;
-        buttonTextPx?: T;
-        buttonHeightPx?: T;
-        buttonPaddingXPx?: T;
-        buttonRadiusPx?: T;
-        headerHeightPx?: T;
       };
   updatedAt?: T;
   createdAt?: T;

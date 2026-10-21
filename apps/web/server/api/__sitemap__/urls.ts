@@ -10,6 +10,8 @@
 interface PayloadDoc {
   slug: string
   updatedAt?: string
+  // Группа meta добавляется плагином @payloadcms/plugin-seo
+  meta?: { noindex?: boolean | null }
 }
 interface PayloadListResponse {
   docs: PayloadDoc[]
@@ -35,18 +37,20 @@ export default defineSitemapEventHandler(async () => {
   ])
 
   const urls: ReturnType<typeof asSitemapUrl>[] = []
+  // noindex-страницы в sitemap не входят
+  const indexable = <T extends PayloadDoc>(docs: T[]) => docs.filter((d) => !d.meta?.noindex)
 
   // Главная (slug = 'home' → корень)
-  for (const p of pages.docs.filter((p) => p.slug !== 'home')) {
+  for (const p of indexable(pages.docs).filter((p) => p.slug !== 'home')) {
     urls.push(asSitemapUrl({ loc: `/${p.slug}`, lastmod: p.updatedAt }))
   }
-  for (const p of projects.docs) {
+  for (const p of indexable(projects.docs)) {
     urls.push(asSitemapUrl({ loc: `/portfolio/${p.slug}`, lastmod: p.updatedAt }))
   }
-  for (const s of services.docs) {
+  for (const s of indexable(services.docs)) {
     urls.push(asSitemapUrl({ loc: `/services/${s.slug}`, lastmod: s.updatedAt }))
   }
-  for (const p of posts.docs) {
+  for (const p of indexable(posts.docs)) {
     urls.push(asSitemapUrl({ loc: `/blog/${p.slug}`, lastmod: p.updatedAt }))
   }
 

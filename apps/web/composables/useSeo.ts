@@ -3,15 +3,15 @@ import type { Media } from '../shared/types/payload'
 /**
  * useSeo — единый хелпер для SEO-мета на каждой странице.
  *
- * Слои значений: страница → Settings.seoDefaults («SEO по умолчанию» в админке)
- * → builtin-фолбэк. Description из шаблона (%s) подставляется только когда у
- * страницы своего описания нет; в %s идёт title страницы.
+ * Слои значений: страница (meta от @payloadcms/plugin-seo) → global «settings»
+ * (meta — дефолты сайта, тот же плагин; seoDefaults — коды верификации)
+ * → builtin-фолбэк.
  *
  * Note: useSeoMeta / useHead / useSchemaOrg / defineLocalBusiness /
  * useRuntimeConfig / useRoute — Nuxt auto-imports.
  */
 
-// Поля из Payload могут быть null (seo-группа необязательна) — принимаем null,
+// Поля из Payload могут быть null (meta-группа необязательна) — принимаем null,
 // чтобы страницы не приходило чистить перед вызовом
 interface SeoOptions {
   title?: string | null
@@ -29,14 +29,6 @@ interface SeoOptions {
 const isMedia = (m: unknown): m is Media =>
   Boolean(m) && typeof m === 'object' && typeof (m as Media).url === 'string'
 
-/** Шаблон описания: %s заменяется на title страницы; без него разделитель подчищается */
-const applyDescriptionTemplate = (template: string, fill?: string | null) => {
-  if (!template.includes('%s')) return template
-  const value = (fill ?? '').trim()
-  if (!value) return template.replace('%s', '').replace(/\s*[—–-]\s*$/, '').trim()
-  return template.replace('%s', value)
-}
-
 /**
  * useSeo — единый хелпер для SEO-мета на каждой странице.
  *
@@ -49,23 +41,22 @@ export function useSeo(options: SeoOptions = {}) {
   const payloadBase = config.public.payloadApiUrl as string
   const route = useRoute()
 
-  // Дефолты из Settings (fetch дедуплицируется по ключу useAsyncData)
+  // Дефолты из Settings (fetch дедуплицируется по ключу useAsyncData).
+  // meta — дефолтные title/description/OG-картинка сайта (seoPlugin);
+  // seoDefaults — только коды верификации поисковиков.
   const { data: settingsData } = useSettings()
-  const seoDefaults = settingsData.value?.seoDefaults ?? {}
+  const settings = settingsData.value
+  const siteMeta = settings?.meta ?? {}
+  const seoDefaults = settings?.seoDefaults ?? {}
 
-  // title: страница → глобальный дефолт
-  const title = options.title || seoDefaults.title || undefined
+  // title: страница → дефолт сайта
+  const title = options.title || siteMeta.title || undefined
 
-  // description: страница → шаблон с %s из Settings
-  const description = options.description
-    ?? (seoDefaults.descriptionTemplate
-      ? applyDescriptionTemplate(seoDefaults.descriptionTemplate, options.title)
-      : null)
+  // description: страница → дефолт сайта
+  const description = options.description || siteMeta.description || null
 
-  // OG-картинка: страница → глобальная дефолтная → /og-default.jpg
-  const defaultOgUrl = isMedia(seoDefaults.defaultOgImage)
-    ? seoDefaults.defaultOgImage.url ?? null
-    : null
+  // OG-картинка: страница → дефолтная сайта → /og-default.jpg
+  const defaultOgUrl = isMedia(siteMeta.image) ? siteMeta.image.url ?? null : null
   const imageUrl = options.image || defaultOgUrl || '/og-default.jpg'
   // /media/* отдаёт Payload, /og-default.jpg лежит в public/ фронтенда
   const fullImage = imageUrl.startsWith('http')
@@ -103,7 +94,7 @@ export function useSeo(options: SeoOptions = {}) {
 
   useSeoMeta(meta)
 
-  // Canonical + коды верификации поисковиков (заполняются в админке, Settings → SEO)
+  // Canonical + коды верификации поисковиков (заполняются в админке, Settings → Верификация)
   useHead({
     link: [{ rel: 'canonical', href: fullUrl }],
     meta: [

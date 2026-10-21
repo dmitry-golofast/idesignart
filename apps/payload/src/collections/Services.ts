@@ -136,16 +136,8 @@ export const Services: CollectionConfig = {
       hasMany: true,
       admin: { description: 'Кейсы по этой услуге.' },
     },
-    {
-      name: 'seo',
-      type: 'group',
-      fields: [
-        { name: 'title', type: 'text' },
-        { name: 'description', type: 'textarea' },
-        { name: 'keywords', type: 'text' },
-        { name: 'ogImage', type: 'upload', relationTo: 'media' },
-      ],
-    },
+    // SEO-поля (meta.title/description/image/noindex) добавляет плагин
+    // @payloadcms/plugin-seo — см. payload.config.ts
     {
       name: 'order',
       type: 'number',
