@@ -4,7 +4,8 @@ export const Settings: GlobalConfig = {
   slug: 'settings',
   admin: {
     group: 'Настройки',
-    description: 'Глобальные настройки сайта: контакты, SEO по умолчанию, интеграции.',
+    description:
+      'Глобальные настройки сайта: контакты, SEO (дефолты — группа meta от плагина), верификация, интеграции.',
   },
   access: {
     read: () => true, // публично — нужно для рендеринга футера/SEO на сайте
@@ -41,31 +42,22 @@ export const Settings: GlobalConfig = {
       ],
     },
     {
-      name: 'socialProof',
-      type: 'group',
-      label: 'Социальное доказательство',
-      fields: [
-        { name: 'stats', type: 'array', label: 'Цифры', fields: [
-          { name: 'value', type: 'text', required: true, label: 'Значение (напр. «120+»)' },
-          { name: 'label', type: 'text', required: true, label: 'Подпись (напр. «проектов»)' },
-        ] },
-        { name: 'pressLogos', type: 'array', label: 'Логотипы изданий', fields: [
-          { name: 'name', type: 'text' },
-          { name: 'logo', type: 'upload', relationTo: 'media' },
-          { name: 'url', type: 'text' },
-        ] },
-      ],
-    },
-    {
+      // Дефолтные title/description/OG-картинка сайта живут в группе meta,
+      // которую сюда добавляет seoPlugin (globals: ['settings']) — см. payload.config.
       name: 'seoDefaults',
       type: 'group',
-      label: 'SEO по умолчанию',
+      label: 'Верификация поисковиков',
       fields: [
-        { name: 'title', type: 'text' },
-        { name: 'descriptionTemplate', type: 'text', admin: { description: 'Шаблон: %s — разделитель' } },
-        { name: 'defaultOgImage', type: 'upload', relationTo: 'media' },
-        { name: 'googleVerification', type: 'text' },
-        { name: 'yandexVerification', type: 'text' },
+        {
+          name: 'googleVerification',
+          type: 'text',
+          admin: { description: 'Код Google Search Console (google-site-verification)' },
+        },
+        {
+          name: 'yandexVerification',
+          type: 'text',
+          admin: { description: 'Код Яндекс Вебмастера (yandex-verification)' },
+        },
       ],
     },
     {
@@ -76,18 +68,6 @@ export const Settings: GlobalConfig = {
         { name: 'gaId', type: 'text' },
         { name: 'yandexMetrikaId', type: 'text' },
         { name: 'plausibleDomain', type: 'text' },
-      ],
-    },
-    {
-      name: 'leadMagnet',
-      type: 'group',
-      label: 'Лид-магнит',
-      fields: [
-        { name: 'enabled', type: 'checkbox', defaultValue: true },
-        { name: 'title', type: 'text' },
-        { name: 'subtitle', type: 'textarea' },
-        { name: 'guideFile', type: 'upload', relationTo: 'media' },
-        { name: 'image', type: 'upload', relationTo: 'media' },
       ],
     },
   ],

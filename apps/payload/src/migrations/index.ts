@@ -9,6 +9,12 @@ import * as migration_20261013_102414_services__add_cardImage_and_tagline from '
 import * as migration_20261013_102429_services__drop_icon__replaced_by_cardImage_ from './20261013_102429_services__drop_icon__replaced_by_cardImage_';
 import * as migration_20261013_124029_process_steps__add_description_and_sketch_fields from './20261013_124029_process_steps__add_description_and_sketch_fields';
 import * as migration_20261014_162547 from './20261014_162547';
+import * as migration_20261017_003000_services_block__add_bg_image from './20261017_003000_services_block__add_bg_image';
+import * as migration_20261021_130800_seo_plugin_meta_group from './20261021_130800_seo_plugin_meta_group';
+import * as migration_20261021_153000_drop_header_appearance_group from './20261021_153000_drop_header_appearance_group';
+import * as migration_20261021_155500_drop_header_phone from './20261021_155500_drop_header_phone';
+import * as migration_20261021_161500_drop_settings_social_proof_lead_magnet from './20261021_161500_drop_settings_social_proof_lead_magnet';
+import * as migration_20261021_164000_settings_seo_plugin_meta from './20261021_164000_settings_seo_plugin_meta';
 
 export const migrations = [
   {
@@ -65,5 +71,35 @@ export const migrations = [
     up: migration_20261014_162547.up,
     down: migration_20261014_162547.down,
     name: '20261014_162547'
+  },
+  {
+    up: migration_20261017_003000_services_block__add_bg_image.up,
+    down: migration_20261017_003000_services_block__add_bg_image.down,
+    name: '20261017_003000_services_block__add_bg_image',
+  },
+  {
+    up: migration_20261021_130800_seo_plugin_meta_group.up,
+    down: migration_20261021_130800_seo_plugin_meta_group.down,
+    name: '20261021_130800_seo_plugin_meta_group',
+  },
+  {
+    up: migration_20261021_153000_drop_header_appearance_group.up,
+    down: migration_20261021_153000_drop_header_appearance_group.down,
+    name: '20261021_153000_drop_header_appearance_group',
+  },
+  {
+    up: migration_20261021_155500_drop_header_phone.up,
+    down: migration_20261021_155500_drop_header_phone.down,
+    name: '20261021_155500_drop_header_phone',
+  },
+  {
+    up: migration_20261021_161500_drop_settings_social_proof_lead_magnet.up,
+    down: migration_20261021_161500_drop_settings_social_proof_lead_magnet.down,
+    name: '20261021_161500_drop_settings_social_proof_lead_magnet',
+  },
+  {
+    up: migration_20261021_164000_settings_seo_plugin_meta.up,
+    down: migration_20261021_164000_settings_seo_plugin_meta.down,
+    name: '20261021_164000_settings_seo_plugin_meta',
   },
 ];
