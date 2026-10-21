@@ -37,7 +37,7 @@ const badge = computed(() => {
     (c): c is Category => Boolean(c) && typeof c === 'object',
   )
   if (categories[0]?.title) return categories[0].title
-  const pt = props.project.meta?.propertyType
+  const pt = props.project.details?.propertyType
   return pt ? propertyLabels[pt] : null
 })
 </script>
@@ -90,8 +90,8 @@ const badge = computed(() => {
       </div>
 
       <div class="shrink-0 text-right">
-        <p v-if="project.meta?.area" class="text-sm font-medium text-white sm:text-base">
-          {{ project.meta.area }} м²
+        <p v-if="project.details?.area" class="text-sm font-medium text-white sm:text-base">
+          {{ project.details.area }} м²
         </p>
         <!-- «Подробнее» с горизонтальной стрелкой и подчёркиванием -->
         <span class="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-white/90 underline decoration-white/50 underline-offset-4 transition-colors duration-200 group-hover:decoration-white sm:text-sm">
