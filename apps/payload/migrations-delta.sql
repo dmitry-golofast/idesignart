@@ -1,260 +1,153 @@
--- Догон схемы БД: миграции 3–11 (для сервера, где payload_migrations = первые 2).
--- Каждая миграция — в транзакции, как делает payload migrate. Контент не затрагивается.
+-- Догон схемы БД: миграции 20261021_130800_seo_plugin_meta_group … 20261021_164000_settings_seo_plugin_meta.
+-- Каждая миграция — в транзакции, как делает payload migrate.
 -- Применение: docker exec -i idesignart-db psql -U postgres -d idesignart < apps/payload/migrations-delta.sql
 
--- ===== 20261012_105926_portfolio_grid__drop_showAllButton.ts =====
+-- ===== 20261021_130800_seo_plugin_meta_group.ts =====
 BEGIN;
-CREATE TYPE "public"."enum_pages_blocks_portfolio_grid_facts_icon" AS ENUM('layers', 'house', 'leaf', 'compass');
-  CREATE TYPE "public"."enum__pages_v_blocks_portfolio_grid_facts_icon" AS ENUM('layers', 'house', 'leaf', 'compass');
-  CREATE TABLE "pages_blocks_portfolio_grid_facts" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"icon" "enum_pages_blocks_portfolio_grid_facts_icon" DEFAULT 'layers',
-  	"value" varchar,
-  	"label" varchar
-  );
-  
-  CREATE TABLE "_pages_v_blocks_portfolio_grid_facts" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"icon" "enum__pages_v_blocks_portfolio_grid_facts_icon" DEFAULT 'layers',
-  	"value" varchar,
-  	"label" varchar,
-  	"_uuid" varchar
-  );
-  
-  ALTER TABLE "pages_blocks_portfolio_grid" ALTER COLUMN "eyebrow" SET DEFAULT 'Портфолио';
-  ALTER TABLE "_pages_v_blocks_portfolio_grid" ALTER COLUMN "eyebrow" SET DEFAULT 'Портфолио';
-  ALTER TABLE "pages_blocks_portfolio_grid_facts" ADD CONSTRAINT "pages_blocks_portfolio_grid_facts_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_portfolio_grid"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_pages_v_blocks_portfolio_grid_facts" ADD CONSTRAINT "_pages_v_blocks_portfolio_grid_facts_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v_blocks_portfolio_grid"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "pages_blocks_portfolio_grid_facts_order_idx" ON "pages_blocks_portfolio_grid_facts" USING btree ("_order");
-  CREATE INDEX "pages_blocks_portfolio_grid_facts_parent_id_idx" ON "pages_blocks_portfolio_grid_facts" USING btree ("_parent_id");
-  CREATE INDEX "_pages_v_blocks_portfolio_grid_facts_order_idx" ON "_pages_v_blocks_portfolio_grid_facts" USING btree ("_order");
-  CREATE INDEX "_pages_v_blocks_portfolio_grid_facts_parent_id_idx" ON "_pages_v_blocks_portfolio_grid_facts" USING btree ("_parent_id");
-  ALTER TABLE "pages_blocks_portfolio_grid" DROP COLUMN "show_all_button";
-  ALTER TABLE "_pages_v_blocks_portfolio_grid" DROP COLUMN "show_all_button";
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261012_105926_portfolio_grid__drop_showAllButton', 1, now(), now());
+-- 1. Энумы projects: meta.* → details.*
+  ALTER TYPE "public"."enum_projects_meta_property_type" RENAME TO "enum_projects_details_property_type";
+  ALTER TYPE "public"."enum_projects_meta_style" RENAME TO "enum_projects_details_style";
+  ALTER TYPE "public"."enum_projects_meta_budget_range" RENAME TO "enum_projects_details_budget_range";
+  ALTER TYPE "public"."enum__projects_v_version_meta_property_type" RENAME TO "enum__projects_v_version_details_property_type";
+  ALTER TYPE "public"."enum__projects_v_version_meta_style" RENAME TO "enum__projects_v_version_details_style";
+  ALTER TYPE "public"."enum__projects_v_version_meta_budget_range" RENAME TO "enum__projects_v_version_details_budget_range";
+
+  -- 2. pages / _pages_v: seo_* → meta_*
+  ALTER TABLE "pages" RENAME COLUMN "seo_title" TO "meta_title";
+  ALTER TABLE "pages" RENAME COLUMN "seo_description" TO "meta_description";
+  ALTER TABLE "pages" RENAME COLUMN "seo_og_image_id" TO "meta_image_id";
+  ALTER TABLE "pages" RENAME COLUMN "seo_noindex" TO "meta_noindex";
+  ALTER TABLE "pages" DROP COLUMN "seo_keywords";
+  ALTER TABLE "_pages_v" RENAME COLUMN "version_seo_title" TO "version_meta_title";
+  ALTER TABLE "_pages_v" RENAME COLUMN "version_seo_description" TO "version_meta_description";
+  ALTER TABLE "_pages_v" RENAME COLUMN "version_seo_og_image_id" TO "version_meta_image_id";
+  ALTER TABLE "_pages_v" RENAME COLUMN "version_seo_noindex" TO "version_meta_noindex";
+  ALTER TABLE "_pages_v" DROP COLUMN "version_seo_keywords";
+
+  -- 3. posts / _posts_v
+  ALTER TABLE "posts" RENAME COLUMN "seo_title" TO "meta_title";
+  ALTER TABLE "posts" RENAME COLUMN "seo_description" TO "meta_description";
+  ALTER TABLE "posts" RENAME COLUMN "seo_og_image_id" TO "meta_image_id";
+  ALTER TABLE "posts" RENAME COLUMN "seo_noindex" TO "meta_noindex";
+  ALTER TABLE "posts" DROP COLUMN "seo_keywords";
+  ALTER TABLE "_posts_v" RENAME COLUMN "version_seo_title" TO "version_meta_title";
+  ALTER TABLE "_posts_v" RENAME COLUMN "version_seo_description" TO "version_meta_description";
+  ALTER TABLE "_posts_v" RENAME COLUMN "version_seo_og_image_id" TO "version_meta_image_id";
+  ALTER TABLE "_posts_v" RENAME COLUMN "version_seo_noindex" TO "version_meta_noindex";
+  ALTER TABLE "_posts_v" DROP COLUMN "version_seo_keywords";
+
+  -- 4. projects / _projects_v: seo_* → meta_* (+ новое meta_noindex),
+  --    параметры проекта meta_* → details_*
+  ALTER TABLE "projects" RENAME COLUMN "seo_title" TO "meta_title";
+  ALTER TABLE "projects" RENAME COLUMN "seo_description" TO "meta_description";
+  ALTER TABLE "projects" RENAME COLUMN "seo_og_image_id" TO "meta_image_id";
+  ALTER TABLE "projects" DROP COLUMN "seo_keywords";
+  ALTER TABLE "projects" ADD COLUMN "meta_noindex" boolean DEFAULT false;
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_seo_title" TO "version_meta_title";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_seo_description" TO "version_meta_description";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_seo_og_image_id" TO "version_meta_image_id";
+  ALTER TABLE "_projects_v" DROP COLUMN "version_seo_keywords";
+  ALTER TABLE "_projects_v" ADD COLUMN "version_meta_noindex" boolean DEFAULT false;
+  ALTER TABLE "projects" RENAME COLUMN "meta_area" TO "details_area";
+  ALTER TABLE "projects" RENAME COLUMN "meta_property_type" TO "details_property_type";
+  ALTER TABLE "projects" RENAME COLUMN "meta_style" TO "details_style";
+  ALTER TABLE "projects" RENAME COLUMN "meta_location" TO "details_location";
+  ALTER TABLE "projects" RENAME COLUMN "meta_year" TO "details_year";
+  ALTER TABLE "projects" RENAME COLUMN "meta_duration" TO "details_duration";
+  ALTER TABLE "projects" RENAME COLUMN "meta_budget_range" TO "details_budget_range";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_area" TO "version_details_area";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_property_type" TO "version_details_property_type";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_style" TO "version_details_style";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_location" TO "version_details_location";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_year" TO "version_details_year";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_duration" TO "version_details_duration";
+  ALTER TABLE "_projects_v" RENAME COLUMN "version_meta_budget_range" TO "version_details_budget_range";
+
+  -- 5. services / _services_v
+  ALTER TABLE "services" RENAME COLUMN "seo_title" TO "meta_title";
+  ALTER TABLE "services" RENAME COLUMN "seo_description" TO "meta_description";
+  ALTER TABLE "services" RENAME COLUMN "seo_og_image_id" TO "meta_image_id";
+  ALTER TABLE "services" DROP COLUMN "seo_keywords";
+  ALTER TABLE "services" ADD COLUMN "meta_noindex" boolean DEFAULT false;
+  ALTER TABLE "_services_v" RENAME COLUMN "version_seo_title" TO "version_meta_title";
+  ALTER TABLE "_services_v" RENAME COLUMN "version_seo_description" TO "version_meta_description";
+  ALTER TABLE "_services_v" RENAME COLUMN "version_seo_og_image_id" TO "version_meta_image_id";
+  ALTER TABLE "_services_v" DROP COLUMN "version_seo_keywords";
+  ALTER TABLE "_services_v" ADD COLUMN "version_meta_noindex" boolean DEFAULT false;
+
+  -- 6. Констрейнты FK → имена fresh-схемы
+  ALTER TABLE "pages" RENAME CONSTRAINT "pages_seo_og_image_id_media_id_fk" TO "pages_meta_image_id_media_id_fk";
+  ALTER TABLE "_pages_v" RENAME CONSTRAINT "_pages_v_version_seo_og_image_id_media_id_fk" TO "_pages_v_version_meta_image_id_media_id_fk";
+  ALTER TABLE "projects" RENAME CONSTRAINT "projects_seo_og_image_id_media_id_fk" TO "projects_meta_image_id_media_id_fk";
+  ALTER TABLE "_projects_v" RENAME CONSTRAINT "_projects_v_version_seo_og_image_id_media_id_fk" TO "_projects_v_version_meta_image_id_media_id_fk";
+  ALTER TABLE "services" RENAME CONSTRAINT "services_seo_og_image_id_media_id_fk" TO "services_meta_image_id_media_id_fk";
+  ALTER TABLE "_services_v" RENAME CONSTRAINT "_services_v_version_seo_og_image_id_media_id_fk" TO "_services_v_version_meta_image_id_media_id_fk";
+  ALTER TABLE "posts" RENAME CONSTRAINT "posts_seo_og_image_id_media_id_fk" TO "posts_meta_image_id_media_id_fk";
+  ALTER TABLE "_posts_v" RENAME CONSTRAINT "_posts_v_version_seo_og_image_id_media_id_fk" TO "_posts_v_version_meta_image_id_media_id_fk";
+
+  -- 7. Индексы → имена fresh-схемы
+  ALTER INDEX "public"."pages_seo_seo_og_image_idx" RENAME TO "pages_meta_image_idx";
+  ALTER INDEX "public"."_pages_v_version_seo_version_seo_og_image_idx" RENAME TO "_pages_v_version_meta_image_idx";
+  ALTER INDEX "public"."projects_seo_seo_og_image_idx" RENAME TO "projects_meta_image_idx";
+  ALTER INDEX "public"."_projects_v_version_seo_version_seo_og_image_idx" RENAME TO "_projects_v_version_meta_image_idx";
+  ALTER INDEX "public"."services_seo_seo_og_image_idx" RENAME TO "services_meta_image_idx";
+  ALTER INDEX "public"."_services_v_version_seo_version_seo_og_image_idx" RENAME TO "_services_v_version_meta_image_idx";
+  ALTER INDEX "public"."posts_seo_seo_og_image_idx" RENAME TO "posts_meta_image_idx";
+  ALTER INDEX "public"."_posts_v_version_seo_version_seo_og_image_idx" RENAME TO "_posts_v_version_meta_image_idx";
+INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261021_130800_seo_plugin_meta_group', 1, now(), now());
 COMMIT;
 
--- ===== 20261012_105942_portfolio_grid__add_showFilters_and_facts_cards.ts =====
+-- ===== 20261021_153000_drop_header_appearance_group.ts =====
 BEGIN;
-ALTER TABLE "pages_blocks_portfolio_grid" ADD COLUMN "show_filters" boolean DEFAULT true;
-  ALTER TABLE "_pages_v_blocks_portfolio_grid" ADD COLUMN "show_filters" boolean DEFAULT true;
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261012_105942_portfolio_grid__add_showFilters_and_facts_cards', 1, now(), now());
+ALTER TABLE "header" DROP COLUMN "appearance_background_color";
+  ALTER TABLE "header" DROP COLUMN "appearance_text_color";
+  ALTER TABLE "header" DROP COLUMN "appearance_muted_text_color";
+  ALTER TABLE "header" DROP COLUMN "appearance_accent_color";
+  ALTER TABLE "header" DROP COLUMN "appearance_accent_text_color";
+  ALTER TABLE "header" DROP COLUMN "appearance_font_family";
+  ALTER TABLE "header" DROP COLUMN "appearance_brand_px";
+  ALTER TABLE "header" DROP COLUMN "appearance_navigation_px";
+  ALTER TABLE "header" DROP COLUMN "appearance_button_text_px";
+  ALTER TABLE "header" DROP COLUMN "appearance_button_height_px";
+  ALTER TABLE "header" DROP COLUMN "appearance_button_padding_x_px";
+  ALTER TABLE "header" DROP COLUMN "appearance_button_radius_px";
+  ALTER TABLE "header" DROP COLUMN "appearance_header_height_px";
+  DROP TYPE "public"."enum_header_appearance_font_family";
+INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261021_153000_drop_header_appearance_group', 1, now(), now());
 COMMIT;
 
--- ===== 20261012_121240_portfolio_block_manual_projects__categories_order.ts =====
+-- ===== 20261021_155500_drop_header_phone.ts =====
 BEGIN;
-/* IF NOT EXISTS: начальная миграция (перегенерирована 20260922) уже
-      создаёт enum с 'leaf', на свежей БД повторный ADD VALUE падал бы */
-   ALTER TYPE "public"."enum_pages_blocks_portfolio_grid_facts_icon" ADD VALUE IF NOT EXISTS 'leaf' BEFORE 'compass';
-  ALTER TYPE "public"."enum__pages_v_blocks_portfolio_grid_facts_icon" ADD VALUE IF NOT EXISTS 'leaf' BEFORE 'compass';
-  CREATE TABLE "pages_rels" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"order" integer,
-  	"parent_id" integer NOT NULL,
-  	"path" varchar NOT NULL,
-  	"projects_id" integer
-  );
-  
-  CREATE TABLE "_pages_v_rels" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"order" integer,
-  	"parent_id" integer NOT NULL,
-  	"path" varchar NOT NULL,
-  	"projects_id" integer
-  );
-  
-  ALTER TABLE "categories" ADD COLUMN "order" numeric;
-  ALTER TABLE "pages_rels" ADD CONSTRAINT "pages_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_rels" ADD CONSTRAINT "pages_rels_projects_fk" FOREIGN KEY ("projects_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_pages_v_rels" ADD CONSTRAINT "_pages_v_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."_pages_v"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_pages_v_rels" ADD CONSTRAINT "_pages_v_rels_projects_fk" FOREIGN KEY ("projects_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "pages_rels_order_idx" ON "pages_rels" USING btree ("order");
-  CREATE INDEX "pages_rels_parent_idx" ON "pages_rels" USING btree ("parent_id");
-  CREATE INDEX "pages_rels_path_idx" ON "pages_rels" USING btree ("path");
-  CREATE INDEX "pages_rels_projects_id_idx" ON "pages_rels" USING btree ("projects_id");
-  CREATE INDEX "_pages_v_rels_order_idx" ON "_pages_v_rels" USING btree ("order");
-  CREATE INDEX "_pages_v_rels_parent_idx" ON "_pages_v_rels" USING btree ("parent_id");
-  CREATE INDEX "_pages_v_rels_path_idx" ON "_pages_v_rels" USING btree ("path");
-  CREATE INDEX "_pages_v_rels_projects_id_idx" ON "_pages_v_rels" USING btree ("projects_id");
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261012_121240_portfolio_block_manual_projects__categories_order', 1, now(), now());
+ALTER TABLE "header" DROP COLUMN "phone";
+INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261021_155500_drop_header_phone', 1, now(), now());
 COMMIT;
 
--- ===== 20261013_073214_drop_hero_appearance_group.ts =====
+-- ===== 20261021_161500_drop_settings_social_proof_lead_magnet.ts =====
 BEGIN;
-ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_background_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_text_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_muted_text_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_accent_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_accent_text_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_divider_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_caption_color";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_font_family";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_title_weight";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_title_desktop_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_title_mobile_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_title_line_height";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_title_letter_spacing_em";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_body_desktop_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_body_mobile_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_body_line_height";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_brand_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_navigation_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_eyebrow_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_eyebrow_letter_spacing_em";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_caption_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_bottom_line_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_button_text_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_button_height_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_button_padding_x_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_button_radius_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_content_max_width_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_desktop_gutter_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_mobile_gutter_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_header_height_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_hero_top_padding_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_hero_bottom_padding_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_hero_column_gap_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_title_column_percent";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_description_button_gap_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_mobile_stack_gap_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_image_width";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_image_desktop_ratio";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_image_mobile_ratio";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_image_radius_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_caption_inset_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_bottom_line_padding_y_px";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "appearance_divider_thickness_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_background_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_text_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_muted_text_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_accent_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_accent_text_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_divider_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_caption_color";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_font_family";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_title_weight";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_title_desktop_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_title_mobile_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_title_line_height";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_title_letter_spacing_em";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_body_desktop_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_body_mobile_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_body_line_height";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_brand_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_navigation_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_eyebrow_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_eyebrow_letter_spacing_em";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_caption_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_bottom_line_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_button_text_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_button_height_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_button_padding_x_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_button_radius_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_content_max_width_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_desktop_gutter_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_mobile_gutter_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_header_height_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_hero_top_padding_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_hero_bottom_padding_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_hero_column_gap_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_title_column_percent";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_description_button_gap_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_mobile_stack_gap_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_image_width";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_image_desktop_ratio";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_image_mobile_ratio";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_image_radius_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_caption_inset_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_bottom_line_padding_y_px";
-  ALTER TABLE "_pages_v_blocks_hero" DROP COLUMN "appearance_divider_thickness_px";
-  DROP TYPE "public"."enum_pages_blocks_hero_appearance_font_family";
-  DROP TYPE "public"."enum_pages_blocks_hero_appearance_title_weight";
-  DROP TYPE "public"."enum_pages_blocks_hero_appearance_image_width";
-  DROP TYPE "public"."enum_pages_blocks_hero_appearance_image_desktop_ratio";
-  DROP TYPE "public"."enum_pages_blocks_hero_appearance_image_mobile_ratio";
-  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_font_family";
-  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_title_weight";
-  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_image_width";
-  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_image_desktop_ratio";
-  DROP TYPE "public"."enum__pages_v_blocks_hero_appearance_image_mobile_ratio";
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261013_073214_drop_hero_appearance_group', 1, now(), now());
+DROP TABLE "settings_social_proof_stats";
+  DROP TABLE "settings_social_proof_press_logos";
+  ALTER TABLE "settings" DROP COLUMN "lead_magnet_enabled";
+  ALTER TABLE "settings" DROP COLUMN "lead_magnet_title";
+  ALTER TABLE "settings" DROP COLUMN "lead_magnet_subtitle";
+  ALTER TABLE "settings" DROP COLUMN "lead_magnet_guide_file_id";
+  ALTER TABLE "settings" DROP COLUMN "lead_magnet_image_id";
+INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261021_161500_drop_settings_social_proof_lead_magnet', 1, now(), now());
 COMMIT;
 
--- ===== 20261013_084339_stats_cards__add_icon_description_image.ts =====
+-- ===== 20261021_164000_settings_seo_plugin_meta.ts =====
 BEGIN;
-CREATE TYPE "public"."enum_pages_blocks_stats_items_icon" AS ENUM('layers', 'house', 'leaf', 'compass', 'heart', 'trending-up');
-  CREATE TYPE "public"."enum__pages_v_blocks_stats_items_icon" AS ENUM('layers', 'house', 'leaf', 'compass', 'heart', 'trending-up');
-  ALTER TABLE "pages_blocks_stats_items" ADD COLUMN "icon" "enum_pages_blocks_stats_items_icon" DEFAULT 'layers';
-  ALTER TABLE "pages_blocks_stats_items" ADD COLUMN "description" varchar;
-  ALTER TABLE "pages_blocks_stats_items" ADD COLUMN "image_id" integer;
-  ALTER TABLE "_pages_v_blocks_stats_items" ADD COLUMN "icon" "enum__pages_v_blocks_stats_items_icon" DEFAULT 'layers';
-  ALTER TABLE "_pages_v_blocks_stats_items" ADD COLUMN "description" varchar;
-  ALTER TABLE "_pages_v_blocks_stats_items" ADD COLUMN "image_id" integer;
-  ALTER TABLE "pages_blocks_stats_items" ADD CONSTRAINT "pages_blocks_stats_items_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_pages_v_blocks_stats_items" ADD CONSTRAINT "_pages_v_blocks_stats_items_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  CREATE INDEX "pages_blocks_stats_items_image_idx" ON "pages_blocks_stats_items" USING btree ("image_id");
-  CREATE INDEX "_pages_v_blocks_stats_items_image_idx" ON "_pages_v_blocks_stats_items" USING btree ("image_id");
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261013_084339_stats_cards__add_icon_description_image', 1, now(), now());
-COMMIT;
-
--- ===== 20261013_102414_services__add_cardImage_and_tagline.ts =====
-BEGIN;
-ALTER TABLE "pages_blocks_services_grid" ALTER COLUMN "title" SET DEFAULT 'Чем мы можем помочь';
-  ALTER TABLE "pages_blocks_services_grid" ALTER COLUMN "description" SET DEFAULT 'Полный цикл: от планировки и визуализации до реализации под ключ.';
-  ALTER TABLE "_pages_v_blocks_services_grid" ALTER COLUMN "title" SET DEFAULT 'Чем мы можем помочь';
-  ALTER TABLE "_pages_v_blocks_services_grid" ALTER COLUMN "description" SET DEFAULT 'Полный цикл: от планировки и визуализации до реализации под ключ.';
-  ALTER TABLE "services" ADD COLUMN "card_image_id" integer;
-  ALTER TABLE "services" ADD COLUMN "tagline" varchar;
-  ALTER TABLE "_services_v" ADD COLUMN "version_card_image_id" integer;
-  ALTER TABLE "_services_v" ADD COLUMN "version_tagline" varchar;
-  ALTER TABLE "services" ADD CONSTRAINT "services_card_image_id_media_id_fk" FOREIGN KEY ("card_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_services_v" ADD CONSTRAINT "_services_v_version_card_image_id_media_id_fk" FOREIGN KEY ("version_card_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  CREATE INDEX "services_card_image_idx" ON "services" USING btree ("card_image_id");
-  CREATE INDEX "_services_v_version_version_card_image_idx" ON "_services_v" USING btree ("version_card_image_id");
-  ALTER TABLE "pages_blocks_services_grid" DROP COLUMN "eyebrow";
-  ALTER TABLE "_pages_v_blocks_services_grid" DROP COLUMN "eyebrow";
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261013_102414_services__add_cardImage_and_tagline', 1, now(), now());
-COMMIT;
-
--- ===== 20261013_102429_services__drop_icon__replaced_by_cardImage_.ts =====
-BEGIN;
-ALTER TABLE "services" DROP CONSTRAINT "services_icon_id_media_id_fk";
-  
-  ALTER TABLE "_services_v" DROP CONSTRAINT "_services_v_version_icon_id_media_id_fk";
-  
-  DROP INDEX "services_icon_idx";
-  DROP INDEX "_services_v_version_version_icon_idx";
-  ALTER TABLE "services" DROP COLUMN "icon_id";
-  ALTER TABLE "_services_v" DROP COLUMN "version_icon_id";
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261013_102429_services__drop_icon__replaced_by_cardImage_', 1, now(), now());
-COMMIT;
-
--- ===== 20261013_124029_process_steps__add_description_and_sketch_fields.ts =====
-BEGIN;
-CREATE TYPE "public"."enum_pages_blocks_process_steps_steps_sketch" AS ENUM('plan', 'iso', 'elevation', 'perspective');
-  CREATE TYPE "public"."enum__pages_v_blocks_process_steps_steps_sketch" AS ENUM('plan', 'iso', 'elevation', 'perspective');
-  ALTER TABLE "pages_blocks_process_steps" ALTER COLUMN "eyebrow" SET DEFAULT 'Процесс';
-  ALTER TABLE "pages_blocks_process_steps" ALTER COLUMN "title" SET DEFAULT 'Как мы работаем';
-  ALTER TABLE "_pages_v_blocks_process_steps" ALTER COLUMN "eyebrow" SET DEFAULT 'Процесс';
-  ALTER TABLE "_pages_v_blocks_process_steps" ALTER COLUMN "title" SET DEFAULT 'Как мы работаем';
-  ALTER TABLE "pages_blocks_process_steps_steps" ADD COLUMN "sketch" "enum_pages_blocks_process_steps_steps_sketch" DEFAULT 'plan';
-  ALTER TABLE "pages_blocks_process_steps" ADD COLUMN "description" varchar DEFAULT 'Четыре листа — от первой идеи до готового интерьера';
-  ALTER TABLE "_pages_v_blocks_process_steps_steps" ADD COLUMN "sketch" "enum__pages_v_blocks_process_steps_steps_sketch" DEFAULT 'plan';
-  ALTER TABLE "_pages_v_blocks_process_steps" ADD COLUMN "description" varchar DEFAULT 'Четыре листа — от первой идеи до готового интерьера';
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261013_124029_process_steps__add_description_and_sketch_fields', 1, now(), now());
-COMMIT;
-
--- ===== 20261014_162547.ts =====
-BEGIN;
-ALTER TABLE "pages_blocks_process_steps_steps" ADD COLUMN "image_id" integer;
-  ALTER TABLE "_pages_v_blocks_process_steps_steps" ADD COLUMN "image_id" integer;
-  ALTER TABLE "pages_blocks_process_steps_steps" ADD CONSTRAINT "pages_blocks_process_steps_steps_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_pages_v_blocks_process_steps_steps" ADD CONSTRAINT "_pages_v_blocks_process_steps_steps_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  CREATE INDEX "pages_blocks_process_steps_steps_image_idx" ON "pages_blocks_process_steps_steps" USING btree ("image_id");
-  CREATE INDEX "_pages_v_blocks_process_steps_steps_image_idx" ON "_pages_v_blocks_process_steps_steps" USING btree ("image_id");
-INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261014_162547', 1, now(), now());
+ALTER TABLE "settings" ADD COLUMN "meta_title" varchar;
+  ALTER TABLE "settings" ADD COLUMN "meta_description" varchar;
+  ALTER TABLE "settings" ADD COLUMN "meta_noindex" boolean DEFAULT false;
+  ALTER TABLE "settings" ADD COLUMN "meta_image_id" integer;
+  ALTER TABLE "settings" ADD CONSTRAINT "settings_meta_image_id_media_id_fk" FOREIGN KEY ("meta_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
+  CREATE INDEX "settings_meta_image_idx" ON "settings" USING btree ("meta_image_id");
+  UPDATE "settings" SET
+    "meta_title" = "seo_defaults_title",
+    "meta_description" = "seo_defaults_description_template",
+    "meta_image_id" = "seo_defaults_default_og_image_id";
+  ALTER TABLE "settings" DROP COLUMN "seo_defaults_title";
+  ALTER TABLE "settings" DROP COLUMN "seo_defaults_description_template";
+  ALTER TABLE "settings" DROP COLUMN "seo_defaults_default_og_image_id";
+INSERT INTO payload_migrations (name, batch, updated_at, created_at) VALUES ('20261021_164000_settings_seo_plugin_meta', 1, now(), now());
 COMMIT;
