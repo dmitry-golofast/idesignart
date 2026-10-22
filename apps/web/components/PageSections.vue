@@ -44,6 +44,7 @@ function chapterNum(s: PageSection): number | undefined {
 // Резолвим компоненты один раз (Nuxt auto-import)
 // Имена соответствуют структуре: components/blocks/HeroSection.vue → BlocksHeroSection
 const HeroSection = resolveComponent('BlocksHeroSection')
+const AboutHero = resolveComponent('BlocksAboutHero')
 const ServicesGrid = resolveComponent('BlocksServicesGrid')
 const PortfolioShowcase = resolveComponent('BlocksPortfolioShowcase')
 const ProcessSteps = resolveComponent('BlocksProcessSteps')
@@ -54,6 +55,7 @@ const ContactForm = resolveComponent('BlocksContactForm')
 
 const blockMap: Record<string, any> = {
   hero: HeroSection,
+  'about-hero': AboutHero,
   'services-grid': ServicesGrid,
   'portfolio-grid': PortfolioShowcase,
   'process-steps': ProcessSteps,

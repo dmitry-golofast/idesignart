@@ -297,6 +297,30 @@ export interface Page {
           }
         | {
             title: string;
+            description?: string | null;
+            /**
+             * Вертикальный или квадратный кадр от 1000 px; без фото — декоративная панель
+             */
+            photo?: (number | null) | Media;
+            /**
+             * Описание для скринридеров и поисковых роботов
+             */
+            photoAlt?: string | null;
+            /**
+             * Показывается под фото; пустое значение скрывает цитату
+             */
+            quote?: string | null;
+            quoteAuthor?: string | null;
+            /**
+             * Например: основатель и главный дизайнер
+             */
+            quoteRole?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'about-hero';
+          }
+        | {
+            title: string;
             /**
              * Арт во всю секцию; рисунок прижимается к левому краю. Если пусто — берётся фото первой услуги.
              */
@@ -1043,6 +1067,19 @@ export interface PagesSelect<T extends boolean = true> {
                     rightText?: T;
                     showDivider?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        'about-hero'?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              photo?: T;
+              photoAlt?: T;
+              quote?: T;
+              quoteAuthor?: T;
+              quoteRole?: T;
               id?: T;
               blockName?: T;
             };

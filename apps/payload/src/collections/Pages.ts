@@ -7,6 +7,7 @@ import { TestimonialsBlock } from '../blocks/TestimonialsBlock'
 import { ContentBlock } from '../blocks/ContentBlock'
 import { CtaBlock } from '../blocks/CtaBlock'
 import { ContactBlock } from '../blocks/ContactBlock'
+import { AboutBlock } from '../blocks/AboutBlock'
 
 // SEO-поля (meta.title/description/image/noindex) добавляет плагин
 // @payloadcms/plugin-seo — см. payload.config.ts
@@ -51,6 +52,7 @@ export const Pages: CollectionConfig = {
       },
       blocks: [
         HeroBlock,
+        AboutBlock,
         ServicesBlock,
         PortfolioBlock,
         ProcessBlock,

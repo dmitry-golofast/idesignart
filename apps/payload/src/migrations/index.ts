@@ -15,6 +15,7 @@ import * as migration_20261021_153000_drop_header_appearance_group from './20261
 import * as migration_20261021_155500_drop_header_phone from './20261021_155500_drop_header_phone';
 import * as migration_20261021_161500_drop_settings_social_proof_lead_magnet from './20261021_161500_drop_settings_social_proof_lead_magnet';
 import * as migration_20261021_164000_settings_seo_plugin_meta from './20261021_164000_settings_seo_plugin_meta';
+import * as migration_20261022_161500_add_about_hero_block from './20261022_161500_add_about_hero_block';
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20261021_164000_settings_seo_plugin_meta.up,
     down: migration_20261021_164000_settings_seo_plugin_meta.down,
     name: '20261021_164000_settings_seo_plugin_meta',
+  },
+  {
+    up: migration_20261022_161500_add_about_hero_block.up,
+    down: migration_20261022_161500_add_about_hero_block.down,
+    name: '20261022_161500_add_about_hero_block',
   },
 ];
