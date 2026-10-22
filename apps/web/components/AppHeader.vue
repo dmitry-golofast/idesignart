@@ -5,7 +5,9 @@ import { computed, ref, watch } from 'vue'
  * AppHeader — шапка сайта (редизайн v3, язык ayocin).
  * Бренд слева, навигация по центру, справа — телефон и CTA-пилюля
  * со стрелкой-орбом («Order Now»-стиль). Контент из global «header»
- * (CMS): пункты меню, кнопка действия. Телефон из CMS не приходит —
+ * (CMS): пункты меню, кнопка действия. Авторизованным (cookie сессии
+ * Payload — см. useAuth) кнопка перекрывается на «В личный кабинет»
+ * со ссылкой на /admin. Телефон из CMS не приходит —
  * берётся из контактов Settings, затем из env-переменной.
  * Оформление в CMS не живёт — цвета/шрифты берутся из дизайн-токенов
  * tokens.css, размеры зашиты в scoped-стилях этого компонента.
@@ -41,6 +43,8 @@ const props = defineProps<{ settings?: SettingsData }>()
 
 const { data: headerData } = useHeader()
 const hd = computed<HeaderData>(() => (headerData.value ?? {}) as HeaderData)
+
+const { isAuthenticated } = useAuth()
 
 const open = ref(false)
 const route = useRoute()
@@ -87,12 +91,15 @@ const phoneHref = computed(() =>
   phoneText.value ? `tel:${phoneText.value.replace(/[^\d+]/g, '')}` : '',
 )
 
+// Авторизованным CTA ведёт в личный кабинет (админка Payload на /admin):
+// перекрываем текст и ссылку из CMS, оформление и видимость — без изменений
 const cta = computed(() => {
   const c = hd.value.cta ?? {}
+  const authed = isAuthenticated.value
   return {
     enabled: bool(c.enabled, true),
-    label: str(c.label, 'Обсудить проект'),
-    href: typeof c.href === 'string' && c.href ? c.href : '/contacts',
+    label: authed ? 'В личный кабинет' : str(c.label, 'Обсудить проект'),
+    href: authed ? '/admin' : typeof c.href === 'string' && c.href ? c.href : '/contacts',
     newTab: bool(c.newTab, false),
     icon: str(c.icon, 'arrow-up-right'),
     variant: str(c.variant, 'accent'),
@@ -112,6 +119,12 @@ const ctaClass = computed(() => {
 
 const ctaAttrs = computed(() =>
   cta.value.newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {},
+)
+
+// Орб со стрелкой рендерится только для известных иконок; «Без иконки»
+// (icon: 'none') убирает орб целиком, а не оставляет пустой кружок
+const hasIcon = computed(
+  () => cta.value.icon === 'arrow-up-right' || cta.value.icon === 'arrow-right',
 )
 </script>
 
@@ -143,11 +156,11 @@ const ctaAttrs = computed(() =>
         <a
           v-if="cta.enabled"
           :href="cta.href"
-          :class="ctaClass"
+          :class="[ctaClass, { 'hd-cta--no-icon': !hasIcon }]"
           v-bind="ctaAttrs"
         >
           <span>{{ cta.label }}</span>
-          <span class="hd-cta-orb" aria-hidden="true">
+          <span v-if="hasIcon" class="hd-cta-orb" aria-hidden="true">
             <svg
               v-if="cta.icon === 'arrow-up-right'"
               viewBox="0 0 24 24"
@@ -209,7 +222,7 @@ const ctaAttrs = computed(() =>
           <a v-if="phoneHref" :href="phoneHref" class="hd-mobile-link">{{ phoneText }}</a>
           <a v-if="cta.enabled" :href="cta.href" :class="ctaClass" class="hd-cta--mobile" v-bind="ctaAttrs">
             <span>{{ cta.label }}</span>
-            <span class="hd-cta-orb" aria-hidden="true">↗</span>
+            <span v-if="hasIcon" class="hd-cta-orb" aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
@@ -385,6 +398,11 @@ const ctaAttrs = computed(() =>
 .hd-cta:focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;
+}
+
+/* Без иконки: орб не рендерится, паддинг симметричный */
+.hd-cta--no-icon {
+  padding-inline: 1.375rem;
 }
 
 .hd-burger {
