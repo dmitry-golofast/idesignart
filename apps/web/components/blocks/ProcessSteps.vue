@@ -7,8 +7,9 @@ import type { Media } from '#shared/types/payload'
  * pinned-секция, где текст меняется по скроллу «With the ATMOS, you…»).
  *
  * Механика: секция высотой N×100vh, внутри — прилипающая сцена во весь экран.
- * Шапка главы (номер + заголовок + hairline-прогресс) видна всегда, пока
- * крутятся шаги. У каждого шага фоновая картинка (поле image в CMS): слои
+ * Шапка главы (номер + заголовок + hairline-прогресс) появляется fade-up
+ * при входе секции (data-reveal, как sec-head других глав), затем видна
+ * всегда, пока крутятся шаги. У каждого шага фоновая картинка (поле image в CMS): слои
  * кроссфейдятся при смене активного шага, поверх — центрированный текст шага,
  * который сменяется анимацией. Без картинки — эспрессо-градиент с номером.
  *
@@ -40,6 +41,15 @@ const props = defineProps<{
 const payloadBase = useRuntimeConfig().public.payloadApiUrl as string
 
 const secNum = computed(() => String(props.num ?? 1).padStart(2, '0'))
+
+/* Высота зоны прокрутки на шаг (в vh). Меньше 100 — слайды листаются
+   меньшим количеством оборотов колеса: за шаг пользователь прокручивает
+   M − 100vh/N (при M=60 и 4 шагах — 35vh вместо 75vh). Минимум 120vh —
+   чтобы sticky-сцена успевала прилипнуть даже при одном шаге */
+const STEP_SCROLL_VH = 60
+const sectionHeightVh = computed(() =>
+  Math.max(120, displaySteps.value.length * STEP_SCROLL_VH),
+)
 
 const defaultSteps: ProcessStep[] = [
   { num: '01', title: 'Брифинг и концепция', description: 'Изучаем задачи, образ жизни, референсы. Формируем концепцию и планировочное решение.', duration: '1–2 недели', sketch: 'plan' },
@@ -76,9 +86,7 @@ const active = computed(() => {
 })
 const currentStep = computed(() => displaySteps.value[active.value])
 
-let ticking = false
 function updateProgress() {
-  ticking = false
   const el = rootEl.value
   if (!el) return
   const rect = el.getBoundingClientRect()
@@ -86,11 +94,12 @@ function updateProgress() {
   const passed = Math.min(Math.max(-rect.top, 0), scrollable)
   progress.value = scrollable > 0 ? passed / scrollable : 0
 }
+/* Без rAF-очереди (как в PortfolioShowcase): один getBoundingClientRect на
+   событие — дёшево. rAF-throttle здесь опасен: во вьюпортах с приостановленным
+   rAF (скрытые панели, webview-превью) колбэк не срабатывает, флаг залипает и
+   прогресс замирает навсегда */
 function onScroll() {
-  if (!ticking) {
-    ticking = true
-    requestAnimationFrame(updateProgress)
-  }
+  updateProgress()
 }
 onMounted(() => {
   updateProgress()
@@ -109,7 +118,7 @@ onBeforeUnmount(() => {
     <div
       ref="rootEl"
       class="relative hidden lg:block"
-      :style="{ height: `${displaySteps.length * 100}vh` }"
+      :style="{ height: `${sectionHeightVh}vh` }"
     >
       <div class="sticky top-0 h-[100svh] overflow-hidden bg-[var(--color-espresso)] text-[#f6f1e7]">
         <!-- Фоновые картинки шагов: кроссфейд по активному шагу -->
@@ -141,9 +150,11 @@ onBeforeUnmount(() => {
           aria-hidden="true"
         />
 
-        <!-- Шапка главы: всегда видна, hairline = прогресс-линия -->
+        <!-- Шапка главы: появляется fade-up при входе секции (как sec-head
+             других глав, например «Чем мы можем помочь»), затем видна всегда;
+             hairline = прогресс-линия -->
         <div class="absolute inset-x-0 top-0 pt-[96px]">
-          <div class="container-app">
+          <div class="container-app" data-reveal>
             <div class="flex items-baseline gap-[clamp(1.5rem,4vw,4rem)] pb-5">
               <span class="sec-num process-num" aria-hidden="true">{{ secNum }}</span>
               <h2 class="sec-title process-title">{{ title || 'Как мы работаем' }}</h2>
