@@ -38,6 +38,9 @@ type LexicalContent =
 
 const props = defineProps<{
   content: LexicalContent
+  /** Утилита размера основного текста (напр. 'text-lg' для страницы кейса);
+      по умолчанию — базовые 1rem. Заголовки/списки наследуют от корня. */
+  textClass?: string
 }>()
 
 const config = useRuntimeConfig()
@@ -88,7 +91,10 @@ function renderText(text: string, format = 0): string {
 </script>
 
 <template>
-  <div class="prose-content space-y-5 text-body leading-[var(--text--body--line-height)] text-[var(--color-ink-muted)]">
+  <div
+    class="prose-content space-y-5 leading-[var(--text--body--line-height)] text-[var(--color-ink-muted)]"
+    :class="textClass || 'text-body'"
+  >
     <template v-for="(node, i) in nodes" :key="i">
       <!-- Параграф -->
       <p v-if="node.type === 'paragraph'" class="text-inherit">
@@ -164,7 +170,7 @@ function renderText(text: string, format = 0): string {
           :src="imgUrl(node.value.url)"
           :alt="node.value.alt || node.value.filename || ''"
           class="w-full rounded-[var(--radius-lg)] object-cover"
-          sizes="md:768px 100vw"
+          sizes="md:768px xl:100vw"
           format="webp,avif"
         />
         <figcaption v-if="node.value.alt" class="mt-2 text-sm text-[var(--color-ink-subtle)]">
