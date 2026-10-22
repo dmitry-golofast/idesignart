@@ -5,7 +5,8 @@ import { computed } from 'vue'
  * AppFooter — подвал (редизайн v3, язык ayocin).
  * Тёмная эспрессо-панель: колонки с caps-заголовками, крупный email
  * как центральный контакт, соцсети текстом, нижняя строка с copyright,
- * политикой и gold-чипом.
+ * политикой и gold-чипом. Колонка «Услуги» — те же featured-услуги из
+ * CMS, что в блоке «Чем мы можем помочь» (статичный список — фолбэк).
  */
 
 interface SettingsData {
@@ -30,13 +31,26 @@ const contacts = computed(() => ({
 
 const year = new Date().getFullYear()
 
-const serviceLinks = [
+// Услуги — тот же список, что показывает блок «Чем мы можем помочь»
+// на главной: опубликованные featured-услуги из CMS, по порядку order
+// (useFetch дедуплицируется по ключу с запросом этого блока).
+// Пока CMS пуст — статичный фолбэк, как DEFAULT_NAV в шапке.
+const DEFAULT_SERVICE_LINKS = [
   { label: 'Дизайн квартиры', to: '/services/apartment-design' },
   { label: 'Дизайн офиса', to: '/services/office-design' },
   { label: '3D-визуализация', to: '/services/3d-visualization' },
   { label: 'Планировочные решения', to: '/services/space-planning' },
   { label: 'Авторский надзор', to: '/services/author-supervision' },
 ]
+
+const { data: servicesData } = useServices({ featuredOnly: true })
+const serviceLinks = computed(() => {
+  const docs = servicesData.value?.docs ?? []
+  const links = docs
+    .filter((s) => s.title && s.slug)
+    .map((s) => ({ label: s.title as string, to: `/services/${s.slug}` }))
+  return links.length > 0 ? links : DEFAULT_SERVICE_LINKS
+})
 
 const studioLinks = [
   { label: 'Портфолио', to: '/#portfolio-grid' },
