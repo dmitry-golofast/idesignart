@@ -76,32 +76,33 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
         :src="imgUrl(coverImage.url)"
         :alt="coverImage.alt || project.title"
         class="absolute inset-0 h-full w-full object-cover opacity-70"
-        sizes="100vw"
+        sizes="sm:100vw xl:100vw"
         format="webp,avif"
         preload
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
       <div class="container-app relative z-10 flex min-h-[70vh] flex-col justify-end pb-16 text-[var(--color-canvas)]">
         <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-accent-deep)]">Кейс</p>
-        <h1 class="max-w-4xl font-display text-h1">{{ project.title }}</h1>
-        <p class="mt-4 max-w-2xl text-lg text-[var(--color-canvas)]/80">{{ project.excerpt }}</p>
+        <!-- Цвет задаём явно: базовый h1-стиль красит в эспрессо — на тёмном hero не видно -->
+        <h1 class="max-w-4xl page-title text-[var(--color-canvas)]">{{ project.title }}</h1>
+        <p class="mt-4 max-w-2xl text-xl text-[var(--color-canvas)]/80 sm:text-2xl">{{ project.excerpt }}</p>
 
         <!-- Метаданные -->
-        <dl v-if="details" class="mt-8 grid grid-cols-2 gap-6 text-sm sm:grid-cols-4">
+        <dl v-if="details" class="mt-8 grid grid-cols-2 gap-6 text-base sm:text-lg sm:grid-cols-4">
           <div v-if="details.area">
-            <dt class="text-[var(--color-canvas)]/50">Площадь</dt>
+            <dt class="text-sm text-[var(--color-canvas)]/50">Площадь</dt>
             <dd class="mt-1 text-[var(--color-canvas)]">{{ details.area }} м²</dd>
           </div>
           <div v-if="details.propertyType">
-            <dt class="text-[var(--color-canvas)]/50">Тип</dt>
+            <dt class="text-sm text-[var(--color-canvas)]/50">Тип</dt>
             <dd class="mt-1 text-[var(--color-canvas)]">{{ propertyLabels[details.propertyType] || details.propertyType }}</dd>
           </div>
           <div v-if="details.style">
-            <dt class="text-[var(--color-canvas)]/50">Стиль</dt>
+            <dt class="text-sm text-[var(--color-canvas)]/50">Стиль</dt>
             <dd class="mt-1 text-[var(--color-canvas)]">{{ styleLabels[details.style] || details.style }}</dd>
           </div>
           <div v-if="details.duration">
-            <dt class="text-[var(--color-canvas)]/50">Срок</dt>
+            <dt class="text-sm text-[var(--color-canvas)]/50">Срок</dt>
             <dd class="mt-1 text-[var(--color-canvas)]">{{ details.duration }}</dd>
           </div>
         </dl>
@@ -112,20 +113,20 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
       <div class="mx-auto max-w-3xl">
         <!-- Задача -->
         <section v-if="project.brief" class="mb-16">
-          <h2 class="mb-4 font-display text-h2">Задача</h2>
-          <RichTextRenderer :content="project.brief" />
+          <h2 class="section-title mb-6">Задача</h2>
+          <RichTextRenderer :content="project.brief" text-class="text-lg" />
         </section>
 
         <!-- Решение -->
         <section v-if="project.solution" class="mb-16">
-          <h2 class="mb-4 font-display text-h2">Решение</h2>
-          <RichTextRenderer :content="project.solution" />
+          <h2 class="section-title mb-6">Решение</h2>
+          <RichTextRenderer :content="project.solution" text-class="text-lg" />
         </section>
       </div>
 
       <!-- Галерея -->
       <section v-if="renderImages.length" class="my-16">
-        <h2 class="mb-8 font-display text-h2">3D-визуализация</h2>
+        <h2 class="section-title mb-8">3D-визуализация</h2>
         <div class="grid gap-6 sm:grid-cols-2">
           <figure
             v-for="(img, i) in renderImages"
@@ -137,7 +138,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
               :src="galleryUrl(img)"
               :alt="img.caption || galleryAlt(img, project.title)"
               class="w-full object-cover"
-              sizes="sm:50vw xl:50vw 100vw"
+              sizes="sm:50vw xl:50vw"
               format="webp,avif"
             />
             <figcaption v-if="img.caption" class="mt-2 text-sm text-[var(--color-ink-subtle)]">
@@ -149,7 +150,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
 
       <!-- Реализация (после) -->
       <section v-if="afterImages.length" class="my-16">
-        <h2 class="mb-8 font-display text-h2">Реализация</h2>
+        <h2 class="section-title mb-8">Реализация</h2>
         <div class="grid gap-6 sm:grid-cols-2">
           <figure
             v-for="(img, i) in afterImages"
@@ -161,7 +162,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
               :src="galleryUrl(img)"
               :alt="img.caption || galleryAlt(img, project.title)"
               class="w-full object-cover"
-              sizes="sm:50vw xl:50vw 100vw"
+              sizes="sm:50vw xl:50vw"
               format="webp,avif"
             />
           </figure>
@@ -172,7 +173,7 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
       <section v-if="project.testimonial?.quote" class="my-16">
         <div class="mx-auto max-w-3xl rounded-[var(--radius-xl)] bg-[var(--color-surface-alt)] p-10 text-center">
           <UIcon name="i-lucide-quote" class="mx-auto mb-4 h-10 w-10 text-[var(--color-accent-soft)]" />
-          <blockquote class="font-display text-2xl text-[var(--color-ink)]">
+          <blockquote class="font-display text-3xl text-[var(--color-ink)]">
             «{{ project.testimonial.quote }}»
           </blockquote>
           <div class="mt-6">
@@ -186,8 +187,8 @@ function galleryAlt(g: { image?: any }, fallback: string): string {
 
       <!-- CTA -->
       <div class="my-16 rounded-[var(--radius-xl)] bg-[var(--color-ink)] p-10 text-center text-[var(--color-canvas)]">
-        <h2 class="font-display text-h2 text-[var(--color-canvas)]">Хотите так же?</h2>
-        <p class="mt-3 text-[var(--color-canvas)]/70">Обсудим ваш проект и предложим решение.</p>
+        <h2 class="section-title text-[var(--color-canvas)]">Хотите так же?</h2>
+        <p class="mt-3 text-lg text-[var(--color-canvas)]/70">Обсудим ваш проект и предложим решение.</p>
         <UButton to="/contacts" color="primary" size="lg" class="mt-6">Оставить заявку</UButton>
       </div>
     </div>

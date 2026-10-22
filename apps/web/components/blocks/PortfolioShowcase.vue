@@ -380,14 +380,21 @@ onBeforeUnmount(() => {
   position: relative;
   display: flex;
   flex-direction: column;
-  /* Минус sticky-шапка: при переходе по якорю блок целиком виден под ней
-     (--header-height — токен в tokens.css) */
-  min-height: calc(100vh - var(--header-height, 76px));
-  min-height: calc(100svh - var(--header-height, 76px));
-  min-height: calc(100dvh - var(--header-height, 76px));
+  /* Весь вьюпорт — как .section-full у соседних глав (отзывы, CTA):
+     одинаковый ритм полноэкранных секций на главной, sticky-шапка
+     перекрывает верхние 76px (padding-top ниже это компенсирует) */
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   padding-top: calc(76px + clamp(1.25rem, 3vh, 2.5rem));
   padding-bottom: clamp(1.25rem, 2.5vh, 2rem);
-  padding-inline: var(--container-pad);
+  /* Контентная зона — как .container-app (max 1920 + pad), фон и кубы —
+     во всю ширину. max(): ниже 1920+pad действует обычный pad,
+     выше — секция «дозревает» до контейнера и центрируется */
+  padding-inline: max(
+    var(--container-pad),
+    calc((100% - var(--container-max)) / 2 + var(--container-pad))
+  );
   overflow: hidden;
   background: linear-gradient(180deg, #2b221a 0%, var(--color-espresso) 52%, #1d1610 100%);
   color: #f6f1e7;
