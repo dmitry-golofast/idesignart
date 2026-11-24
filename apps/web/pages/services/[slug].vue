@@ -19,8 +19,11 @@ if (error.value || !data.value?.docs?.length) {
 // После throw выше — docs гарантированно есть. Явный тип снимает undefined.
 const service = computed<Service>(() => data.value!.docs[0]!)
 
-// Связи Payload сужает автоимпортируемый populated() из utils/payload.ts
-const heroImage = computed(() => populated(service.value.heroImage))
+// Связи Payload сужает автоимпортируемый populated() из utils/payload.ts.
+// heroImage заполнен не у всех услуг — без него берём cardImage (есть у каждой)
+const heroImage = computed(() =>
+  populated(service.value.heroImage) ?? populated(service.value.cardImage),
+)
 const relatedProjects = computed(() =>
   (service.value.relatedProjects ?? [])
     .map((p) => populated(p))
@@ -49,6 +52,16 @@ const faqJsonLd = computed(() => {
   }
 })
 
+// JSON-LD отдаём через <head> — разметка попадает и в серверный HTML.
+// В шаблоне для этого использовался <Script>, но Nuxt такой компонент не
+// регистрирует («Failed to resolve component: Script»), а v-html с объектом
+// записывал в тег «[object Object]»
+useHead(() => ({
+  script: faqJsonLd.value
+    ? [{ key: 'faq-json-ld', type: 'application/ld+json', innerHTML: jsonLd(faqJsonLd.value) }]
+    : [],
+}))
+
 const config = useRuntimeConfig()
 const payloadBase = config.public.payloadApiUrl as string
 const heroImg = computed(() => {
@@ -61,6 +74,31 @@ const propertyLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', office: 'Офис',
   hospitality: 'HoReCa', retail: 'Retail', other: 'Другое',
 }
+
+// FAQ для аккордеона UI kit: label/content/value — поля элемента UAccordion
+const faqItems = computed(() =>
+  (service.value.faqs ?? []).map((f, i) => ({ label: f.question, content: f.answer, value: String(i) })),
+)
+// Подпись и ответ аккордеона крупнее дефолтных 14px — читаются как основной текст
+// страницы; ответ — тёмным (ink-muted даёт контраст 4.2:1 на фоне страницы).
+// Каждый вопрос — карточка на подложке: с одними линиями снизу (дефолт темы)
+// аккордеон сливался с фоном страницы
+const accordionUi = {
+  item: 'mb-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] px-6 last:mb-0 last:border-b',
+  trigger: 'py-4 text-base font-semibold text-[var(--color-ink)] lg:text-lg',
+  body: 'pb-5 text-base leading-[1.65] text-[var(--color-ink)]',
+  trailingIcon: 'size-5 text-[var(--color-ink)]',
+}
+
+const priceLabel = computed(() =>
+  service.value.pricing?.priceFrom
+    ? new Intl.NumberFormat('ru-RU').format(service.value.pricing.priceFrom)
+    : '',
+)
+const unitLabel = computed(() => {
+  const unit = service.value.pricing?.unit
+  return unit === 'sqm' ? 'м²' : unit === 'project' ? 'проект' : unit ?? ''
+})
 </script>
 
 <template>
@@ -77,9 +115,10 @@ const propertyLabels: Record<string, string> = {
         preload
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+      <!-- Цвет задаётся на самих заголовках: глобальное правило h1–h4 в main.css
+           (color: var(--color-ink)) не даёт унаследовать светлый цвет контейнера -->
       <div class="container-app relative z-10 pb-16 text-[var(--color-canvas)]">
-        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-accent-deep)]">Услуга</p>
-        <h1 class="max-w-3xl font-display text-h1">
+        <h1 class="max-w-3xl font-display text-h1 text-[var(--color-canvas)]">
           {{ service.heroHeadline || service.title }}
         </h1>
         <p v-if="service.heroSubheadline" class="mt-4 max-w-xl text-lg text-[var(--color-canvas)]/80">
@@ -89,68 +128,77 @@ const propertyLabels: Record<string, string> = {
     </section>
 
     <div class="container-app section">
-      <div class="grid gap-16 lg:grid-cols-[1fr_320px]">
-        <!-- Основной контент -->
-        <div>
+      <!-- minmax(0,1fr): колонка контента не тянется за самым длинным
+           непереносимым словом, а сжимается под сетку; overflow-wrap:anywhere
+           переносит такие слова. Без этого одна длинная строка без пробелов
+           растягивала колонку на несколько тысяч пикселей -->
+      <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
+        <!-- Основной контент. max-w-[46rem] на текстовых блоках — строка около
+             80 символов, длиннее читать тяжело -->
+        <div class="min-w-0 [overflow-wrap:anywhere]">
           <!-- Боли клиента -->
-          <div v-if="service.painPoints?.length">
-            <h2 class="font-display text-h2">Знакомо?</h2>
-            <ul class="mt-6 space-y-4">
+          <section v-if="service.painPoints?.length">
+            <h2 class="content-heading">Знакомо?</h2>
+            <!-- Список — в карточке, как и пункты «Что входит» -->
+            <ul class="mt-6 max-w-[46rem] space-y-4 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
               <li
                 v-for="(pain, i) in service.painPoints"
                 :key="i"
-                class="flex gap-3 text-[var(--color-ink-muted)]"
+                class="flex gap-4 text-lg leading-[1.6] text-[var(--color-ink)]"
               >
                 <UIcon name="i-lucide-alert-circle" class="mt-1 h-5 w-5 shrink-0 text-[var(--color-accent-deep)]" />
                 <span>{{ pain.point }}</span>
               </li>
             </ul>
-          </div>
+          </section>
 
           <!-- Что входит -->
-          <div v-if="service.deliverables?.length" class="mt-16">
-            <h2 class="font-display text-h2">Что входит</h2>
-            <div class="mt-6 grid gap-6 sm:grid-cols-2">
+          <section v-if="service.deliverables?.length" class="mt-14">
+            <h2 class="content-heading">Что входит</h2>
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:gap-6">
               <div
                 v-for="(d, i) in service.deliverables"
                 :key="i"
-                class="rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-xs)]"
+                class="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6"
               >
-                <div class="mb-2 flex items-center gap-2">
-                  <UIcon name="i-lucide-check" class="h-5 w-5 text-[var(--color-success)]" />
-                  <h3 class="font-medium text-[var(--color-ink)]">{{ d.item }}</h3>
+                <div class="flex items-start gap-3">
+                  <UIcon name="i-lucide-check" class="mt-1 h-5 w-5 shrink-0 text-[var(--color-success)]" />
+                  <h3 class="text-lg font-semibold leading-snug text-[var(--color-ink)]">{{ d.item }}</h3>
                 </div>
-                <p v-if="d.description" class="text-sm text-[var(--color-ink-muted)]">{{ d.description }}</p>
+                <p v-if="d.description" class="mt-2 pl-8 text-base leading-[1.6] text-[var(--color-ink-muted)]">
+                  {{ d.description }}
+                </p>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- Подробное описание (Lexical rich text) -->
-          <div v-if="service.body" class="mt-16 max-w-none">
-            <RichTextRenderer :content="service.body" />
-          </div>
+          <!-- Подробное описание (Lexical rich text): основной текст — тёмным -->
+          <section v-if="service.body" class="mt-14 max-w-[46rem] [&_p]:text-[var(--color-ink)]">
+            <RichTextRenderer :content="service.body" text-class="text-lg" />
+          </section>
 
-          <!-- FAQ -->
-          <div v-if="service.faqs?.length" class="mt-16">
-            <h2 class="font-display text-h2">Частые вопросы</h2>
-            <UAccordion
-              :items="service.faqs.map((f, i) => ({ label: f.question, content: f.answer, key: String(i) }))"
-              class="mt-6"
-            />
-          </div>
+          <!-- FAQ: аккордеон из UI kit (Nuxt UI) -->
+          <section v-if="faqItems.length" class="mt-14">
+            <h2 class="content-heading">Частые вопросы</h2>
+            <UAccordion :items="faqItems" type="single" collapsible class="mt-4" :ui="accordionUi" />
+          </section>
         </div>
 
         <!-- Сайдбар: цена + CTA -->
-        <aside class="lg:sticky lg:top-28 lg:self-start">
-          <div class="rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-subtle)]">Стоимость</p>
-            <p v-if="service.pricing?.priceFrom" class="mt-2 text-3xl font-extrabold tracking-[-0.02em] text-[var(--color-ink)]">
-              от {{ new Intl.NumberFormat('ru-RU').format(service.pricing.priceFrom) }} ₽
-              <span class="text-base font-medium text-[var(--color-ink-muted)]">
-                / {{ service.pricing.unit === 'sqm' ? 'м²' : service.pricing.unit === 'project' ? 'проект' : service.pricing.unit }}
-              </span>
+        <aside class="min-w-0 [overflow-wrap:anywhere] lg:sticky lg:top-28 lg:self-start">
+          <div class="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 lg:p-7">
+            <p class="eyebrow text-[var(--color-ink)]">Стоимость</p>
+            <p
+              v-if="priceLabel"
+              class="mt-3 text-[2rem] leading-[1.1] font-extrabold tracking-[-0.02em] text-[var(--color-ink)]"
+            >
+              от {{ priceLabel }} ₽
+              <span class="text-base font-medium tracking-normal text-[var(--color-ink-muted)]">/ {{ unitLabel }}</span>
             </p>
-            <p v-if="service.pricing?.note" class="mt-1 text-sm text-[var(--color-ink-muted)]">
+            <p v-else class="mt-3 text-base leading-[1.6] text-[var(--color-ink-muted)]">
+              Рассчитаем стоимость под ваш объект
+            </p>
+            <p v-if="service.pricing?.note" class="mt-2 text-base leading-[1.5] text-[var(--color-ink-muted)]">
               {{ service.pricing.note }}
             </p>
             <NuxtLink to="/contacts" class="btn-lime mt-6 w-full">
@@ -162,17 +210,12 @@ const propertyLabels: Record<string, string> = {
       </div>
     </div>
 
-    <!-- Портфолио по услуге -->
-    <BlocksPortfolioMasonry
+    <!-- Примеры работ по услуге: отдельный список-карусель -->
+    <ServicesProjectsCarousel
       v-if="relatedProjects.length"
       :projects="relatedProjects"
-      eyebrow="Кейсы по этой услуге"
       title="Примеры работ"
     />
-
-    <!-- JSON-LD FAQ -->
-    <ClientOnly v-if="faqJsonLd">
-      <Script type="application/ld+json" v-html="faqJsonLd" />
-    </ClientOnly>
   </article>
 </template>
+

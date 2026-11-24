@@ -6,6 +6,10 @@ import type { Project } from '#shared/types/payload'
  * /portfolio/[slug] — страница кейса.
  * Главный SEO-актив для long-tail трафика.
  * Структура по REFERENCES_AND_STRATEGY.md п. 3.4.
+ *
+ * Скелет и типографика — как у посадочной услуги (/services/[slug]):
+ * hero с заголовком text-h1 → контент слева (max-w-[46rem]) и липкая
+ * карточка справа с параметрами проекта и кнопкой заявки.
  */
 const route = useRoute()
 const slug = route.params.slug as string
@@ -49,147 +53,121 @@ const styleLabels: Record<string, string> = {
   loft: 'Лофт', classic: 'Классика', neoclassic: 'Неоклассика', japandi: 'Джапанди',
 }
 
-// Разбиваем галерею на before/after для сравнения
-const beforeImages = computed(() => project.value.gallery?.filter((g) => g.type === 'before') || [])
-const renderImages = computed(() => project.value.gallery?.filter((g) => g.type === 'render') || [])
-const afterImages = computed(() => project.value.gallery?.filter((g) => g.type === 'after') || [])
-
-// Type guard: gallery.image может быть ID (string) при depth < 2
-function isMedia(img: any): img is { url?: string; alt?: string } {
-  return img && typeof img === 'object' && 'url' in img
-}
-// Безопасно достаём URL картинки из элемента галереи
-function galleryUrl(g: { image?: any }): string {
-  return isMedia(g.image) ? imgUrl(g.image.url) : ''
-}
-function galleryAlt(g: { image?: any }, fallback: string): string {
-  return isMedia(g.image) ? (g.image.alt || fallback) : fallback
-}
+// Параметры проекта — в карточке справа (там, где у услуги цена).
+// Выводим только заполненные
+const facts = computed(() =>
+  (
+    [
+      { label: 'Площадь', value: details.value.area ? `${details.value.area} м²` : '' },
+      {
+        label: 'Тип',
+        value: details.value.propertyType
+          ? propertyLabels[details.value.propertyType] || details.value.propertyType
+          : '',
+      },
+      {
+        label: 'Стиль',
+        value: details.value.style ? styleLabels[details.value.style] || details.value.style : '',
+      },
+      { label: 'Срок', value: details.value.duration || '' },
+    ] as { label: string; value: string }[]
+  ).filter((f) => f.value),
+)
 </script>
 
 <template>
   <article>
-    <!-- Hero кейса -->
-    <section class="relative min-h-[70vh] overflow-hidden bg-[var(--color-ink)] pt-20">
+    <!-- Hero — как на странице услуги. Цвет задаётся на самом заголовке:
+         глобальное правило h1–h4 в main.css (color: var(--color-ink)) не даёт
+         унаследовать светлый цвет контейнера -->
+    <section class="relative flex min-h-[60vh] items-end overflow-hidden bg-[var(--color-ink)] pt-24">
       <NuxtImg
         v-if="coverImage?.url"
         :src="imgUrl(coverImage.url)"
         :alt="coverImage.alt || project.title"
-        class="absolute inset-0 h-full w-full object-cover opacity-70"
-        sizes="sm:100vw xl:100vw"
+        class="absolute inset-0 h-full w-full object-cover opacity-60"
+        sizes="lg:100vw 2xl:100vw 100vw"
         format="webp,avif"
         preload
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-      <div class="container-app relative z-10 flex min-h-[70vh] flex-col justify-end pb-16 text-[var(--color-canvas)]">
-        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-accent-deep)]">Кейс</p>
-        <!-- Цвет задаём явно: базовый h1-стиль красит в эспрессо — на тёмном hero не видно -->
-        <h1 class="max-w-4xl page-title text-[var(--color-canvas)]">{{ project.title }}</h1>
-        <p class="mt-4 max-w-2xl text-xl text-[var(--color-canvas)]/80 sm:text-2xl">{{ project.excerpt }}</p>
-
-        <!-- Метаданные -->
-        <dl v-if="details" class="mt-8 grid grid-cols-2 gap-6 text-base sm:text-lg sm:grid-cols-4">
-          <div v-if="details.area">
-            <dt class="text-sm text-[var(--color-canvas)]/50">Площадь</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ details.area }} м²</dd>
-          </div>
-          <div v-if="details.propertyType">
-            <dt class="text-sm text-[var(--color-canvas)]/50">Тип</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ propertyLabels[details.propertyType] || details.propertyType }}</dd>
-          </div>
-          <div v-if="details.style">
-            <dt class="text-sm text-[var(--color-canvas)]/50">Стиль</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ styleLabels[details.style] || details.style }}</dd>
-          </div>
-          <div v-if="details.duration">
-            <dt class="text-sm text-[var(--color-canvas)]/50">Срок</dt>
-            <dd class="mt-1 text-[var(--color-canvas)]">{{ details.duration }}</dd>
-          </div>
-        </dl>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+      <div class="container-app relative z-10 pb-16 text-[var(--color-canvas)]">
+        <h1 class="max-w-3xl font-display text-h1 text-[var(--color-canvas)]">{{ project.title }}</h1>
+        <p v-if="project.excerpt" class="mt-4 max-w-xl text-lg text-[var(--color-canvas)]/80">
+          {{ project.excerpt }}
+        </p>
       </div>
     </section>
 
     <div class="container-app section">
-      <div class="mx-auto max-w-3xl">
-        <!-- Задача -->
-        <section v-if="project.brief" class="mb-16">
-          <h2 class="section-title mb-6">Задача</h2>
-          <RichTextRenderer :content="project.brief" text-class="text-lg" />
-        </section>
-
-        <!-- Решение -->
-        <section v-if="project.solution" class="mb-16">
-          <h2 class="section-title mb-6">Решение</h2>
-          <RichTextRenderer :content="project.solution" text-class="text-lg" />
-        </section>
-      </div>
-
-      <!-- Галерея -->
-      <section v-if="renderImages.length" class="my-16">
-        <h2 class="section-title mb-8">3D-визуализация</h2>
-        <div class="grid gap-6 sm:grid-cols-2">
-          <figure
-            v-for="(img, i) in renderImages"
-            :key="i"
-            class="overflow-hidden rounded-[var(--radius-lg)]"
-          >
-            <NuxtImg
-              v-if="galleryUrl(img)"
-              :src="galleryUrl(img)"
-              :alt="img.caption || galleryAlt(img, project.title)"
-              class="w-full object-cover"
-              sizes="sm:50vw xl:50vw"
-              format="webp,avif"
+      <!-- minmax(0,1fr) + overflow-wrap:anywhere — колонка контента не тянется
+           за непереносимыми словами (та же защита, что на странице услуги) -->
+      <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
+        <!-- Основной контент -->
+        <div class="min-w-0 [overflow-wrap:anywhere]">
+          <!-- Задача -->
+          <section v-if="project.brief">
+            <h2 class="content-heading">Задача</h2>
+            <RichTextRenderer
+              :content="project.brief"
+              text-class="text-lg"
+              class="mt-6 max-w-[46rem] [&_p]:text-[var(--color-ink)]"
             />
-            <figcaption v-if="img.caption" class="mt-2 text-sm text-[var(--color-ink-subtle)]">
-              {{ img.caption }}
-            </figcaption>
-          </figure>
-        </div>
-      </section>
+          </section>
 
-      <!-- Реализация (после) -->
-      <section v-if="afterImages.length" class="my-16">
-        <h2 class="section-title mb-8">Реализация</h2>
-        <div class="grid gap-6 sm:grid-cols-2">
-          <figure
-            v-for="(img, i) in afterImages"
-            :key="i"
-            class="overflow-hidden rounded-[var(--radius-lg)]"
-          >
-            <NuxtImg
-              v-if="galleryUrl(img)"
-              :src="galleryUrl(img)"
-              :alt="img.caption || galleryAlt(img, project.title)"
-              class="w-full object-cover"
-              sizes="sm:50vw xl:50vw"
-              format="webp,avif"
+          <!-- Решение -->
+          <section v-if="project.solution" class="mt-14">
+            <h2 class="content-heading">Решение</h2>
+            <RichTextRenderer
+              :content="project.solution"
+              text-class="text-lg"
+              class="mt-6 max-w-[46rem] [&_p]:text-[var(--color-ink)]"
             />
-          </figure>
-        </div>
-      </section>
+          </section>
 
-      <!-- Отзыв -->
-      <section v-if="project.testimonial?.quote" class="my-16">
-        <div class="mx-auto max-w-3xl rounded-[var(--radius-xl)] bg-[var(--color-surface-alt)] p-10 text-center">
-          <UIcon name="i-lucide-quote" class="mx-auto mb-4 h-10 w-10 text-[var(--color-accent-soft)]" />
-          <blockquote class="font-display text-3xl text-[var(--color-ink)]">
-            «{{ project.testimonial.quote }}»
-          </blockquote>
-          <div class="mt-6">
-            <p class="font-medium text-[var(--color-ink)]">{{ project.testimonial.author }}</p>
-            <p v-if="project.testimonial.role" class="text-sm text-[var(--color-ink-subtle)]">
-              {{ project.testimonial.role }}
-            </p>
+          <!-- Галерея: все картинки из CMS одной каруселью -->
+          <PortfolioGalleryCarousel
+            v-if="project.gallery?.length"
+            class="mt-14"
+            :gallery="project.gallery"
+            :title="project.title"
+          />
+
+          <!-- Отзыв — карточка, как вопросы FAQ на странице услуги -->
+          <section v-if="project.testimonial?.quote" class="mt-14">
+            <h2 class="content-heading">Отзыв</h2>
+            <figure class="mt-6 max-w-[46rem] rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 lg:p-7">
+              <blockquote class="text-lg leading-[1.6] text-[var(--color-ink)]">
+                «{{ project.testimonial.quote }}»
+              </blockquote>
+              <figcaption class="mt-4 text-base text-[var(--color-ink-muted)]">
+                <span class="font-semibold text-[var(--color-ink)]">{{ project.testimonial.author }}</span>
+                <template v-if="project.testimonial.role"> · {{ project.testimonial.role }}</template>
+              </figcaption>
+            </figure>
+          </section>
+        </div>
+
+        <!-- Сайдбар: параметры проекта + CTA (у услуги здесь цена) -->
+        <aside class="min-w-0 [overflow-wrap:anywhere] lg:sticky lg:top-28 lg:self-start">
+          <div class="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 lg:p-7">
+            <p class="eyebrow text-[var(--color-ink)]">О проекте</p>
+            <dl v-if="facts.length" class="mt-4">
+              <div
+                v-for="f in facts"
+                :key="f.label"
+                class="flex items-baseline justify-between gap-6 border-b border-[var(--color-line)] py-3 first:pt-0 last:border-b-0 last:pb-0"
+              >
+                <dt class="text-base text-[var(--color-ink-muted)]">{{ f.label }}</dt>
+                <dd class="text-right text-base font-medium text-[var(--color-ink)]">{{ f.value }}</dd>
+              </div>
+            </dl>
+            <NuxtLink to="/contacts" class="btn-lime mt-6 w-full">
+              Оставить заявку
+              <UIcon name="i-lucide-arrow-right" class="h-4 w-4" aria-hidden="true" />
+            </NuxtLink>
           </div>
-        </div>
-      </section>
-
-      <!-- CTA -->
-      <div class="my-16 rounded-[var(--radius-xl)] bg-[var(--color-ink)] p-10 text-center text-[var(--color-canvas)]">
-        <h2 class="section-title text-[var(--color-canvas)]">Хотите так же?</h2>
-        <p class="mt-3 text-lg text-[var(--color-canvas)]/70">Обсудим ваш проект и предложим решение.</p>
-        <UButton to="/contacts" color="primary" size="lg" class="mt-6">Оставить заявку</UButton>
+        </aside>
       </div>
     </div>
   </article>

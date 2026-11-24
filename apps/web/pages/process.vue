@@ -20,7 +20,6 @@ useSeo({
     </section>
 
     <BlocksProcessSteps />
-    <BlocksPricingCalculator />
     <BlocksContactForm
       eyebrow="Обсудить проект"
       title="Расскажите о вашей задаче"

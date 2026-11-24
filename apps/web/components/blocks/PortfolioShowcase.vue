@@ -367,7 +367,6 @@ onBeforeUnmount(() => {
           </button>
         </li>
       </ul>
-      <p class="foot-tagline">Интерьеры, в которых хочется жить.</p>
     </footer>
   </section>
 </template>

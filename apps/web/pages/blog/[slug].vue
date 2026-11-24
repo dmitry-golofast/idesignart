@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Post } from '#shared/types/payload'
+import type { Category, Post } from '#shared/types/payload'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -17,7 +17,19 @@ const post = computed<Post>(() => data.value!.docs[0]!)
 // Связи Payload (number | Media / number | User / number | Category) → объекты
 const coverImage = computed(() => populated(post.value.coverImage))
 const author = computed(() => populated(post.value.author))
-const category = computed(() => populated(post.value.category))
+// Категории те же, что у проектов; в шапке показываем первую
+const categories = computed(() =>
+  (post.value.categories ?? [])
+    .map((c) => populated(c))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c)),
+)
+
+// Теги статьи (hasMany-связь с отдельной коллекцией tags) → объекты
+const tags = computed(() =>
+  (post.value.tags ?? [])
+    .map((t) => populated(t))
+    .filter((t): t is NonNullable<typeof t> => Boolean(t)),
+)
 
 useSeo({
   title: post.value.meta?.title || post.value.title,
@@ -54,24 +66,42 @@ const articleJsonLd = computed(() => ({
   dateModified: post.value.updatedAt,
   author: { '@type': 'Person', name: author.value?.name || 'idesignart' },
   publisher: { '@type': 'Organization', name: 'idesignart' },
+  keywords: tags.value.map((t) => t.title).join(', ') || undefined,
+}))
+
+// JSON-LD отдаём через <head> — разметка попадает и в серверный HTML.
+// В шаблоне для этого использовался <Script>, но Nuxt такой компонент не
+// регистрирует («Failed to resolve component: Script»), а v-html с объектом
+// записывал в тег «[object Object]»
+useHead(() => ({
+  script: [{ key: 'article-json-ld', type: 'application/ld+json', innerHTML: jsonLd(articleJsonLd.value) }],
 }))
 </script>
 
 <template>
   <article>
     <!-- Hero статьи -->
-    <section class="bg-[var(--color-surface)] pt-32">
+    <section class="bg-surface pt-16">
       <div class="container-app">
         <div class="mx-auto max-w-3xl pb-12">
-          <NuxtLink to="/blog" class="link-arrow mb-8 text-sm">Все статьи</NuxtLink>
-          <div class="mb-4 flex items-center gap-3 text-sm text-[var(--color-ink-subtle)]">
-            <span v-if="category?.title" class="text-[var(--color-accent-deep)]">{{ category.title }}</span>
-            <span>·</span>
+          <div class="mb-4 flex gap-3 text-sm text-ink-subtle">
+            <span v-if="categories[0]?.title" class="text-accent-deep">{{ categories[0].title }}</span>
             <time v-if="post.publishedAt">{{ formatDate(post.publishedAt) }}</time>
             <span v-if="post.readingTime">· {{ post.readingTime }} мин чтения</span>
           </div>
           <h1 class="page-title">{{ post.title }}</h1>
-          <p class="mt-4 text-lg text-[var(--color-ink-muted)]">{{ post.excerpt }}</p>
+          <p class="mt-4 text-lg text-ink-muted">{{ post.excerpt }}</p>
+
+          <!-- Теги статьи: ключевые слова, отдельная сущность от категорий -->
+          <div v-if="tags.length" class="mt-6 flex flex-wrap gap-2">
+            <span
+              v-for="tag in tags"
+              :key="tag.id"
+              class="rounded-[var(--radius-pill)] border border-[var(--color-line)] px-3.5 py-1.5 text-xs text-[var(--color-ink-muted)]"
+            >
+              {{ tag.title }}
+            </span>
+          </div>
         </div>
       </div>
     </section>
@@ -81,7 +111,7 @@ const articleJsonLd = computed(() => ({
       <NuxtImg
         :src="imgUrl(coverImage.url)"
         :alt="coverImage.alt || post.title"
-        class="aspect-[16/9] w-full rounded-[var(--radius-lg)] object-cover"
+        class="aspect-video w-full rounded-lg object-cover"
         sizes="xl:880px 100vw"
         format="webp,avif"
       />
@@ -122,8 +152,5 @@ const articleJsonLd = computed(() => ({
         </div>
       </div>
     </section>
-
-    <!-- JSON-LD -->
-    <Script type="application/ld+json" v-html="articleJsonLd" />
   </article>
 </template>

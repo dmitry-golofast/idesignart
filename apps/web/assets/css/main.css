@@ -215,6 +215,20 @@
     font-size: clamp(2.5rem, 5vw, 5.5rem);
   }
 
+  /* Заголовок раздела внутри контента посадочной страницы (услуга, кейс).
+     Умеренный размер вместо крупных секционных (.section-title) — страница
+     читается как статья: h1 → .content-heading → текст.
+     Гарнитура, вес и цвет — из глобального правила h1–h4 */
+  .content-heading {
+    font-size: 1.375rem;
+    line-height: 1.25;
+  }
+  @media (min-width: 1024px) {
+    .content-heading {
+      font-size: 1.625rem;
+    }
+  }
+
   /* Statement — крупный центрированный текст-утверждение (секции-манифесты) */
   .statement {
     font-family: var(--font-display);

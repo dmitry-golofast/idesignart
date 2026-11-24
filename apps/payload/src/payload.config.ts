@@ -16,6 +16,7 @@ import { Projects } from './collections/Projects'
 import { Services } from './collections/Services'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
+import { Tags } from './collections/Tags'
 import { Leads } from './collections/Leads'
 import { Subscriptions } from './collections/Subscriptions'
 import { Users } from './collections/Users'
@@ -27,6 +28,16 @@ import { Header } from './globals/Header'
 // PAYLOAD_PUBLIC_SERVER_URL (prod задаёт его в docker-compose).
 const appURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
 const secret = process.env.PAYLOAD_SECRET || 'idesignart-dev-secret-key-2026-change-in-prod'
+
+// В dev standalone-вызов getPayload() (сид- и миграционные скрипты, payload run)
+// открывает HMR-WebSocket к ws://localhost:${PORT || 3000}/_next/webpack-hmr —
+// предполагая, что админка Next слушает :3000. Здесь на :3000 стоит Nuxt: сокет
+// попадает в заглушку web/server/routes/_next/webpack-hmr.ts, а его обрыв при
+// выходе скрипта даёт в Nuxt unhandledRejection (read ECONNRESET) → рестарт или
+// зависание dev-сервера. Направляем на настоящий HMR админки на :3001.
+if (process.env.NODE_ENV !== 'production') {
+  process.env.PAYLOAD_HMR_URL_OVERRIDE ??= 'ws://localhost:3001/_next/webpack-hmr'
+}
 
 // ===== SEO (@payloadcms/plugin-seo) =====
 // Плагин добавляет группу meta (title/description/image/noindex)
@@ -75,6 +86,7 @@ export default buildConfig({
     Services,
     Posts,
     Categories,
+    Tags,
     Leads,
     Subscriptions,
     Users,
@@ -123,13 +135,17 @@ export default buildConfig({
   // Сайт и Payload same-origin на всех окружениях: админка и API доступны
   // на /admin и /api основного origin (в dev — через прокси в Nuxt, в
   // проде — через Caddy). CORS/CSRF-list остаётся для совместимости и
-  // прямого доступа к :3001 в dev.
+  // прямого доступа к :3001 в dev: без :3001 в csrf админка, открытая
+  // напрямую на :3001, читает данные, но любой POST/PATCH/DELETE уходит
+  // без сессии и получает 403.
   cors: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     'http://localhost:3000',
+    'http://localhost:3001',
   ],
   csrf: [
     process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     'http://localhost:3000',
+    'http://localhost:3001',
   ],
 })

@@ -14,15 +14,22 @@ const PAYLOAD_DEFAULTS: Record<string, string> = {
 
 export function usePayload<T>(
   endpoint: string,
-  query: Record<string, string> = {},
+  query: Record<string, string> | Ref<Record<string, string>> | (() => Record<string, string>) = {},
+  /**
+   * Доп. опции useFetch (например, getCachedData). Полезно точечно
+   * отключать межнавигационный кеш для «живых» данных (списки из CMS).
+   */
+  fetchOptions: Record<string, unknown> = {},
 ) {
   const config = useRuntimeConfig()
   const base = config.public.payloadApiUrl as string
 
+  // query может быть реактивным (computed/getter) — URL пересчитывается,
+  // а useFetch при смене URL перезапрашивает данные без перезагрузки страницы
   const queryString = computed(() => {
     const params = new URLSearchParams({
       ...PAYLOAD_DEFAULTS,
-      ...query,
+      ...toValue(query),
     })
     return params.toString()
   })
@@ -30,10 +37,24 @@ export function usePayload<T>(
   const url = computed(() => `${base}/api/${endpoint}?${queryString.value}`)
 
   return useFetch<T>(url, {
-    key: `payload-${endpoint}-${JSON.stringify(query)}`,
+    // Ключ реактивный: входит в него и сам query, поэтому смена query
+    // (например, тега фильтра) меняет ключ — useAsyncData перезапрашивает
+    // данные. Со статическим ключом URL менялся «вхолостую»: перезапроса
+    // не происходило, список не обновлялся при смене фильтра.
+    key: computed(() => `payload-${endpoint}-${JSON.stringify(toValue(query))}`),
     server: true,
     lazy: false,
+    ...fetchOptions,
   })
+}
+
+/**
+ * getCachedData для «живых» списков CMS: при гидратации берём данные
+ * из SSR-payload (без повторного запроса), а при последующих клиентских
+ * заходах на страницу кеш игнорируем — состав/теги постов всегда свежие.
+ */
+export function freshOnVisit(key: string, nuxtApp: { isHydrating: boolean; payload: { data: Record<string, unknown> } }) {
+  return nuxtApp.isHydrating ? nuxtApp.payload.data[key] : undefined
 }
 
 /**

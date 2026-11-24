@@ -5,7 +5,7 @@ export const Posts: CollectionConfig = {
   admin: {
     group: 'Блог',
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', 'author', 'publishedAt', '_status'],
+    defaultColumns: ['title', 'categories', 'author', 'publishedAt', '_status'],
     description:
       'Статьи и гайды — SEO-движок сайта. Каждая статья под 1 ключевое слово.',
   },
@@ -40,17 +40,24 @@ export const Posts: CollectionConfig = {
       required: true,
     },
     {
-      name: 'category',
+      name: 'categories',
       type: 'relationship',
       relationTo: 'categories',
-      admin: { position: 'sidebar' },
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Тип проекта/статьи — те же категории, что у портфолио. Формирует фильтры блога.',
+      },
     },
     {
       name: 'tags',
       type: 'relationship',
-      relationTo: 'categories',
+      relationTo: 'tags',
       hasMany: true,
-      filterOptions: { type: { equals: 'style' } },
+      admin: {
+        description: 'Ключевые слова статьи — отдельная сущность, не связаны с категориями.',
+      },
     },
     {
       name: 'content',

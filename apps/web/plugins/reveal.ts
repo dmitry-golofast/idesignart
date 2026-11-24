@@ -12,6 +12,8 @@
  *   style="--reveal-delay: 120ms"
  */
 
+const REVEAL_SELECTOR = '[data-reveal], [data-reveal-line]'
+
 export default defineNuxtPlugin((nuxtApp) => {
   if (import.meta.server) return
 
@@ -51,13 +53,39 @@ export default defineNuxtPlugin((nuxtApp) => {
     els.forEach((el) => obs.observe(el))
   }
 
-  nuxtApp.hook('app:mounted', () => {
-    // Даём Vue отрисовать первый кадр, затем включаем наблюдение
-    requestAnimationFrame(scan)
+  // Один скан на кадр, сколько бы мутаций ни пришло
+  let scheduled = false
+  const scheduleScan = () => {
+    if (scheduled) return
+    scheduled = true
+    requestAnimationFrame(() => {
+      scheduled = false
+      scan()
+    })
+  }
+
+  // Первичный скан — после гидратации страницы. app:mounted для этого рано:
+  // контент <NuxtPage> гидратируется позже, и класс попадал в ещё не
+  // гидратированные узлы («Hydration class mismatch»).
+  nuxtApp.hook('page:finish', () => {
+    scheduleScan()
   })
 
-  // SPA-навигация: новые страницы содержат новые data-reveal
-  nuxtApp.hook('page:finish', () => {
-    requestAnimationFrame(scan)
-  })
+  // SPA-навигация: при pageTransition с mode: 'out-in' page:finish вызывается,
+  // когда новая страница ещё не вставлена в DOM (она ждёт окончания анимации
+  // ухода старой), и скан захватывал только уходящую страницу — новая
+  // оставалась навсегда скрытой (data-reveal без .is-revealed). Поэтому скан
+  // привязан к факту вставки узлов; наблюдение покрывает и страницы после
+  // перехода, и данные, пришедшие позже, и модалки.
+  new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (!(node instanceof Element)) continue
+        if (node.matches(REVEAL_SELECTOR) || node.querySelector(REVEAL_SELECTOR)) {
+          scheduleScan()
+          return
+        }
+      }
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true })
 })

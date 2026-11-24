@@ -73,6 +73,7 @@ export interface Config {
     services: Service;
     posts: Post;
     categories: Category;
+    tags: Tag;
     leads: Lead;
     subscriptions: Subscription;
     users: User;
@@ -89,6 +90,7 @@ export interface Config {
     services: ServicesSelect<false> | ServicesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
     subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -692,8 +694,14 @@ export interface Post {
    */
   excerpt: string;
   coverImage: number | Media;
-  category?: (number | null) | Category;
-  tags?: (number | Category)[] | null;
+  /**
+   * Тип проекта/статьи — те же категории, что у портфолио. Формирует фильтры блога.
+   */
+  categories?: (number | Category)[] | null;
+  /**
+   * Ключевые слова статьи — отдельная сущность, не связаны с категориями.
+   */
+  tags?: (number | Tag)[] | null;
   content: {
     root: {
       type: string;
@@ -731,6 +739,19 @@ export interface Post {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Теги статей — свободные ключевые слова, отдельная сущность от категорий (типов проектов).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  title: string;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -883,6 +904,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
       } | null)
     | ({
         relationTo: 'leads';
@@ -1310,7 +1335,7 @@ export interface PostsSelect<T extends boolean = true> {
   slug?: T;
   excerpt?: T;
   coverImage?: T;
-  category?: T;
+  categories?: T;
   tags?: T;
   content?: T;
   author?: T;
@@ -1340,6 +1365,16 @@ export interface CategoriesSelect<T extends boolean = true> {
   description?: T;
   type?: T;
   seoImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }
